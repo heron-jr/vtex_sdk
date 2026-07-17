@@ -10,20 +10,36 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  * Combines multiple AbortSignals into one that aborts when any of them abort.
  * Equivalent to `AbortSignal.any(...)`, but works on all Node >=18 (that API
  * only landed in Node 18.17 / 20.3), matching this project's Node >=18 floor.
+ *
+ * Returns both the combined signal and a `dispose` callback that removes
+ * every listener this function registered. Callers MUST invoke `dispose`
+ * once the operation settles (success, failure, or abort) — otherwise a
+ * long-lived input signal (e.g. one AbortController shared across many
+ * `request()` calls) accumulates one permanent listener per call, an
+ * unbounded leak that native `AbortSignal.any` does not have.
  */
-function combineSignals(signals: Array<AbortSignal | undefined>): AbortSignal {
+function combineSignals(
+  signals: Array<AbortSignal | undefined>,
+): { signal: AbortSignal; dispose: () => void } {
   const valid = signals.filter((s): s is AbortSignal => Boolean(s))
-  if (valid.length === 1) return valid[0]
+  if (valid.length === 1) return { signal: valid[0], dispose: () => {} }
   const controller = new AbortController()
-  const onAbort = (s: AbortSignal) => () => controller.abort(s.reason)
+  const cleanups: Array<() => void> = []
   for (const s of valid) {
     if (s.aborted) {
       controller.abort(s.reason)
       break
     }
-    s.addEventListener('abort', onAbort(s), { once: true })
+    const handler = () => controller.abort(s.reason)
+    s.addEventListener('abort', handler)
+    cleanups.push(() => s.removeEventListener('abort', handler))
   }
-  return controller.signal
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      for (const c of cleanups) c()
+    },
+  }
 }
 
 async function parseBody(res: Response): Promise<unknown> {
@@ -72,9 +88,12 @@ export class VtexHttpClient {
     for (;;) {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), opts.timeoutMs ?? this.timeoutMs)
+      let dispose: () => void = () => {}
 
       try {
-        const signal = combineSignals([opts.signal, controller.signal])
+        const combined = combineSignals([opts.signal, controller.signal])
+        const signal = combined.signal
+        dispose = combined.dispose
 
         this.hooks.onRequest?.({ method: opts.method, url, attempt })
 
@@ -118,6 +137,7 @@ export class VtexHttpClient {
         throw mapResponseToError(res.status, body, res.headers)
       } finally {
         clearTimeout(timeout)
+        dispose()
       }
     }
   }

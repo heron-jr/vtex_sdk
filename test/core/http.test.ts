@@ -144,5 +144,34 @@ describe('VtexHttpClient.request', () => {
     // The first response is retried (body must be drained); the second is
     // the final failure and its body is read by parseBody instead, not cancelled.
     expect(cancelSpies[0]).toHaveBeenCalledTimes(1)
+    expect(cancelSpies[1]).not.toHaveBeenCalled()
+  })
+
+  it('removes combined-signal abort listeners after a normal completion (no leak)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock })
+
+    const controller = new AbortController()
+    // A caller signal plus the client's internal per-attempt timeout signal
+    // together make two "valid" signals, which exercises the combine+dispose
+    // path in `combineSignals` (the single-signal passthrough branch never
+    // registers a listener at all).
+    const addSpy = vi.spyOn(controller.signal, 'addEventListener')
+    const removeSpy = vi.spyOn(controller.signal, 'removeEventListener')
+
+    const out = await http.request<{ ok: boolean }>({
+      method: 'GET',
+      path: '/x',
+      signal: controller.signal,
+    })
+    expect(out).toEqual({ ok: true })
+
+    const abortAdds = addSpy.mock.calls.filter(([type]) => type === 'abort').length
+    const abortRemoves = removeSpy.mock.calls.filter(([type]) => type === 'abort').length
+    expect(abortAdds).toBeGreaterThan(0)
+    expect(abortRemoves).toBe(abortAdds)
+
+    addSpy.mockRestore()
+    removeSpy.mockRestore()
   })
 })
