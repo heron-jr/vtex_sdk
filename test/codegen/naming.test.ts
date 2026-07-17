@@ -10,6 +10,11 @@ describe('methodName', () => {
     expect(methodName({}, 'get', '/api/oms/pvt/orders/{orderId}')).toBe('getApiOmsPvtOrdersByOrderId')
     expect(methodName({}, 'post', '/api/catalog/pvt/product')).toBe('postApiCatalogPvtProduct')
   })
+  it('produces a valid identifier when the operationId starts with a digit', () => {
+    const result = methodName({ operationId: '1RetrieveToken' }, 'get', '/x')
+    expect(result).toBe('_1RetrieveToken')
+    expect(result).toMatch(/^[A-Za-z_$][A-Za-z0-9_$]*$/)
+  })
 })
 
 describe('dedupe', () => {

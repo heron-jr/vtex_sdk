@@ -5,7 +5,7 @@ function camelCase(input: string): string {
     .split(/\s+/)
     .filter(Boolean)
   if (parts.length === 0) return 'op'
-  return parts
+  const result = parts
     .map((p, i) => {
       if (i === 0) {
         // First part: if all uppercase, fully lowercase; otherwise just lowercase first char
@@ -15,6 +15,8 @@ function camelCase(input: string): string {
       return p.charAt(0).toUpperCase() + p.slice(1)
     })
     .join('')
+  // A name starting with a digit is not a valid identifier / class member name.
+  return /^[0-9]/.test(result) ? `_${result}` : result
 }
 
 export function methodName(op: { operationId?: string }, httpMethod: string, path: string): string {
