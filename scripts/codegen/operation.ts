@@ -8,6 +8,13 @@ interface Ctx {
   refName: (ref: string) => string
   /** Resolve a `$ref` (e.g. "#/components/parameters/X") to the referenced parameter object. */
   resolveRef?: (ref: string) => any
+  /**
+   * Override the computed method name (e.g. after a caller has run per-namespace
+   * `dedupe()` across a batch of operations). When omitted, falls back to
+   * `methodName(op, httpMethod, path)` — the same value emitted before this
+   * option existed, so existing callers are unaffected.
+   */
+  name?: string
 }
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/
@@ -61,7 +68,7 @@ function pathPlaceholders(path: string): string[] {
 
 export function generateMethod(ctx: Ctx): string {
   const { httpMethod, path, op, refName, resolveRef } = ctx
-  const name = methodName(op, httpMethod, path)
+  const name = ctx.name ?? methodName(op, httpMethod, path)
   const rawParams: any[] = op.parameters ?? []
 
   // Resolve `$ref` parameter entries (best-effort; unresolved/no-resolver entries are dropped —

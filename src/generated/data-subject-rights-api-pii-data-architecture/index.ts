@@ -1,0 +1,47 @@
+import type { VtexHttpClient } from '../../core/http.js'
+
+class DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights {
+  constructor(private http: VtexHttpClient) {}
+
+  postApiUserRightsCreateAndProcessDeleteUserData(params: {
+  an?: string
+  body: {
+  email?: string
+}
+}): Promise<{
+  uuid?: string
+  requestType?: string
+  email?: string
+  status?: string
+  dataResponse?: string
+  requestTime?: string
+  applications?: {
+  application?: string
+  status?: string
+  errorDetail?: string
+  updateAt?: string
+}[]
+}> {
+    return this.http.request<{
+  uuid?: string
+  requestType?: string
+  email?: string
+  status?: string
+  dataResponse?: string
+  requestTime?: string
+  applications?: {
+  application?: string
+  status?: string
+  errorDetail?: string
+  updateAt?: string
+}[]
+}>({ method: 'POST', path: `/api/user-rights/createAndProcessDeleteUserData`, query: { 'an': params.an }, body: params.body })
+  }
+}
+
+export class DataSubjectRightsApiPiiDataArchitectureApi {
+  readonly dataSubjectRights: DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights
+  constructor(http: VtexHttpClient) {
+    this.dataSubjectRights = new DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights(http)
+  }
+}
