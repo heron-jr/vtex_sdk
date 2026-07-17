@@ -16,6 +16,16 @@ describe('dedupe', () => {
   it('suffixes collisions, keeping order', () => {
     expect(dedupe(['get', 'get', 'list', 'get'])).toEqual(['get', 'get2', 'list', 'get3'])
   })
+  it('avoids collisions with pre-existing suffixed names', () => {
+    const result = dedupe(['foo', 'foo2', 'foo'])
+    expect(result).toEqual(['foo', 'foo2', 'foo3'])
+    expect(new Set(result).size).toBe(result.length)
+  })
+  it('ensures all emitted names are globally unique', () => {
+    const result = dedupe(['a', 'a', 'a2'])
+    expect(new Set(result).size).toBe(result.length)
+    expect(result).toEqual(['a', 'a2', 'a22'])
+  })
 })
 
 describe('tagToNamespace', () => {
