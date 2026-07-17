@@ -32,5 +32,19 @@ describe('OrdersFacade', () => {
     // first call carries the status filter and page=1
     expect(fetchMock.mock.calls[0][0]).toContain('f_status=ready-for-handling')
     expect(fetchMock.mock.calls[0][0]).toContain('page=1')
+    // second call requests page=2
+    expect(fetchMock.mock.calls[1][0]).toContain('page=2')
+  })
+
+  it('list() pagination controls override passthrough filters', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(page([{ orderId: 'a' }], 1, 1))
+    const http = new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock })
+    const facade = new OrdersFacade(http)
+    const ids: string[] = []
+    for await (const o of facade.list({ page: 5 })) ids.push((o as any).orderId)
+    expect(ids).toEqual(['a'])
+    // internal control page=1 wins over passthrough page=5
+    expect(fetchMock.mock.calls[0][0]).toContain('page=1')
   })
 })
