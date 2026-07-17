@@ -75,6 +75,10 @@ export class VtexHttpClient {
   }
 
   async request<T>(opts: RequestOptions): Promise<T> {
+    return (await this.requestRaw<T>(opts)).data
+  }
+
+  async requestRaw<T>(opts: RequestOptions): Promise<{ data: T; headers: Headers; status: number }> {
     const url = this.baseUrl + opts.path + buildQuery(opts.query)
     const hasBody = opts.body !== undefined
     const headers: Record<string, string> = {
@@ -118,7 +122,7 @@ export class VtexHttpClient {
 
         this.hooks.onResponse?.({ method: opts.method, url, status: res.status, attempt })
 
-        if (res.ok) return (await parseBody(res)) as T
+        if (res.ok) return { data: (await parseBody(res)) as T, headers: res.headers, status: res.status }
 
         if (shouldRetry(res.status, attempt, this.maxRetries)) {
           // Release the response body before looping back to fetch again; an

@@ -175,3 +175,23 @@ describe('VtexHttpClient.request', () => {
     removeSpy.mockRestore()
   })
 })
+
+describe('VtexHttpClient.requestRaw', () => {
+  it('surfaces response headers and status alongside parsed data', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({ ok: true }, 200, { 'X-VTEX-MD-TOKEN': 'tok1' }),
+    )
+    const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock })
+    const out = await http.requestRaw<{ ok: boolean }>({ method: 'GET', path: '/x' })
+    expect(out.data).toEqual({ ok: true })
+    expect(out.status).toBe(200)
+    expect(out.headers.get('X-VTEX-MD-TOKEN')).toBe('tok1')
+  })
+
+  it('request() delegates to requestRaw and returns only the parsed data', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }, 200, { 'X-VTEX-MD-TOKEN': 'tok1' }))
+    const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock })
+    const out = await http.request<{ ok: boolean }>({ method: 'GET', path: '/x' })
+    expect(out).toEqual({ ok: true })
+  })
+})
