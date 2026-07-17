@@ -41,4 +41,19 @@ describe('schemaToType', () => {
     // Null schema
     expect(schemaToType(null, ref)).toBe('unknown')
   })
+  it('handles non-array required field without throwing', () => {
+    // required as object (not array)
+    const t1 = schemaToType(
+      { type: 'object', properties: { id: { type: 'string' } }, required: {} },
+      ref,
+    )
+    expect(t1).toContain('id?: string')
+    // required as string (not array)
+    const t2 = schemaToType(
+      { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } }, required: 'id' },
+      ref,
+    )
+    expect(t2).toContain('id?: string')
+    expect(t2).toContain('name?: string')
+  })
 })

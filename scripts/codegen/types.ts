@@ -24,7 +24,7 @@ export function schemaToType(schema: any, refName: (ref: string) => string): str
     default: {
       const props = schema.properties
       if (!props) return schema.type === 'object' ? 'Record<string, unknown>' : 'unknown'
-      const required: string[] = schema.required ?? []
+      const required: string[] = Array.isArray(schema.required) ? schema.required : []
       const lines = Object.entries(props).map(([key, sub]) => {
         const opt = required.includes(key) ? '' : '?'
         const safeKey = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) ? key : JSON.stringify(key)
