@@ -17,4 +17,14 @@ describe('VtexClient', () => {
     expect(out).toBeDefined()
     expect(fetchMock).toHaveBeenCalledOnce()
   })
+
+  it('exposes the ergonomic facades', () => {
+    const c = new VtexClient({ account: 'x', appKey: 'K', appToken: 'T' })
+    expect(c.orders).toBeDefined()
+    expect(c.catalog).toBeDefined()
+    expect(c.masterData).toBeDefined()
+    expect(c.pricing).toBeDefined()
+    expect(c.logistics).toBeDefined()
+    expect(c.checkout).toBeDefined()
+  })
 })
