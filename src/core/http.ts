@@ -110,6 +110,13 @@ export class VtexHttpClient {
             signal,
           })
         } catch (err) {
+          // A caller-initiated abort (opts.signal) is a cancellation, not a
+          // transient failure — honor it immediately instead of retrying,
+          // otherwise a cancelled request keeps hitting the API after the
+          // caller has already given up. The internal per-attempt timeout
+          // (controller.signal) is NOT checked here, so a timed-out attempt
+          // still falls through to the normal retry logic below.
+          if (opts.signal?.aborted) throw err
           if (shouldRetry(undefined, attempt, this.maxRetries)) {
             const delay = computeBackoff(attempt, undefined, Math.random)
             this.hooks.onRetry?.({ method: opts.method, url, attempt, delayMs: delay, reason: 'network' })

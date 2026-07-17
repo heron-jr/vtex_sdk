@@ -147,6 +147,31 @@ describe('VtexHttpClient.request', () => {
     expect(cancelSpies[1]).not.toHaveBeenCalled()
   })
 
+  it('retries on a transient network error (fetch rejects) then succeeds', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('ECONNRESET'))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+    const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 2 })
+    const out = await http.request<{ ok: boolean }>({ method: 'GET', path: '/x' })
+    expect(out).toEqual({ ok: true })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('honors a caller AbortSignal immediately instead of retrying a rejected fetch', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+    const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 3 })
+
+    await expect(
+      http.request({ method: 'GET', path: '/x', signal: controller.signal }),
+    ).rejects.toThrow()
+
+    // Without the fix, this would retry ~maxRetries+1 = 4 times before giving up.
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('removes combined-signal abort listeners after a normal completion (no leak)', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
     const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock })
