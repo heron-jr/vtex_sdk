@@ -34,11 +34,12 @@ export function createVtexFactory(config: VtexFactoryConfig) {
       if (!entry) {
         entry = build(account)
         cache.set(account, entry)
+        entry.catch(() => { if (cache.get(account) === entry) cache.delete(account) })
       }
       return entry
     },
     clear(account?: string): void {
-      if (account) cache.delete(account)
+      if (account !== undefined) cache.delete(account)
       else cache.clear()
     },
   }
