@@ -56,7 +56,10 @@ describe('VtexHttpClient.request', () => {
   })
 
   it('gives up after maxRetries on persistent 429', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}, 429, { 'Retry-After': '0' }))
+    // Use a fresh Response per call (like a real fetch would return) rather than
+    // `mockResolvedValue` reusing a single instance, since the retry path now
+    // consumes/cancels each response's body as it loops back to refetch.
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({}, 429, { 'Retry-After': '0' })))
     const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 1 })
     await expect(http.request({ method: 'GET', path: '/x' })).rejects.toBeInstanceOf(VtexRateLimitError)
     expect(fetchMock).toHaveBeenCalledTimes(2) // initial + 1 retry
@@ -67,5 +70,79 @@ describe('VtexHttpClient.request', () => {
     const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock })
     const out = await http.request({ method: 'DELETE', path: '/x' })
     expect(out).toBeUndefined()
+  })
+
+  it('clears the per-attempt timeout even when the onRequest hook throws synchronously', async () => {
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout')
+    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout')
+
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    const http = new VtexHttpClient({
+      account: 'lojax',
+      appKey: 'K',
+      appToken: 'T',
+      fetch: fetchMock,
+      hooks: {
+        onRequest: () => {
+          throw new Error('boom from onRequest hook')
+        },
+      },
+    })
+
+    await expect(http.request({ method: 'GET', path: '/x' })).rejects.toThrow('boom from onRequest hook')
+
+    // fetch must never have been reached, since the hook throws before it.
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    // Every timer armed by the request pipeline (setTimeout calls with a
+    // numeric handle) must have a matching clearTimeout, i.e. no leaked timer.
+    const timeoutCalls = setTimeoutSpy.mock.results.length
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(timeoutCalls)
+    expect(timeoutCalls).toBeGreaterThan(0)
+
+    setTimeoutSpy.mockRestore()
+    clearTimeoutSpy.mockRestore()
+  })
+
+  it('drains/cancels the response body on the 429 retry path before refetching', async () => {
+    const cancelSpies: Array<() => Promise<void>> = []
+
+    function retryableResponse(status: number, headers: Record<string, string> = {}) {
+      const real = new Response(JSON.stringify({}), {
+        status,
+        headers: { 'content-type': 'application/json', ...headers },
+      })
+      const cancelSpy = vi.fn(() => Promise.resolve())
+      cancelSpies.push(cancelSpy)
+      // Wrap `body` so we can observe whether the retry path releases it,
+      // without touching the real readable stream (which parseBody may also
+      // need to read from on the final, non-retry attempt).
+      const realBody = real.body
+      Object.defineProperty(real, 'body', {
+        get() {
+          if (!realBody) return realBody
+          return new Proxy(realBody, {
+            get(target, prop, receiver) {
+              if (prop === 'cancel') return cancelSpy
+              return Reflect.get(target, prop, receiver)
+            },
+          })
+        },
+      })
+      return real
+    }
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(retryableResponse(429, { 'Retry-After': '0' }))
+      .mockResolvedValueOnce(retryableResponse(429, { 'Retry-After': '0' }))
+    const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 1 })
+
+    await expect(http.request({ method: 'GET', path: '/x' })).rejects.toBeInstanceOf(VtexRateLimitError)
+    expect(fetchMock).toHaveBeenCalledTimes(2) // initial + 1 retry
+
+    // The first response is retried (body must be drained); the second is
+    // the final failure and its body is read by parseBody instead, not cancelled.
+    expect(cancelSpies[0]).toHaveBeenCalledTimes(1)
   })
 })
