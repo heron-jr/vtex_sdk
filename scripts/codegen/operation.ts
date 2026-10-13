@@ -2,7 +2,7 @@ import { methodName } from './naming.js'
 import { schemaToType } from './types.js'
 import { DEFAULT_SERVER } from '../../src/core/url.js'
 import { isJsonContentType, mediaType } from '../../src/core/body.js'
-import { isValidHeaderName } from '../../src/core/headers.js'
+import { isValidHeaderName, isValidHeaderValue } from '../../src/core/headers.js'
 
 interface Ctx {
   httpMethod: string
@@ -32,8 +32,12 @@ const MANAGED_HEADERS = new Set([
 ])
 /** Method names that would clash with the generated class itself. */
 const RESERVED_METHOD_NAMES = new Set(['constructor', 'http'])
-/** Option keys that object literals or the `= {}` default would mishandle. */
-const RESERVED_PARAM_NAMES = new Set(['__proto__', 'constructor'])
+/**
+ * Option keys that object literals or the `= {}` default would mishandle: every
+ * Object.prototype member (`__proto__`, `constructor`, `toString`, `valueOf`...), since an
+ * omitted optional param would otherwise read the inherited function.
+ */
+const RESERVED_PARAM_NAMES = new Set(Object.getOwnPropertyNames(Object.prototype))
 /** Header values must be primitives the runtime accepts (string, number, boolean or a literal union of them). */
 const PRIMITIVE_TYPE_RE =
   /^(?:string|number|boolean|true|false|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")(?: \| (?:string|number|boolean|true|false|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*"))*$/
@@ -85,6 +89,10 @@ function requestBodyInfo(requestBody: any, refName: (ref: string) => string): Bo
   if (!content || typeof content !== 'object') return undefined
   const types = Object.keys(content)
   if (types.length === 0) return undefined
+  for (const t of types) {
+    // The chosen type is sent as the Content-Type header, which the runtime would reject.
+    if (!isValidHeaderValue(t)) throw new Error(`Refusing to generate a request body with content type ${JSON.stringify(t)}`)
+  }
   const plainJson = types.find((t) => mediaType(t) === 'application/json')
   if (plainJson) return { type: schemaToType(content[plainJson].schema ?? {}, refName) }
   const vendorJson = types.find(isJsonContentType)
@@ -164,16 +172,21 @@ export function generateMethod(ctx: Ctx): string {
   const headerParams: any[] = []
   const seenQueryNames = new Set<string>()
   const seenHeaderNames = new Set<string>()
+  // Only params that become option keys are checked against reserved names (path names are
+  // checked with the placeholders below); ignored ones, e.g. cookie params, can't clash.
+  const refuseReserved = (name: string) => {
+    if (RESERVED_PARAM_NAMES.has(name)) {
+      throw new Error(`Refusing to generate a method with a parameter named ${JSON.stringify(name)} (${path})`)
+    }
+  }
   for (const p of resolvedParams) {
     if (!p || !p.name) continue
     const paramName = String(p.name)
-    if (RESERVED_PARAM_NAMES.has(paramName)) {
-      throw new Error(`Refusing to generate a method with a parameter named ${JSON.stringify(paramName)} (${path})`)
-    }
     const lowerName = paramName.toLowerCase()
     if (p.in === 'path') {
       inlinePathParams.set(paramName, p)
     } else if (p.in === 'query' && !seenQueryNames.has(paramName)) {
+      refuseReserved(paramName)
       seenQueryNames.add(paramName)
       queryParams.push(p)
     } else if (p.in === 'header') {
@@ -181,6 +194,7 @@ export function generateMethod(ctx: Ctx): string {
         throw new Error(`Refusing to generate a method with invalid header name ${JSON.stringify(paramName)} (${path})`)
       }
       if (!MANAGED_HEADERS.has(lowerName) && !seenHeaderNames.has(lowerName)) {
+        refuseReserved(paramName)
         seenHeaderNames.add(lowerName)
         headerParams.push(p)
       }

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import ts from 'typescript'
 import { generateMethod } from '../../scripts/codegen/operation.js'
+import { isValidHeaderValue } from '../../src/core/headers.js'
 
 const refName = (r: string) => r.split('/').pop()!
 const ok = { '200': { content: { 'application/json': { schema: { type: 'object' } } } } }
@@ -229,6 +230,12 @@ describe('generateMethod', () => {
     expect(gen({ parameters: [{ name: ' Authorization', in: 'header' }] })).toThrow(/invalid header name/)
     expect(gen({ parameters: [{ name: '__proto__', in: 'query' }] })).toThrow(/parameter named/)
     expect(gen({ parameters: [{ name: 'constructor', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'toString', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'valueOf', in: 'header' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'constructor', in: 'cookie' }] })).not.toThrow()
+    expect(
+      gen({ requestBody: { content: { 'application/vnd.x+json;\r\nX-Evil: 1': { schema: { type: 'object' } } } } }),
+    ).toThrow(/content type/)
     expect(gen({}, 'get', 'constructor')).toThrow(/method named/)
     expect(gen({}, 'get', 'http')).toThrow(/method named/)
     expect(gen({}, 'trace')).toThrow(/HTTP method/)
@@ -272,7 +279,7 @@ describe('generateMethod', () => {
     })
     expect(code).toContain('  flag: string | number')
     expect(code).toContain('  id: number')
-    expect(code).toContain("  'X-List'?: string")
+    expect(code).toMatch(/^  'X-List'\?: string$/m)
     expect(code).toContain(`  'X-Mode'?: "a" | "b"`)
   })
 
@@ -301,7 +308,14 @@ describe('generateMethod', () => {
         op: {
           operationId: 'X',
           parameters: [{ name: `q${h}`, in: 'query', schema: { type: 'string', enum: [h] } }],
-          requestBody: { content: { [`application/vnd.x+json;${h}`]: { schema: { type: 'object', properties: { [h]: { type: 'string' } } } } } },
+          // Content types that aren't valid header values are refused (tested above); the rest are escaped.
+          requestBody: {
+            content: {
+              [isValidHeaderValue(h) ? `application/vnd.x+json;${h}` : 'application/vnd.x+json']: {
+                schema: { type: 'object', properties: { [h]: { type: 'string' } } },
+              },
+            },
+          },
           responses: ok,
         },
       })
