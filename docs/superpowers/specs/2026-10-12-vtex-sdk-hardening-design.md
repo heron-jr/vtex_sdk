@@ -178,8 +178,11 @@ Nothing is removed.
     - Any other default (e.g. the junk `DefaultParameterValue`): resolved at runtime.
   - **`account`** is a spelling used by some Pricing servers and is treated as an alias of `accountName`.
   - **Any other variable** makes that entry unresolvable. Examples: `providerApiEndpoint`, `storeDomain`, `storeHost`, `middlewareEndpoint`, `fulfillmentEndpoint`, `workspace`.
-- **No hard-coded accounts.** On account-scoped domains (`vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtexpayments.com.br`), the host's first label must be `{accountName}` or a shared VTEX service label (`api`, `logistics`, `portal`, `prchub`, `rnb`). Otherwise the entry is unresolvable. This stops a schema example host such as `entelperu.vtexcommercestable.com.br` from receiving our credentials.
-- **Base-path overlap.** When the server's last base-path segment equals the operation path's first segment, the duplicate is dropped. The 7 Pricing operations whose server ends in `/pricing` and whose paths start with `/pricing/` resolve to `api.vtex.com/{account}/pricing/...`, matching the API reference. Without the rule they would get `/pricing/pricing/...`.
+- **Canonical templates only.** A template must be exactly `https://` + a host of letters, digits, dots, dashes and placeholders + plain path segments. The URL parser must not rewrite it: no case or IDNA changes, no trailing dot, no dot segments, no `%`/`\`/`@`/`?`/`#`/`:`. The account checks below therefore read the same host and path that are used at runtime. Stray braces and non-string or non-array `servers` entries are unresolvable.
+- **No hard-coded accounts.** Every allowlisted domain except `vtex.com` is account-scoped (fail-closed for domains added later). On those domains the host's first label must be `{accountName}`. On the commerce domains (`vtexcommercestable.com.br`, `vtexcommercebeta.com.br`) only, it may also be a shared VTEX service label: `api`, `logistics`, `portal`, `prchub` or `rnb`. Otherwise the entry is unresolvable. This stops a schema example host such as `entelperu.vtexcommercestable.com.br` from receiving our credentials.
+- **No VTEX IO app routes.** Hosts under `io.vtex.com` (`app.io.vtex.com/{app}/...`) run third-party app code, so they are unresolvable.
+- **Reviewed host list.** `test/generated-hosts.test.ts` pins the exact set of generated templates, so a re-pin that introduces a host fails until it is reviewed.
+- **Base-path overlap.** When the server's last base-path segment equals the operation path's first segment, the duplicate is dropped. A templated segment such as `{accountName}` is never dropped. The 7 Pricing operations whose server ends in `/pricing` and whose paths start with `/pricing/` resolve to `api.vtex.com/{account}/pricing/...`, matching the API reference. Without the rule they would get `/pricing/pricing/...`.
 
 **How the result is emitted**
 - Each generated call passes `server: '<template>'`, for example `'https://{accountName}.{environment}.com.br/api'`.
@@ -192,10 +195,11 @@ Nothing is removed.
   - B2B Password Migration Protocol;
   - Punchout;
   - Ads (newtail);
-  - Pick and Pack (pickingnpacking.com).
+  - Pick and Pack (pickingnpacking.com);
+  - the VTEX Shipping Network API, whose server `app.io.vtex.com` routes to carriers' VTEX IO apps.
 - **Partial exclusion:** individual operations whose only servers are external are dropped from otherwise-included APIs.
-- **Expected numbers at the current pin:** 966 operations included and 95 excluded.
-  - 12 APIs are excluded in full: Ads, Antifraud Provider, B2B Password Migration, External Promotions, Giftcard Provider, the two Marketplace Protocol external-seller specs, Payment Provider, Pick and Pack, Pick and Pack Last Mile, Punchout, Tracking.
+- **Expected numbers at the current pin:** 964 operations included and 97 excluded.
+  - 13 APIs are excluded in full: Ads, Antifraud Provider, B2B Password Migration, External Promotions, Giftcard Provider, the two Marketplace Protocol external-seller specs, Payment Provider, Pick and Pack, Pick and Pack Last Mile, Punchout, Tracking, VTEX Shipping Network.
   - Two operations are dropped from otherwise-included APIs: Payments Gateway `POST /api/payments/transactions/{transactionId}/payments` (`api.vtexvault.com`, see §10) and Promotions & Taxes `POST /pub/bundles` (placeholder host `example.com`).
 - **Types are kept:** excluded APIs still get their `types.ts`, and the types are exported (§4.7). Implementers of these protocols can use them.
 - **Visibility:** the generator prints the exclusion list.
@@ -205,21 +209,24 @@ Nothing is removed.
 - **Header params:** parameters with `in: 'header'` become typed fields on `params`, required when the schema says so.
   - Except a case-insensitive denylist managed by the SDK or by `fetch`: `accept`, `content-type`, `content-length`, `host`, `x-vtex-api-appkey`, `x-vtex-api-apptoken`, `vtexidclientautcookie`, `cookie`, `authorization`.
   - Values are sent in the request headers.
-  - Name collisions with path, query or body keys keep the first, which is the existing rule.
+  - Name collisions with path, query or body keys keep the first, which is the existing rule. A parameter named `body` on an operation with a request body fails generation.
+  - Header names must be valid RFC 9110 tokens, or generation fails. A padded name such as `'Authorization '` can't slip past the denylist.
+  - Header types are limited to what the runtime sends (string, number, boolean or literal unions); anything else becomes `string`. Path params are limited to `string | number`.
 - **Per-call options:** every method gains `opts?: CallOptions = { headers?, signal?, timeoutMs?, retry?, idempotent? }`.
   - `opts.headers` are merged last, exactly as today, so a caller can deliberately override a header for one call.
   - Generated header *params* can never carry auth headers, because of the denylist above.
 - **Optional params:** when no params field is required, `params` becomes optional. This removes the dummy `{}` that 62 methods need today and is backward compatible.
 
 ### 4.4 Request and response content types (C2)
-**Request body type, chosen by the first matching declared content type**
+**Request body type, by fixed priority over the declared content types** (media types compared exactly, parameters ignored)
 
 | Declared content type | Body type in TS | How it is sent |
 |---|---|---|
 | `application/json` and `application/*+json` | typed JSON | JSON with that exact `Content-Type`, e.g. `application/vnd.vtex.giftcard.v1+json`. This fixes `createGiftCard` and the Hub writes. |
-| `multipart/form-data` and `form-data` | `FormData` | `Content-Type` left for `fetch` to set, so the boundary is included. The generated call still declares `multipart/form-data`, so a non-FormData body is rejected rather than sent as JSON. |
+| `multipart/form-data` and `form-data` | `FormData` | `Content-Type` left for `fetch` to set, so the boundary is included. The generated call still declares `multipart/form-data`, so a plain object is rejected rather than sent as JSON; the `FormData` type stops TypeScript callers from passing anything else. |
 | `application/x-www-form-urlencoded` | `URLSearchParams \| Record<string, string>` | form-encoded |
-| `text/csv` and `text/plain` | `string` | as-is |
+| `text/*` | `string` | as-is |
+| anything else (`application/octet-stream`, images, XML...) | `Blob \| ArrayBuffer \| Uint8Array \| string` | as bytes with the declared type; a wildcard type is sent as `application/octet-stream` |
 
 **Plumbing**
 - `RequestOptions` gains `contentType?`.
@@ -236,13 +243,18 @@ Nothing is removed.
 **Response parsing:** `parseBody` treats `application/json` and `application/*+json` as JSON.
 
 ### 4.5 Types (C4)
-- **`nullable: true`:** `T | null`.
-- **OpenAPI 3.1-style `type: [...]` arrays:** a union. One schema, Profile System, uses them.
-- **Arrays:** the item type is parenthesized when it is a union or intersection, giving `(A | B)[]`.
+- **`nullable: true`:** `T | null`, never with a duplicate `null`.
+- **OpenAPI 3.1-style `type: [...]` arrays:** a union.
+  - At the current pin they appear only inside `example` payloads, which codegen ignores; support is defensive.
+  - Each entry maps to one branch, which is walked once, so repetitive arrays stay linear.
+  - An empty array is treated as no type.
+- **Arrays:** the item type is parenthesized only when its top level is a union or intersection, giving `(A | B)[]` but `{ a?: string | null }[]`.
 - **`additionalProperties`:**
   - `true` or `{}` adds `[key: string]: unknown`;
   - a schema adds `[key: string]: T`;
-  - the index signature is merged with any declared properties.
+  - the index signature is merged with any declared properties and widens to `unknown` when named properties exist;
+  - `false` with no properties gives `Record<string, never>`.
+- **Invalid `$ref`:** a non-string or empty `$ref` fails codegen with a clear error.
 - **Placeholder keys:** property keys of the form `{name}` become an index signature `[key: string]: T` instead of a literal key. There are 24 such keys, e.g. `{fieldName}` in Master Data and `{ID}` in Checkout.
 - **Targeted schema overrides** (`scripts/codegen/overrides.ts`) fix quirks where a VTEX schema uses a *literal* key to mean "any key". The generic rules cannot detect these. Each override names its file, its JSON pointer, a `matches` check of the known-bad "before" shape, a transform and the reason. Codegen fails if a pointer no longer resolves, if the node no longer matches, or if a transform throws. A schema re-pin therefore surfaces stale overrides instead of silently overwriting a schema VTEX has fixed. The pointer walk follows own properties only and refuses `__proto__`, `constructor` and `prototype`. Initial set:
   - Orders API `components/schemas/Headers`: from `{ key: string }` to `Record<string, string>` (order-hook headers).
@@ -251,8 +263,9 @@ Nothing is removed.
   - Search API `GET .../crossselling/showtogether/{productId}` and `GET .../crossselling/accessories/{productId}`: their operation-level `servers` were copied from another store (`entelperu`) and are removed. Both fall back to the account host.
 
 ### 4.6 Generator hardening (S9)
-- **Paths:** schema paths must match `^/[A-Za-z0-9\-._~!&'()*+,;=:@%/{}]*$`, and placeholder names must match `^[A-Za-z0-9_.-]+$`. Anything else, such as a backtick, `$`, `\` or whitespace, fails generation loudly.
-- **String literals:** every emitted literal (names, keys, header names, server templates) goes through `JSON.stringify`/`quoteString`. Nothing is interpolated raw.
+- **Paths:** schema paths must match `^/[A-Za-z0-9\-._~!&'()*+,;=:@%/{}]*$`, and placeholder names must match `^[A-Za-z0-9_.-]+$`. Empty or dot segments (including `%2e`), stray braces and malformed `%` escapes are refused too. Anything else, such as a backtick, `$`, `\` or whitespace, fails generation loudly.
+- **Names:** the HTTP method must be a standard one. Method names must be identifiers other than `constructor` and `http`. Parameters named `__proto__` or `constructor` fail generation.
+- **String literals:** every emitted literal (names, keys, header names, server templates) goes through `JSON.stringify`/`quoteString`, which also escapes control characters and U+2028/2029. Nothing is interpolated raw.
 - **Server templates:** they also pass the §4.1 resolution and are allowlist-checked at generation time.
 
 ### 4.7 Type exports
@@ -277,11 +290,13 @@ Nothing is removed.
 ## 6. Repository, licensing, packaging
 **Upstream schemas**
 - `schemas/` is removed from the tree and added to `.gitignore`.
-- **`scripts/fetch-schemas.ts`:**
-  - keeps the pinned commit;
-  - accepts `download_url`s only on `raw.githubusercontent.com`;
-  - verifies each file's git blob SHA-1 against the SHA in the GitHub listing.
-- **`npm run codegen`** fails with a clear message when `schemas/` is missing.
+- **`scripts/schemas.lock.json`** is the reviewed source of truth. It holds the repo (`vtex/openapi-schemas`), the pinned commit and every schema file's git blob SHA-1.
+- **`npm run fetch-schemas`:**
+  - builds each URL from the lock: `raw.githubusercontent.com/vtex/openapi-schemas/<commit>/<name>`. The GitHub listing never chooses names or URLs, and no token is needed.
+  - validates file names (plain `*.json` base names), refuses redirects, caps size at 32 MiB and times out after 60 s;
+  - verifies each git blob SHA, writes into a staging directory, and swaps it in for `schemas/` only when every file verifies. Files not in the lock never survive.
+- **`npm run fetch-schemas -- --update-lock <commit>`** re-pins from GitHub's listing. The lock diff is the review point.
+- **`npm run codegen`** fails with a clear message when `schemas/` is missing, or when it doesn't match the lock exactly (extra, missing or edited files).
 - `src/generated/` stays committed, so consumers never run codegen.
 
 **Licensing**

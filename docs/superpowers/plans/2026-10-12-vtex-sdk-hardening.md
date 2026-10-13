@@ -51,7 +51,7 @@ Finally, the repository is cleaned up for publication.
 | `scripts/codegen/overrides.ts` | Targeted schema overrides | 10 |
 | `scripts/codegen/servers.ts` | Server selection, host rules, base-path overlap | 11 |
 | `scripts/codegen/operation.ts` | Generated method shape | 12 |
-| `scripts/codegen/integrity.ts`, `scripts/fetch-schemas.ts` | Verified schema downloads | 13 |
+| `scripts/codegen/integrity.ts`, `scripts/codegen/fetch.ts`, `scripts/schemas.lock.json`, `scripts/fetch-schemas.ts` | Locked, verified schema downloads | 13 |
 | `scripts/codegen.ts`, `src/generated/**` | Driver and regenerated output | 14 |
 | `.gitignore`, `schemas/` | Stop committing upstream schemas | 15 |
 | `src/facades/*` | Per-call options, encoded ids, page limits, Master Data validation | 16 |
@@ -3960,16 +3960,17 @@ describe('createVtexFactory', () => {
 
   it('passes environment and maxRetryAfterMs through to the client', async () => {
     const fetchMock = vi.fn().mockImplementation(() =>
-      Promise.resolve(new Response('{}', { status: 429, headers: { 'retry-after': '120' } })),
+      Promise.resolve(new Response('{}', { status: 429, headers: { 'retry-after': '2' } })),
     )
     const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
     const factory = createVtexFactory({
-      credentials, fetch: fetchMock, environment: 'vtexcommercebeta', maxRetryAfterMs: 1000,
+      credentials, fetch: fetchMock, environment: 'vtexcommercebeta', maxRetryAfterMs: 1000, maxRetries: 1,
     })
     const client = await factory.forAccount('x')
     expect(client.environment).toBe('vtexcommercebeta')
     await expect(client.orders.get('1')).rejects.toBeInstanceOf(VtexRateLimitError)
-    expect(fetchMock).toHaveBeenCalledOnce() // Retry-After above the cap: no retry
+    // 2 s is above the 1 s cap but below the 30 s default: only a passed-through cap stops the retry.
+    expect(fetchMock).toHaveBeenCalledOnce()
   })
 
   it('keeps prototype hook methods (class instances) and their this', async () => {
@@ -4005,19 +4006,19 @@ describe('createVtexFactory', () => {
   })
 
   it('reports a non-string credential without echoing it', async () => {
-    const credentials = vi.fn().mockResolvedValue({ appKey: 123, appToken: 'T-SECRET' })
+    const credentials = vi.fn().mockResolvedValue({ appKey: { toString: () => 'K-SECRET' }, appToken: 'T' })
     const factory = createVtexFactory({ credentials })
     const err = await factory.forAccount('x').catch((e: unknown) => e)
     expect(err).toBeInstanceOf(VtexUsageError)
     expect((err as Error).message).toMatch(/appKey must be/)
-    expect((err as Error).message).not.toContain('T-SECRET')
+    expect((err as Error).message).not.toContain('K-SECRET')
   })
 
   it('clear(undefined) is a no-op; clear() drops every client', async () => {
     const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
     const factory = createVtexFactory({ credentials })
     const a = await factory.forAccount('a')
-    factory.clear(undefined)
+    factory.clear(undefined as unknown as string) // what a JS caller with a missing param would do
     expect(await factory.forAccount('a')).toBe(a)
     factory.clear()
     expect(await factory.forAccount('a')).not.toBe(a)
@@ -4180,8 +4181,10 @@ export interface VtexFactoryConfig {
 export interface VtexFactory {
   /** Cached client for the account (normalized to lowercase). Rejects with VtexUsageError for an invalid name. */
   forAccount(account: string): Promise<VtexClient>
-  /** Drops one account's client, or every client when called with no argument. */
-  clear(account?: string): void
+  /** Drops every cached client. */
+  clear(): void
+  /** Drops one account's client. `clear(undefined)` (e.g. a missing request param) does nothing. */
+  clear(account: string): void
 }
 
 type Credentials = Pick<VtexClientConfig, 'appKey' | 'appToken' | 'authCookie'>
@@ -4319,6 +4322,7 @@ EOF
 
 ```ts
 import { describe, it, expect } from 'vitest'
+import ts from 'typescript'
 import { schemaToType } from '../../scripts/codegen/types.js'
 
 const ref = (r: string) => r.split('/').pop()!
@@ -4405,6 +4409,65 @@ describe('schemaToType', () => {
       '{\n  [key: string]: string\n}',
     )
   })
+  it('widens placeholder keys mixed with named keys to unknown', () => {
+    const t = schemaToType({ type: 'object', properties: { id: { type: 'string' }, '{field}': { type: 'number' } } }, ref)
+    expect(t).toBe('{\n  id?: string\n  [key: string]: unknown\n}')
+  })
+  it('never emits a duplicate null', () => {
+    expect(schemaToType({ type: 'string', enum: ['a', null], nullable: true }, ref)).toBe('"a" | null')
+    expect(schemaToType({ type: ['string', 'null'], nullable: true }, ref)).toBe('string | null')
+  })
+  it('makes an intersection nullable as a whole', () => {
+    const t = schemaToType({ allOf: [{ $ref: '#/components/schemas/A' }, { $ref: '#/components/schemas/B' }], nullable: true }, ref)
+    expect(t).toBe('A & B | null')
+  })
+  it('handles type arrays with several or no entries', () => {
+    expect(schemaToType({ type: ['string', 'integer', 'null'] }, ref)).toBe('string | number | null')
+    expect(schemaToType({ type: ['integer', 'number'] }, ref)).toBe('number')
+    expect(schemaToType({ type: [] }, ref)).toBe('unknown')
+    expect(schemaToType({ type: [], nullable: true }, ref)).toBe('unknown')
+  })
+  it('stays linear on repetitive nested type arrays', () => {
+    let schema: any = { type: 'string' }
+    for (let i = 0; i < 12; i++) {
+      schema = { type: ['object', 'object', 'object', 'object'], properties: { a: schema } }
+    }
+    const start = Date.now()
+    schemaToType(schema, ref)
+    expect(Date.now() - start).toBeLessThan(1000)
+  })
+  it('distinguishes additionalProperties false and {}', () => {
+    expect(schemaToType({ type: 'object', additionalProperties: false }, ref)).toBe('Record<string, never>')
+    expect(schemaToType({ type: 'object', additionalProperties: {} }, ref)).toBe('{\n  [key: string]: unknown\n}')
+  })
+  it('quotes keys that are not identifiers', () => {
+    expect(schemaToType({ type: 'object', properties: { 'x-y': { type: 'string' } }, required: ['x-y'] }, ref)).toBe(
+      '{\n  "x-y": string\n}',
+    )
+  })
+  it('parenthesizes only top-level unions in array items', () => {
+    expect(schemaToType({ type: 'array', items: { type: 'object', properties: { a: { type: 'string', nullable: true } } } }, ref)).toBe(
+      '{\n  a?: string | null\n}[]',
+    )
+    expect(schemaToType({ type: 'array', items: { type: 'array', items: { type: 'string', nullable: true } } }, ref)).toBe(
+      '(string | null)[][]',
+    )
+    expect(schemaToType({ type: 'array', items: { type: 'string', enum: ['a|b', 'c'] } }, ref)).toBe('("a|b" | "c")[]')
+  })
+  it('rejects a non-string $ref with a clear error', () => {
+    expect(() => schemaToType({ $ref: 123 }, ref)).toThrow(/Invalid \$ref/)
+  })
+  it('emits syntactically valid TypeScript for odd inputs', () => {
+    const odd = [
+      { type: [] }, { type: [], nullable: true }, { enum: ['*/', '`${x}`', '"; export const x = 1; //', '\u2028'] },
+      { type: 'object', properties: { '*/ evil': { type: 'string' }, '__proto__': { type: 'number' } } },
+      { allOf: [{ oneOf: [{ type: 'string' }, { type: 'number' }] }, { type: 'object', additionalProperties: true }] },
+    ]
+    for (const schema of odd) {
+      const out = ts.transpileModule(`type T = ${schemaToType(schema, ref)}`, { reportDiagnostics: true })
+      expect(out.diagnostics ?? []).toEqual([])
+    }
+  })
 })
 ```
 
@@ -4420,19 +4483,54 @@ const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 /** Keys such as "{fieldName}" stand for "any key" in VTEX schemas. */
 const PLACEHOLDER_KEY_RE = /^\{[^}]+\}$/
 
-function wrap(type: string): string {
-  return type.includes(' | ') || type.includes(' & ') ? `(${type})` : type
+/**
+ * Splits an emitted type on its top-level `|` (outside brackets and JSON string literals)
+ * and reports whether it has a top-level `&`.
+ */
+function topLevel(type: string): { members: string[]; intersection: boolean } {
+  const members: string[] = []
+  let depth = 0
+  let start = 0
+  let intersection = false
+  for (let i = 0; i < type.length; i++) {
+    const c = type[i]
+    if (c === '"') {
+      for (i++; i < type.length && type[i] !== '"'; i++) if (type[i] === '\\') i++
+    } else if (c === '{' || c === '(' || c === '[' || c === '<') depth++
+    else if (c === '}' || c === ')' || c === ']' || c === '>') depth--
+    else if (depth === 0 && c === '|') {
+      members.push(type.slice(start, i).trim())
+      start = i + 1
+    } else if (depth === 0 && c === '&') intersection = true
+  }
+  members.push(type.slice(start).trim())
+  return { members, intersection }
 }
 
+function wrap(type: string): string {
+  const { members, intersection } = topLevel(type)
+  return members.length > 1 || intersection ? `(${type})` : type
+}
+
+/**
+ * Renders an OpenAPI schema as a TypeScript type expression. Property names and enum values
+ * are emitted through JSON.stringify; `refName` output is emitted as-is, so it must return a
+ * valid TypeScript identifier.
+ */
 export function schemaToType(schema: any, refName: (ref: string) => string): string {
   if (!schema || typeof schema !== 'object') return 'unknown'
   const base = baseType(schema, refName)
-  if (schema.nullable === true && base !== 'unknown' && base !== 'null') return `${base} | null`
-  return base
+  if (schema.nullable !== true || base === 'unknown' || topLevel(base).members.includes('null')) return base
+  return `${base} | null`
 }
 
 function baseType(schema: any, refName: (ref: string) => string): string {
-  if (schema.$ref) return refName(schema.$ref)
+  if (schema.$ref !== undefined) {
+    if (typeof schema.$ref !== 'string' || schema.$ref === '') {
+      throw new Error(`Invalid $ref ${JSON.stringify(schema.$ref)}: expected a non-empty string`)
+    }
+    return refName(schema.$ref)
+  }
   if (Array.isArray(schema.enum) && schema.enum.length > 0) {
     return schema.enum.map((v: unknown) => JSON.stringify(v)).join(' | ')
   }
@@ -4446,10 +4544,15 @@ function baseType(schema: any, refName: (ref: string) => string): string {
     return schema.anyOf.map((s: any) => schemaToType(s, refName)).join(' | ')
   }
   if (Array.isArray(schema.type)) {
-    const parts = schema.type.map((t: unknown) =>
-      t === 'null' ? 'null' : schemaToType({ ...schema, type: t, nullable: false }, refName),
+    // Map each entry to the branch it takes below, so every branch (and the subtree it
+    // walks) is visited at most once, however long or repetitive the array is.
+    const branches = new Set<unknown>(
+      schema.type.map((t: unknown) =>
+        t === 'integer' ? 'number' : ['string', 'number', 'boolean', 'null', 'array'].includes(t as string) ? t : 'object',
+      ),
     )
-    return [...new Set(parts)].join(' | ')
+    if (branches.size === 0) return objectType(schema, refName)
+    return [...branches].map((t) => baseType({ ...schema, type: t }, refName)).join(' | ')
   }
   switch (schema.type) {
     case 'string': return 'string'
@@ -4485,6 +4588,7 @@ function objectType(schema: any, refName: (ref: string) => string): string {
     indexTypes.push(schemaToType(extra, refName))
   }
   if (lines.length === 0 && indexTypes.length === 0) {
+    if (extra === false) return 'Record<string, never>'
     return schema.type === 'object' || schema.properties ? 'Record<string, unknown>' : 'unknown'
   }
   if (indexTypes.length > 0) {
@@ -4643,7 +4747,31 @@ describe('applyOverrides', () => {
   it('fails loudly when the node no longer has the known-bad shape', () => {
     const doc = sampleDoc()
     doc.components.schemas.Headers = { type: 'object', additionalProperties: { type: 'string' } }
-    expect(() => applyOverrides('A.json', doc, sample)).toThrow(/no longer applies/)
+    expect(() => applyOverrides('A.json', doc, sample)).toThrow(/no longer applies \(shape changed\)/)
+  })
+
+  it('requires a leading slash even when the shifted pointer would resolve', () => {
+    const override: SchemaOverride = { ...sample[0], pointer: 'components/schemas/Headers' }
+    const doc: any = { schemas: { Headers: { properties: { key: {} } } } }
+    expect(() => applyOverrides('A.json', doc, [override])).toThrow(/no longer applies/)
+    expect(doc.schemas.Headers).toEqual({ properties: { key: {} } })
+  })
+
+  it('refuses array parents', () => {
+    const override: SchemaOverride = { file: 'A.json', pointer: '/a/1', matches: () => true, transform: () => undefined, reason: 'x' }
+    const doc: any = { a: [1, 2] }
+    expect(() => applyOverrides('A.json', doc, [override])).toThrow(/no longer applies/)
+    expect(doc.a).toEqual([1, 2])
+  })
+
+  it('refuses an own __proto__ key created by JSON.parse', () => {
+    const override: SchemaOverride = { file: 'A.json', pointer: '/a/__proto__', matches: () => true, transform: () => 1, reason: 'x' }
+    expect(() => applyOverrides('A.json', JSON.parse('{"a":{"__proto__":{}}}'), [override])).toThrow(/no longer applies/)
+  })
+
+  it('wraps errors thrown by a matcher', () => {
+    const throwing: SchemaOverride[] = [{ ...sample[0], matches: () => { throw new Error('boom') } }]
+    expect(() => applyOverrides('A.json', sampleDoc(), throwing)).toThrow(/no longer applies/)
   })
 
   it('wraps errors thrown by a transform', () => {
@@ -4705,6 +4833,16 @@ describe('shipped OVERRIDES', () => {
         .properties.profileUsages
     usages.properties.other = { type: 'string' }
     expect(() => applyOverrides('VTEX - Promotions & Taxes API.json', promo)).toThrow(/no longer applies/)
+
+    const headers = fixtures()['VTEX - Orders API.json']
+    headers.components.schemas.Headers.properties = { key: { type: 'string' }, other: { type: 'string' } }
+    expect(() => applyOverrides('VTEX - Orders API.json', headers)).toThrow(/shape changed/)
+
+    const search = fixtures()['VTEX - Search API.json']
+    search.paths['/api/catalog_system/pub/products/crossselling/accessories/{productId}'].get.servers = [
+      { url: 'https://{accountName}.{environment}.com.br' },
+    ]
+    expect(() => applyOverrides('VTEX - Search API.json', search)).toThrow(/shape changed/)
   })
 })
 ```
@@ -4766,7 +4904,7 @@ export const OVERRIDES: readonly SchemaOverride[] = [
     file: 'VTEX - Promotions & Taxes API.json',
     pointer:
       '/paths/~1api~1rnb~1pvt~1coupon~1usage~1{couponCode}/get/responses/200/content/application~1json/schema/properties/profileUsages',
-    matches: (n) => sameKeys(n?.properties, ['profileId']) && typeof n.properties.profileId === 'object',
+    matches: (n) => sameKeys(n?.properties, ['profileId']) && isContainer(n.properties.profileId),
     transform: (node) => ({
       type: 'object',
       description: node.description,
@@ -4812,8 +4950,10 @@ export function applyOverrides(file: string, doc: unknown, overrides: readonly S
   let applied = 0
   for (const override of overrides) {
     if (override.file !== file) continue
-    const fail = (cause?: unknown) =>
-      new Error(`Schema override for ${file} no longer applies: ${override.pointer} (${override.reason})`, { cause })
+    const fail = (cause?: unknown, detail = '') =>
+      new Error(`Schema override for ${file} no longer applies${detail}: ${override.pointer} (${override.reason})`, {
+        cause,
+      })
     if (!override.pointer.startsWith('/')) throw fail()
     const segments = override.pointer.split('/').slice(1).map(decodeSegment)
     const last = segments.pop()
@@ -4827,13 +4967,15 @@ export function applyOverrides(file: string, doc: unknown, overrides: readonly S
     }
     if (Array.isArray(parent)) throw fail() // overrides replace object members only
     const node = parent[last]
-    if (!override.matches(node)) throw fail()
+    let matched: boolean
     let next: unknown
     try {
-      next = override.transform(node)
+      matched = override.matches(node)
+      if (matched) next = override.transform(node)
     } catch (err) {
       throw fail(err)
     }
+    if (!matched) throw fail(undefined, ' (shape changed)')
     if (next === undefined) delete parent[last]
     else parent[last] = next
     applied++
@@ -4917,6 +5059,71 @@ describe('normalizeServer', () => {
   ])('accepts VTEX service host %s', (url) => {
     expect(normalizeServer({ url, variables: stable })).toBe(url)
   })
+  it.each([
+    // hostile hosts
+    'https://vtexcommercestable.com.br.evil.com',
+    'https://evil-vtexcommercestable.com.br',
+    'https://{accountName}vtex.com',
+    'https://API.VTEX.COM',
+    'https://api.vtex.com.',
+    'https://ápi.vtex.com',
+    // userinfo, port, query, fragment, other schemes, relative
+    'https://user@api.vtex.com',
+    'https://api.vtex.com:443',
+    'https://api.vtex.com?',
+    'https://api.vtex.com#',
+    'ftp://api.vtex.com',
+    'HTTPS://api.vtex.com',
+    '/api/catalog',
+    // parser differentials: the raw first label is not the runtime one
+    'https:/xapi.myvtex.com',
+    'https:xx{accountName}.myvtex.com',
+    'https:/e{accountName}.vtexcommercestable.com.br',
+    // dot segments and escapes that rewrite the path
+    'https://api.vtex.com/{accountName}/%2e%2e/entelperu/pricing',
+    'https://api.vtex.com/{accountName}/../entelperu/pricing',
+    'https://{accountName}.myvtex.com\\@evil.com',
+    'https://api.vtex.com/a b',
+    // stray braces
+    'https://{}.myvtex.com',
+    'https://{accountName.myvtex.com',
+    'https://x}.myvtex.com',
+    // hard-coded accounts and shared labels outside the commerce domains
+    'https://entelperu.myvtex.com',
+    'https://entelperu.vtexpayments.com.br',
+    'https://x{accountName}.myvtex.com',
+    'https://api.myvtex.com',
+    'https://rnb.myvtex.com',
+    'https://portal.vtexpayments.com.br',
+    // VTEX IO app routes run third-party code
+    'https://app.io.vtex.com',
+    'https://app.io.vtex.com/{accountName}',
+  ])('rejects unsafe template %s', (url) => {
+    expect(normalizeServer({ url, variables: stable })).toBeUndefined()
+  })
+  it('ignores enum and default values that point elsewhere', () => {
+    expect(
+      normalizeServer({
+        url: 'https://{accountName}.{environment}.com.br',
+        variables: { accountName: { default: 'entelperu', enum: ['evil.com'] }, environment: { default: 'evil.com#' } },
+      }),
+    ).toBe('https://{accountName}.{environment}.com.br')
+  })
+  it.each(['exampleParameterValue', 'DefaultParameterValue'])('keeps {environment} for a junk default (%s)', (d) => {
+    expect(normalizeServer({ url: 'https://rnb.{environment}.com.br/api/pricing/pvt', variables: { environment: { default: d } } })).toBe(
+      'https://rnb.{environment}.com.br/api/pricing/pvt',
+    )
+  })
+  it('rejects a myvtex default on a .com.br template', () => {
+    expect(
+      normalizeServer({ url: 'https://{accountName}.{environment}.com.br', variables: { environment: { default: 'myvtex' } } }),
+    ).toBeUndefined()
+  })
+  it('returns undefined for malformed entries', () => {
+    expect(normalizeServer({ url: 123 } as never)).toBeUndefined()
+    expect(normalizeServer(null as never)).toBeUndefined()
+    expect(normalizeServer({} as never)).toBeUndefined()
+  })
 })
 
 describe('pickServer', () => {
@@ -4940,6 +5147,12 @@ describe('pickServer', () => {
   it('defaults to the account host when nothing declares servers', () => {
     expect(pickServer([undefined, undefined, undefined])).toBe(DEFAULT_SERVER)
   })
+  it('lets an empty servers list fall through to the next level', () => {
+    expect(pickServer([[], undefined, doc])).toBe('https://{accountName}.{environment}.com.br')
+  })
+  it('treats a non-array servers value as declared and unresolvable', () => {
+    expect(pickServer([{ url: 'https://evil.com' } as never, undefined, doc])).toBeUndefined()
+  })
 })
 
 describe('trimBasePathOverlap', () => {
@@ -4956,6 +5169,16 @@ describe('trimBasePathOverlap', () => {
       'https://{accountName}.{environment}.com.br',
     )
   })
+  it('never drops a templated segment', () => {
+    expect(trimBasePathOverlap('https://api.vtex.com/{accountName}', '/{accountName}/x')).toBe(
+      'https://api.vtex.com/{accountName}',
+    )
+  })
+  it('drops the only base segment when it overlaps', () => {
+    expect(trimBasePathOverlap('https://rnb.{environment}.com.br/pricing', '/pricing/x')).toBe(
+      'https://rnb.{environment}.com.br',
+    )
+  })
 })
 ```
 
@@ -4967,22 +5190,35 @@ Expected: FAIL (cannot resolve `servers.js`).
 - [ ] **Step 3: Create `scripts/codegen/servers.ts`**
 
 ```ts
-import { DEFAULT_SERVER, isAllowlistedHost } from '../../src/core/url.js'
+import { DEFAULT_SERVER, VTEX_DOMAIN_ALLOWLIST, isAllowlistedHost } from '../../src/core/url.js'
 
 export interface ServerObject {
   url: string
   variables?: Record<string, { default?: unknown; enum?: unknown[] }>
 }
 
-/** Domains where the first host label identifies an account (or a shared VTEX service). */
-const ACCOUNT_SCOPED_DOMAINS = ['vtexcommercestable.com.br', 'vtexcommercebeta.com.br', 'myvtex.com', 'vtexpayments.com.br']
+/** Allowlisted domains whose hosts are not account-scoped. Every other allowlisted domain is (fail-closed). */
+const SERVICE_DOMAINS = new Set(['vtex.com'])
+/** Shared VTEX service hosts on the commerce domains, e.g. portal.vtexcommercestable.com.br. */
 const SHARED_SERVICE_LABELS = new Set(['api', 'logistics', 'portal', 'prchub', 'rnb'])
+const COMMERCE_DOMAINS = new Set(['vtexcommercestable.com.br', 'vtexcommercebeta.com.br'])
+/**
+ * VTEX IO app routes (app.io.vtex.com/{app}/...) run third-party app code, e.g. carriers'
+ * apps in the Shipping Network protocol. The SDK never sends the merchant's credentials there.
+ */
+const IO_APP_DOMAIN = 'io.vtex.com'
+/**
+ * Canonical template: exact `https://` prefix, a host of letters, digits, dots, dashes and
+ * placeholders, and plain path segments (no `%`, `\`, `?`, `#`, `@`, `:` or whitespace).
+ */
+const TEMPLATE_RE = /^https:\/\/[A-Za-z0-9.{}-]+(?:\/[A-Za-z0-9._~{}-]+)*$/
 
 /**
  * Normalizes an OpenAPI server into a template that only contains {accountName}
  * and/or {environment}, or returns undefined when the SDK must not call it.
  */
 export function normalizeServer(server: ServerObject): string | undefined {
+  if (typeof server?.url !== 'string') return undefined
   let url = server.url.replaceAll('{account}', '{accountName}')
   const names = new Set([...url.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]))
   for (const name of names) {
@@ -4995,20 +5231,28 @@ export function normalizeServer(server: ServerObject): string | undefined {
   }
   if (url.startsWith('http://')) url = `https://${url.slice('http://'.length)}`
   url = url.replace(/\/+$/, '')
+  if (!TEMPLATE_RE.test(url)) return undefined
+  const filled = url.replaceAll('{accountName}', 'acme').replaceAll('{environment}', 'vtexcommercestable')
+  if (/[{}]/.test(filled)) return undefined // stray or unclosed braces
   let sample: URL
   try {
-    sample = new URL(url.replaceAll('{accountName}', 'acme').replaceAll('{environment}', 'vtexcommercestable'))
+    sample = new URL(filled)
   } catch {
     return undefined
   }
-  if (sample.protocol !== 'https:' || sample.username || sample.password || sample.port || sample.search || sample.hash) {
-    return undefined
-  }
+  // The parser must not have rewritten anything (case, IDNA, trailing dot, dot segments), so
+  // the checks below, which read the raw template, see exactly the host and path used at runtime.
+  const rawHost = filled.slice('https://'.length).split('/')[0]
+  const rawPath = filled.slice('https://'.length + rawHost.length) || '/'
+  if (sample.hostname !== rawHost || sample.pathname !== rawPath) return undefined
   if (!isAllowlistedHost(sample.hostname)) return undefined
-  const accountScoped = ACCOUNT_SCOPED_DOMAINS.some((d) => sample.hostname === d || sample.hostname.endsWith(`.${d}`))
-  if (accountScoped) {
+  if (sample.hostname === IO_APP_DOMAIN || sample.hostname.endsWith(`.${IO_APP_DOMAIN}`)) return undefined
+  const domain = VTEX_DOMAIN_ALLOWLIST.find((d) => sample.hostname === d || sample.hostname.endsWith(`.${d}`))
+  if (domain === undefined) return undefined
+  if (!SERVICE_DOMAINS.has(domain)) {
     const firstLabel = url.slice('https://'.length).split('/')[0].split('.')[0]
-    if (firstLabel !== '{accountName}' && !SHARED_SERVICE_LABELS.has(firstLabel)) return undefined
+    const shared = COMMERCE_DOMAINS.has(domain) && SHARED_SERVICE_LABELS.has(firstLabel)
+    if (firstLabel !== '{accountName}' && !shared) return undefined
   }
   return url
 }
@@ -5016,11 +5260,14 @@ export function normalizeServer(server: ServerObject): string | undefined {
 /**
  * Picks the server for an operation: operation > path item > document. The first
  * level that declares servers decides; within it, the first resolvable entry wins.
- * When no level declares servers, the account host is used.
+ * When no level declares servers, the account host is used. A level whose `servers`
+ * is present but not an array counts as declared and unresolvable.
  */
 export function pickServer(levels: Array<ServerObject[] | undefined>): string | undefined {
   for (const level of levels) {
-    if (!Array.isArray(level) || level.length === 0) continue
+    if (level === undefined || level === null) continue
+    if (!Array.isArray(level)) return undefined
+    if (level.length === 0) continue
     for (const server of level) {
       const template = normalizeServer(server)
       if (template) return template
@@ -5030,14 +5277,18 @@ export function pickServer(levels: Array<ServerObject[] | undefined>): string | 
   return DEFAULT_SERVER
 }
 
-/** Drops a base-path segment that the operation path repeats (e.g. ".../pricing" + "/pricing/tables"). */
+/**
+ * Drops a base-path segment that the operation path repeats (e.g. ".../pricing" + "/pricing/tables").
+ * A templated segment such as {accountName} is never dropped, so the account always comes from config.
+ */
 export function trimBasePathOverlap(template: string, path: string): string {
   const pathStart = template.indexOf('/', 'https://'.length)
   if (pathStart === -1) return template
   const origin = template.slice(0, pathStart)
   const baseSegments = template.slice(pathStart).split('/').filter(Boolean)
   const firstPathSegment = path.split('/').filter(Boolean)[0]
-  if (baseSegments.length === 0 || baseSegments[baseSegments.length - 1] !== firstPathSegment) return template
+  const last = baseSegments[baseSegments.length - 1]
+  if (last === undefined || last !== firstPathSegment || /[{}]/.test(last)) return template
   baseSegments.pop()
   return baseSegments.length > 0 ? `${origin}/${baseSegments.join('/')}` : origin
 }
@@ -5075,6 +5326,7 @@ EOF
 
 ```ts
 import { describe, it, expect } from 'vitest'
+import ts from 'typescript'
 import { generateMethod } from '../../scripts/codegen/operation.js'
 
 const refName = (r: string) => r.split('/').pop()!
@@ -5258,10 +5510,136 @@ describe('generateMethod', () => {
   })
 
   it('refuses unsafe paths', () => {
-    for (const path of ['/a/`x`', '/a/${x}', '/a b', '/a\\b', '/a/{bad name}']) {
+    for (const path of [
+      '/a/`x`', '/a/${x}', '/a b', '/a\\b', '/a/{bad name}', "/a/{x'y}", '/a/{a:b}',
+      '/a/../b', '/a/%2e%2e/b', '/a/%2E/b', '//x', '/a//b', '/a/{', '/a/}', '/a/{}', '/a/%zz', '/a/{constructor}',
+    ]) {
       expect(() =>
         generateMethod({ httpMethod: 'get', path, op: { operationId: 'X', responses: ok }, refName }),
       ).toThrow(/unsafe/)
+    }
+  })
+
+  it('keeps mid-segment placeholders', () => {
+    const code = generateMethod({
+      httpMethod: 'get', path: '/c/carrier@{capacityType}@{shippingPolicyId}', op: { operationId: 'X', responses: ok }, refName,
+    })
+    expect(code).toContain('`/c/carrier@${encodePathParam(params.capacityType)}@${encodePathParam(params.shippingPolicyId)}`')
+  })
+
+  it('escapes quotes, backslashes and line terminators in string literals', () => {
+    const sep = String.fromCharCode(0x2028)
+    const code = generateMethod({
+      httpMethod: 'get',
+      path: '/x',
+      op: {
+        operationId: 'X',
+        parameters: [
+          { name: "a'b", in: 'query', schema: { type: 'string' } },
+          { name: 'a\\b', in: 'query', schema: { type: 'string' } },
+          { name: `l\n${sep}`, in: 'query', schema: { type: 'string' } },
+        ],
+        responses: ok,
+      },
+      refName,
+    })
+    expect(code).toContain("'a\\'b': params['a\\'b']")
+    expect(code).toContain("'a\\\\b': params['a\\\\b']")
+    expect(code).toContain("'l\\u000a\\u2028'")
+    expect(code).not.toContain('\n' + sep)
+  })
+
+  it('refuses invalid header names, reserved names and a body/param clash', () => {
+    const gen = (op: any, httpMethod = 'post', name?: string) =>
+      () => generateMethod({ httpMethod, path: '/x', op: { operationId: 'X', responses: ok, ...op }, refName, name })
+    expect(gen({ parameters: [{ name: 'X-VTEX-API-AppToken ', in: 'header' }] })).toThrow(/invalid header name/)
+    expect(gen({ parameters: [{ name: ' Authorization', in: 'header' }] })).toThrow(/invalid header name/)
+    expect(gen({ parameters: [{ name: '__proto__', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'constructor', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({}, 'get', 'constructor')).toThrow(/method named/)
+    expect(gen({}, 'get', 'http')).toThrow(/method named/)
+    expect(gen({}, 'trace')).toThrow(/HTTP method/)
+    expect(
+      gen({
+        parameters: [{ name: 'body', in: 'query', schema: { type: 'string' } }],
+        requestBody: { content: { 'application/json': { schema: { type: 'object' } } } },
+      }),
+    ).toThrow(/named "body"/)
+  })
+
+  it('requires params when only a header or only a body is required', () => {
+    const header = generateMethod({
+      httpMethod: 'get', path: '/x', refName,
+      op: { operationId: 'X', parameters: [{ name: 'X-Tenant', in: 'header', required: true, schema: { type: 'string' } }], responses: ok },
+    })
+    expect(header).toContain('x(params: {')
+    expect(header).not.toContain('} = {}')
+    const body = generateMethod({
+      httpMethod: 'post', path: '/x', refName,
+      op: { operationId: 'X', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: ok },
+    })
+    expect(body).not.toContain('} = {}')
+  })
+
+  it('limits header and path param types to what the runtime sends', () => {
+    const code = generateMethod({
+      httpMethod: 'get',
+      path: '/x/{flag}/{id}',
+      refName,
+      op: {
+        operationId: 'X',
+        parameters: [
+          { name: 'flag', in: 'path', schema: { type: 'boolean' } },
+          { name: 'id', in: 'path', schema: { type: 'integer' } },
+          { name: 'X-List', in: 'header', schema: { type: 'array', items: { type: 'string' } } },
+          { name: 'X-Mode', in: 'header', schema: { type: 'string', enum: ['a', 'b'], nullable: true } },
+        ],
+        responses: ok,
+      },
+    })
+    expect(code).toContain('  flag: string | number')
+    expect(code).toContain('  id: number')
+    expect(code).toContain("  'X-List'?: string")
+    expect(code).toContain(`  'X-Mode'?: "a" | "b"`)
+  })
+
+  it('uses exact JSON media types and sends other bodies as bytes', () => {
+    const gen = (ct: string) =>
+      generateMethod({
+        httpMethod: 'post', path: '/x', refName,
+        op: { operationId: 'X', requestBody: { content: { [ct]: { schema: { type: 'object' } } } }, responses: ok },
+      })
+    expect(gen('application/json-patch+json')).toContain("contentType: 'application/json-patch+json'")
+    expect(gen('application/json; charset=utf-8')).not.toContain('contentType:')
+    expect(gen('application/octet-stream')).toContain('body: Blob | ArrayBuffer | Uint8Array | string')
+    expect(gen('application/octet-stream')).toContain("contentType: 'application/octet-stream'")
+    expect(gen('*/*')).toContain("contentType: 'application/octet-stream'")
+    expect(gen('multipart/form-data; boundary=x')).toContain('body: FormData')
+  })
+
+  it('emits exactly one well-formed method for hostile schema values', () => {
+    const hostile = ["'", '\\', '`', '${x}', '*/', '\r\n', String.fromCharCode(0x2028), '"; }; x(); //']
+    for (const h of hostile) {
+      const code = generateMethod({
+        httpMethod: 'post',
+        path: '/x',
+        refName,
+        server: `https://api.vtex.com/{accountName}${h}`,
+        op: {
+          operationId: 'X',
+          parameters: [{ name: `q${h}`, in: 'query', schema: { type: 'string', enum: [h] } }],
+          requestBody: { content: { [`application/vnd.x+json;${h}`]: { schema: { type: 'object', properties: { [h]: { type: 'string' } } } } } },
+          responses: ok,
+        },
+      })
+      const source = ts.createSourceFile('m.ts', `class C {\n${code}\n}`, ts.ScriptTarget.ES2022, true)
+      expect((source as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics).toEqual([])
+      const cls = source.statements[0] as ts.ClassDeclaration
+      expect(source.statements).toHaveLength(1)
+      expect(cls.members).toHaveLength(1)
+      const method = cls.members[0] as ts.MethodDeclaration
+      expect(method.body?.statements).toHaveLength(1)
+      expect(ts.isReturnStatement(method.body!.statements[0])).toBe(true)
     }
   })
 })
@@ -5281,6 +5659,8 @@ Expected: FAIL:
 import { methodName } from './naming.js'
 import { schemaToType } from './types.js'
 import { DEFAULT_SERVER } from '../../src/core/url.js'
+import { isJsonContentType, mediaType } from '../../src/core/body.js'
+import { isValidHeaderName } from '../../src/core/headers.js'
 
 interface Ctx {
   httpMethod: string
@@ -5300,6 +5680,7 @@ interface Ctx {
 }
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+const HTTP_METHOD_RE = /^(get|put|post|patch|delete|head|options)$/
 const SAFE_PATH_RE = /^\/[A-Za-z0-9\-._~!&'()*+,;=:@%/{}]*$/
 const SAFE_PLACEHOLDER_RE = /^[A-Za-z0-9_.-]+$/
 /** Headers managed by the SDK or by fetch; schema-declared params with these names are not exposed. */
@@ -5307,14 +5688,26 @@ const MANAGED_HEADERS = new Set([
   'accept', 'content-type', 'content-length', 'host',
   'x-vtex-api-appkey', 'x-vtex-api-apptoken', 'vtexidclientautcookie', 'cookie', 'authorization',
 ])
+/** Method names that would clash with the generated class itself. */
+const RESERVED_METHOD_NAMES = new Set(['constructor', 'http'])
+/** Option keys that object literals or the `= {}` default would mishandle. */
+const RESERVED_PARAM_NAMES = new Set(['__proto__', 'constructor'])
+/** Header values must be primitives the runtime accepts (string, number, boolean or a literal union of them). */
+const PRIMITIVE_TYPE_RE =
+  /^(?:string|number|boolean|true|false|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")(?: \| (?:string|number|boolean|true|false|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*"))*$/
+/** Path values must be strings or numbers (what encodePathParam accepts). */
+const PATH_TYPE_RE = /^(?:string|number|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")(?: \| (?:string|number|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*"))*$/
 
 function isSafeIdent(name: string): boolean {
   return IDENT_RE.test(name)
 }
 
-/** Single-quoted string literal, escaping backslashes/quotes as needed. */
-function quoteString(name: string): string {
-  return `'${name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+/** Single-quoted string literal: backslashes and quotes escaped, control and line-separator characters as \uXXXX. */
+function quoteString(value: string): string {
+  const escaped = value
+    .replace(/[\\']/g, '\\$&')
+    .replace(/[\u0000-\u001f\u007f\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`)
+  return `'${escaped}'`
 }
 
 /** Key for an object type literal / value, quoting it when it isn't a valid identifier. */
@@ -5327,15 +5720,11 @@ function accessExpr(name: string): string {
   return isSafeIdent(name) ? `params.${name}` : `params[${quoteString(name)}]`
 }
 
-function isJsonMediaType(type: string): boolean {
-  return /^application\/(?:[a-z0-9.!#$&^_-]+\+)?json(?:\s*;|\s*$)/i.test(type)
-}
-
 function jsonSchemaOf(container: any): any | undefined {
   const content = container?.content
   if (!content) return undefined
   const types = Object.keys(content)
-  const key = types.find((t) => t.startsWith('application/json')) ?? types.find(isJsonMediaType)
+  const key = types.find((t) => mediaType(t) === 'application/json') ?? types.find(isJsonContentType)
   return key ? content[key].schema : undefined
 }
 
@@ -5345,21 +5734,30 @@ interface BodyInfo {
   contentType?: string
 }
 
+/**
+ * Body type and content type, by fixed priority: plain JSON, vendor JSON, multipart form-data,
+ * form-urlencoded, text, then any other declared type as a binary body.
+ */
 function requestBodyInfo(requestBody: any, refName: (ref: string) => string): BodyInfo | undefined {
   const content = requestBody?.content
   if (!content || typeof content !== 'object') return undefined
   const types = Object.keys(content)
-  const plainJson = types.find((t) => t.startsWith('application/json'))
+  if (types.length === 0) return undefined
+  const plainJson = types.find((t) => mediaType(t) === 'application/json')
   if (plainJson) return { type: schemaToType(content[plainJson].schema ?? {}, refName) }
-  const vendorJson = types.find(isJsonMediaType)
+  const vendorJson = types.find(isJsonContentType)
   if (vendorJson) return { type: schemaToType(content[vendorJson].schema ?? {}, refName), contentType: vendorJson }
-  // Declared so that a non-FormData body is rejected instead of being sent as JSON.
-  if (types.some((t) => /^(multipart\/)?form-data$/i.test(t))) return { type: 'FormData', contentType: 'multipart/form-data' }
-  const form = types.find((t) => /^application\/x-www-form-urlencoded/i.test(t))
+  // Typed as FormData so TypeScript callers can't pass a plain object; fetch sets the boundary.
+  if (types.some((t) => /^(multipart\/)?form-data$/.test(mediaType(t)))) {
+    return { type: 'FormData', contentType: 'multipart/form-data' }
+  }
+  const form = types.find((t) => mediaType(t) === 'application/x-www-form-urlencoded')
   if (form) return { type: 'URLSearchParams | Record<string, string>', contentType: form }
-  const text = types.find((t) => /^text\//i.test(t))
+  const text = types.find((t) => mediaType(t).startsWith('text/'))
   if (text) return { type: 'string', contentType: text }
-  return undefined
+  // Anything else (octet-stream, images, xml...) is sent as bytes with its declared type.
+  const other = types[0]
+  return { type: 'Blob | ArrayBuffer | Uint8Array | string', contentType: other.includes('*') ? 'application/octet-stream' : other }
 }
 
 function successSchema(op: any): any | undefined {
@@ -5383,10 +5781,28 @@ function pathPlaceholders(path: string): string[] {
   return names
 }
 
+/** Paths the runtime would reject or rewrite: empty or dot segments, stray braces, malformed escapes. */
+function assertSafePath(path: string): void {
+  const refuse = () => new Error(`Refusing to generate a method for unsafe path ${JSON.stringify(path)}`)
+  if (!SAFE_PATH_RE.test(path)) throw refuse()
+  if (/%(?![0-9A-Fa-f]{2})/.test(path)) throw refuse()
+  if (/[{}]/.test(path.replace(/\{[^{}]+\}/g, ''))) throw refuse()
+  const segments = path.slice(1).split('/')
+  for (const [i, segment] of segments.entries()) {
+    if (segment === '' && i < segments.length - 1) throw refuse()
+    const decoded = segment.replace(/%2e/gi, '.')
+    if (decoded === '.' || decoded === '..') throw refuse()
+  }
+}
+
 export function generateMethod(ctx: Ctx): string {
   const { httpMethod, path, op, refName, resolveRef } = ctx
-  if (!SAFE_PATH_RE.test(path)) throw new Error(`Refusing to generate a method for unsafe path ${JSON.stringify(path)}`)
+  if (!HTTP_METHOD_RE.test(httpMethod)) throw new Error(`Refusing to generate a method for HTTP method ${JSON.stringify(httpMethod)}`)
+  assertSafePath(path)
   const name = ctx.name ?? methodName(op, httpMethod, path)
+  if (!IDENT_RE.test(name) || RESERVED_METHOD_NAMES.has(name)) {
+    throw new Error(`Refusing to generate a method named ${JSON.stringify(name)} for ${httpMethod.toUpperCase()} ${path}`)
+  }
   const rawParams: any[] = op.parameters ?? []
 
   // Resolve `$ref` parameter entries (best-effort; unresolved/no-resolver entries are dropped —
@@ -5408,22 +5824,31 @@ export function generateMethod(ctx: Ctx): string {
   const seenHeaderNames = new Set<string>()
   for (const p of resolvedParams) {
     if (!p || !p.name) continue
-    const lowerName = String(p.name).toLowerCase()
+    const paramName = String(p.name)
+    if (RESERVED_PARAM_NAMES.has(paramName)) {
+      throw new Error(`Refusing to generate a method with a parameter named ${JSON.stringify(paramName)} (${path})`)
+    }
+    const lowerName = paramName.toLowerCase()
     if (p.in === 'path') {
-      inlinePathParams.set(p.name, p)
-    } else if (p.in === 'query' && !seenQueryNames.has(p.name)) {
-      seenQueryNames.add(p.name)
+      inlinePathParams.set(paramName, p)
+    } else if (p.in === 'query' && !seenQueryNames.has(paramName)) {
+      seenQueryNames.add(paramName)
       queryParams.push(p)
-    } else if (p.in === 'header' && !MANAGED_HEADERS.has(lowerName) && !seenHeaderNames.has(lowerName)) {
-      seenHeaderNames.add(lowerName)
-      headerParams.push(p)
+    } else if (p.in === 'header') {
+      if (!isValidHeaderName(paramName)) {
+        throw new Error(`Refusing to generate a method with invalid header name ${JSON.stringify(paramName)} (${path})`)
+      }
+      if (!MANAGED_HEADERS.has(lowerName) && !seenHeaderNames.has(lowerName)) {
+        seenHeaderNames.add(lowerName)
+        headerParams.push(p)
+      }
     }
   }
 
   // The path template is the source of truth for what params the URL needs.
   const placeholders = pathPlaceholders(path)
   for (const p of placeholders) {
-    if (!SAFE_PLACEHOLDER_RE.test(p)) {
+    if (!SAFE_PLACEHOLDER_RE.test(p) || RESERVED_PARAM_NAMES.has(p)) {
       throw new Error(`Refusing to generate a method for unsafe placeholder ${JSON.stringify(p)} in ${JSON.stringify(path)}`)
     }
   }
@@ -5440,8 +5865,9 @@ export function generateMethod(ctx: Ctx): string {
   for (const n of placeholders) {
     usedKeys.add(n)
     const inline = inlinePathParams.get(n)
-    // A path segment can never be null, whatever the schema says.
-    const type = inline ? schemaToType({ ...(inline.schema ?? {}), nullable: false }, refName) : 'string | number'
+    // A path segment can never be null, whatever the schema says, and must be a string or number.
+    const computed = inline ? schemaToType({ ...(inline.schema ?? {}), nullable: false }, refName) : ''
+    const type = PATH_TYPE_RE.test(computed) ? computed : 'string | number'
     optionFields.push(`  ${quoteKey(n)}: ${type}`)
     hasRequired = true
   }
@@ -5459,11 +5885,17 @@ export function generateMethod(ctx: Ctx): string {
     usedKeys.add(p.name)
     emittedHeaders.push(p)
     if (p.required) hasRequired = true
-    optionFields.push(`  ${quoteKey(p.name)}${p.required ? '' : '?'}: ${schemaToType(p.schema ?? {}, refName)}`)
+    const computed = schemaToType({ ...(p.schema ?? {}), nullable: false }, refName)
+    const type = PRIMITIVE_TYPE_RE.test(computed) ? computed : 'string'
+    optionFields.push(`  ${quoteKey(p.name)}${p.required ? '' : '?'}: ${type}`)
   }
 
-  if (body && !usedKeys.has('body')) {
+  if (body) {
+    if (usedKeys.has('body')) {
+      throw new Error(`Refusing to generate ${httpMethod.toUpperCase()} ${path}: a parameter is named "body"`)
+    }
     usedKeys.add('body')
+    // Always required: VTEX schemas often omit requestBody.required even when the API needs a body.
     hasRequired = true
     optionFields.push(`  body: ${body.type}`)
   }
@@ -5521,122 +5953,571 @@ EOF
 ## Task 13: Verified schema downloads (spec §6)
 
 **Files:**
-- Create: `scripts/codegen/integrity.ts`
+- Create: `scripts/codegen/integrity.ts`, `scripts/codegen/fetch.ts`, `scripts/schemas.lock.json`
 - Modify: `scripts/fetch-schemas.ts`
-- Test: `test/codegen/integrity.test.ts`
+- Test: `test/codegen/integrity.test.ts`, `test/codegen/fetch.test.ts`
 
-- [ ] **Step 1: Write the failing test.** Create `test/codegen/integrity.test.ts` with
+The lock file is the reviewed source of truth: the pinned repo and commit plus every schema file's git blob SHA. Downloads are built from it alone (the GitHub listing never chooses names or URLs), verified, staged and swapped in atomically. `--update-lock <commit>` re-pins from the listing and produces a reviewable diff.
+
+- [ ] **Step 1: Write the failing tests.** Create `test/codegen/integrity.test.ts` with
 
 ```ts
+import { readFileSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
-import { assertSchemaDownloadUrl, gitBlobSha } from '../../scripts/codegen/integrity.js'
+import {
+  assertSchemaFileName, gitBlobSha, parseSchemaLock, schemaDownloadUrl,
+} from '../../scripts/codegen/integrity.js'
+
+const REF = '1ca3d11c8dfc9dd17484eabad051d364e767c50d'
+const SHA = 'ce013625030ba8dba906f756967f9e9ca394464a'
 
 describe('gitBlobSha', () => {
-  it('matches git hash-object', () => {
-    // `printf 'hello\n' | git hash-object --stdin`
-    expect(gitBlobSha(new TextEncoder().encode('hello\n'))).toBe('ce013625030ba8dba906f756967f9e9ca394464a')
+  // Each expected value comes from `git hash-object` on the same bytes.
+  it.each([
+    ['hello\\n', new TextEncoder().encode('hello\n'), 'ce013625030ba8dba906f756967f9e9ca394464a'],
+    ['empty', new Uint8Array(0), 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391'],
+    ['multibyte (5 bytes, 4 chars)', new TextEncoder().encode('olá\n'), 'b30aa6deda68a4ddeadc2449be9025cbe409881c'],
+    ['binary', new Uint8Array([0x00, 0xff, 0x0a]), '506cd141ad4a679eee22d6a21dd267cca5734b92'],
+    ['BOM', new Uint8Array([0xef, 0xbb, 0xbf, 0x7b, 0x7d, 0x0a]), 'f1177889234785c56a3cffb98a6d63970f8813ed'],
+    ['offset view', new TextEncoder().encode('XXhello\n').subarray(2), 'ce013625030ba8dba906f756967f9e9ca394464a'],
+  ])('matches git hash-object for %s', (_label, bytes, expected) => {
+    expect(gitBlobSha(bytes)).toBe(expected)
   })
 })
 
-describe('assertSchemaDownloadUrl', () => {
-  it('accepts raw.githubusercontent.com over https', () => {
-    expect(assertSchemaDownloadUrl('https://raw.githubusercontent.com/vtex/openapi-schemas/abc/x.json').hostname).toBe(
-      'raw.githubusercontent.com',
+describe('assertSchemaFileName', () => {
+  it.each(['VTEX - Orders API.json', 'VTEX - Promotions & Taxes API.json', 'a.b-c.json'])('accepts %s', (name) => {
+    expect(assertSchemaFileName(name)).toBe(name)
+  })
+  it.each([
+    '../package.json', '..\\x.json', 'a/b.json', 'a\\b.json', '.hidden.json', 'x..json', 'C:x.json',
+    'x.txt', '', 'x\u001b[31m.json', '__proto__.json', 42,
+  ])('rejects %j', (name) => {
+    expect(() => assertSchemaFileName(name)).toThrow(/Refusing unsafe schema file name/)
+  })
+})
+
+describe('schemaDownloadUrl', () => {
+  it('builds the URL from the pinned repo and commit only', () => {
+    expect(schemaDownloadUrl(REF, 'VTEX - Promotions & Taxes API.json').href).toBe(
+      `https://raw.githubusercontent.com/vtex/openapi-schemas/${REF}/VTEX%20-%20Promotions%20%26%20Taxes%20API.json`,
     )
   })
-  it.each(['http://raw.githubusercontent.com/x.json', 'https://evil.example/x.json', 'https://raw.githubusercontent.com.evil.example/x.json'])(
-    'rejects %s',
-    (url) => {
-      expect(() => assertSchemaDownloadUrl(url)).toThrow(/Refusing/)
-    },
-  )
+  it('rejects a branch name or an unsafe file name', () => {
+    expect(() => schemaDownloadUrl('main', 'x.json')).toThrow(/ref/)
+    expect(() => schemaDownloadUrl(REF, '../x.json')).toThrow(/unsafe/)
+  })
+})
+
+describe('parseSchemaLock', () => {
+  const valid = { repo: 'vtex/openapi-schemas', ref: REF, files: { 'A.json': SHA } }
+  it('accepts a valid lock', () => {
+    expect(parseSchemaLock(valid)).toEqual(valid)
+  })
+  it.each([
+    ['another repo', { ...valid, repo: 'attacker/repo' }],
+    ['a branch ref', { ...valid, ref: 'main' }],
+    ['an unsafe name', { ...valid, files: { '../package.json': SHA } }],
+    ['a bad sha', { ...valid, files: { 'A.json': 'nope' } }],
+    ['no files', { ...valid, files: {} }],
+    ['files as an array', { ...valid, files: [] }],
+    ['null', null],
+  ])('rejects %s', (_label, lock) => {
+    expect(() => parseSchemaLock(lock)).toThrow()
+  })
+  it('accepts the committed lock', () => {
+    const lock = parseSchemaLock(JSON.parse(readFileSync('scripts/schemas.lock.json', 'utf8')))
+    expect(Object.keys(lock.files).length).toBeGreaterThan(50)
+  })
 })
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+and `test/codegen/fetch.test.ts` with
 
-Run: `npx vitest run test/codegen/integrity.test.ts`
-Expected: FAIL (cannot resolve `integrity.js`).
+```ts
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
+import { fetchSchemas, listSchemaLock, MAX_SCHEMA_BYTES } from '../../scripts/codegen/fetch.js'
+import { gitBlobSha, type SchemaLock } from '../../scripts/codegen/integrity.js'
+
+const REF = '1ca3d11c8dfc9dd17484eabad051d364e767c50d'
+const enc = (s: string) => new TextEncoder().encode(s)
+const A = enc('{"a":1}\n')
+const B = enc('{"b":2}\n')
+
+let root: string
+let out: string
+beforeEach(() => {
+  root = mkdtempSync(join(tmpdir(), 'vtex-sdk-fetch-'))
+  out = join(root, 'schemas')
+})
+afterEach(() => rmSync(root, { recursive: true, force: true }))
+
+const lockOf = (files: Record<string, Uint8Array>): SchemaLock => ({
+  repo: 'vtex/openapi-schemas',
+  ref: REF,
+  files: Object.fromEntries(Object.entries(files).map(([n, b]) => [n, gitBlobSha(b)])),
+})
+
+/** Fake fetch serving `bodies` by decoded file name from the pinned raw URL only. */
+function fakeFetch(bodies: Record<string, Uint8Array>) {
+  return vi.fn(async (input: string | URL | Request, _init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : String(input))
+    const prefix = `/vtex/openapi-schemas/${REF}/`
+    if (url.origin !== 'https://raw.githubusercontent.com' || !url.pathname.startsWith(prefix)) {
+      return new Response('wrong source', { status: 404 })
+    }
+    const body = bodies[decodeURIComponent(url.pathname.slice(prefix.length))]
+    return body ? new Response(body) : new Response('missing', { status: 404 })
+  })
+}
+
+describe('fetchSchemas', () => {
+  it('downloads from the pinned commit, verifies and writes every locked file', async () => {
+    const fetchMock = fakeFetch({ 'A.json': A, 'B & C.json': B })
+    const count = await fetchSchemas({ lock: lockOf({ 'A.json': A, 'B & C.json': B }), outDir: out, fetch: fetchMock })
+    expect(count).toBe(2)
+    expect(readdirSync(out).sort()).toEqual(['A.json', 'B & C.json'])
+    expect(readFileSync(join(out, 'A.json'))).toEqual(Buffer.from(A))
+    for (const [, init] of fetchMock.mock.calls) {
+      expect(init?.redirect).toBe('error')
+      expect(init?.signal).toBeInstanceOf(AbortSignal)
+      expect((init?.headers as Record<string, string>).Authorization).toBeUndefined()
+    }
+    expect(readdirSync(root).sort()).toEqual(['schemas']) // no stage or .old left behind
+  })
+
+  it('replaces the whole directory, dropping files that are not in the lock', async () => {
+    mkdirSync(out)
+    writeFileSync(join(out, 'Stale.json'), '{}')
+    await fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: fakeFetch({ 'A.json': A }) })
+    expect(readdirSync(out)).toEqual(['A.json'])
+  })
+
+  it('leaves the existing directory untouched when any file fails verification', async () => {
+    mkdirSync(out)
+    writeFileSync(join(out, 'A.json'), 'old')
+    const lock = lockOf({ 'A.json': A, 'B.json': B })
+    await expect(
+      fetchSchemas({ lock, outDir: out, fetch: fakeFetch({ 'A.json': A, 'B.json': enc('tampered') }) }),
+    ).rejects.toThrow(/Integrity check failed for B.json/)
+    expect(readdirSync(out)).toEqual(['A.json'])
+    expect(readFileSync(join(out, 'A.json'), 'utf8')).toBe('old')
+    expect(readdirSync(root).sort()).toEqual(['schemas'])
+  })
+
+  it('refuses an unsafe name in the lock before fetching anything', async () => {
+    const fetchMock = fakeFetch({})
+    const lock = { ...lockOf({ 'A.json': A }), files: { '../package.json': gitBlobSha(A) } }
+    await expect(fetchSchemas({ lock, outDir: out, fetch: fetchMock })).rejects.toThrow(/unsafe/)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(existsSync(join(root, 'package.json'))).toBe(false)
+  })
+
+  it('fails on an HTTP error and on an oversized download', async () => {
+    await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: fakeFetch({}) })).rejects.toThrow(
+      /HTTP 404/,
+    )
+    const big = vi.fn(async () => new Response('x', { headers: { 'content-length': String(MAX_SCHEMA_BYTES + 1) } }))
+    await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: big })).rejects.toThrow(/larger than/)
+    expect(existsSync(out)).toBe(false)
+  })
+})
+
+describe('listSchemaLock', () => {
+  const listing = (entries: unknown) => vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => Response.json(entries))
+
+  it('builds a sorted lock from the listing, skipping tooling files and directories', async () => {
+    const fetchMock = listing([
+      { type: 'file', name: 'VTEX - B.json', sha: gitBlobSha(B) },
+      { type: 'file', name: 'VTEX - A.json', sha: gitBlobSha(A) },
+      { type: 'file', name: 'package.json', sha: gitBlobSha(A) },
+      { type: 'dir', name: 'docs', sha: gitBlobSha(A) },
+      { type: 'file', name: 'README.md', sha: gitBlobSha(A) },
+    ])
+    const lock = await listSchemaLock({ ref: REF, fetch: fetchMock, token: 'ghp_SECRET' })
+    expect(lock).toEqual({ repo: 'vtex/openapi-schemas', ref: REF, files: { 'VTEX - A.json': gitBlobSha(A), 'VTEX - B.json': gitBlobSha(B) } })
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(String(url)).toBe(`https://api.github.com/repos/vtex/openapi-schemas/contents?ref=${REF}`)
+    expect(init?.redirect).toBe('error')
+    expect((init?.headers as Record<string, string>).Authorization).toBe('Bearer ghp_SECRET')
+  })
+
+  it.each([
+    ['a traversal name', [{ type: 'file', name: '../package.json', sha: gitBlobSha(A) }], /unsafe/],
+    ['a bad sha', [{ type: 'file', name: 'A.json', sha: 'nope' }], /blob SHA/],
+    ['a non-array body', { message: 'rate limited' }, /not an array/],
+    ['no schemas', [{ type: 'file', name: 'package.json', sha: gitBlobSha(A) }], /no schema files/],
+    ['a truncated listing', Array.from({ length: 1000 }, (_, i) => ({ type: 'file', name: `F${i}.json`, sha: gitBlobSha(A) })), /truncated/],
+  ])('rejects %s', async (_label, entries, error) => {
+    await expect(listSchemaLock({ ref: REF, fetch: listing(entries) })).rejects.toThrow(error)
+  })
+
+  it('requires a full commit SHA', async () => {
+    await expect(listSchemaLock({ ref: 'main', fetch: listing([]) })).rejects.toThrow(/ref/)
+  })
+})
+```
+
+- [ ] **Step 2: Run them to verify they fail**
+
+Run: `npx vitest run test/codegen/integrity.test.ts test/codegen/fetch.test.ts`
+Expected: FAIL (cannot resolve `integrity.js` / `fetch.js`).
 
 - [ ] **Step 3: Create `scripts/codegen/integrity.ts`**
 
 ```ts
 import { createHash } from 'node:crypto'
 
+/** The only repository schemas are downloaded from. */
+export const SCHEMA_REPO = 'vtex/openapi-schemas'
+
+const SAFE_SCHEMA_NAME = /^[A-Za-z0-9][A-Za-z0-9 &.-]*\.json$/
+const COMMIT_SHA = /^[0-9a-f]{40}$/
+
+/** Reviewed list of schema files and their git blob SHAs at one pinned commit. */
+export interface SchemaLock {
+  repo: string
+  ref: string
+  files: Record<string, string>
+}
+
 /** Git blob SHA-1 of `content`, the value GitHub's contents API reports as `sha`. */
 export function gitBlobSha(content: Uint8Array): string {
   return createHash('sha1').update(`blob ${content.byteLength}\0`).update(content).digest('hex')
 }
 
-/** Only raw.githubusercontent.com over https is accepted as a schema download source. */
-export function assertSchemaDownloadUrl(downloadUrl: string): URL {
-  const url = new URL(downloadUrl)
-  if (url.protocol !== 'https:' || url.hostname !== 'raw.githubusercontent.com') {
-    throw new Error(`Refusing to download a schema from ${url.origin}`)
+/**
+ * A schema file name is a plain `*.json` base name: no separators, no `..`, no leading dot,
+ * no control or terminal escape characters. Anything else could write outside schemas/.
+ */
+export function assertSchemaFileName(name: unknown): string {
+  if (typeof name !== 'string' || !SAFE_SCHEMA_NAME.test(name) || name.includes('..')) {
+    throw new Error(`Refusing unsafe schema file name ${JSON.stringify(name)}`)
   }
-  return url
+  return name
+}
+
+export function assertSha(value: unknown, what: string): string {
+  if (typeof value !== 'string' || !COMMIT_SHA.test(value)) {
+    throw new Error(`Invalid ${what}: expected 40 lowercase hex characters`)
+  }
+  return value
+}
+
+/** Validates a parsed lock file: the pinned repo, a full commit SHA and a non-empty set of safe names. */
+export function parseSchemaLock(json: unknown): SchemaLock {
+  const lock = json as Partial<SchemaLock> | null
+  if (typeof lock !== 'object' || lock === null) throw new Error('Schema lock must be an object')
+  if (lock.repo !== SCHEMA_REPO) throw new Error(`Schema lock must pin ${SCHEMA_REPO}`)
+  const ref = assertSha(lock.ref, 'schema lock ref')
+  if (typeof lock.files !== 'object' || lock.files === null || Array.isArray(lock.files)) {
+    throw new Error('Schema lock files must be an object of name to blob SHA')
+  }
+  const files: Record<string, string> = {}
+  for (const [name, sha] of Object.entries(lock.files)) {
+    files[assertSchemaFileName(name)] = assertSha(sha, `blob SHA for ${name}`)
+  }
+  if (Object.keys(files).length === 0) throw new Error('Schema lock lists no files')
+  return { repo: SCHEMA_REPO, ref, files }
+}
+
+/** Download URL built from the pinned commit; the GitHub listing never chooses where bytes come from. */
+export function schemaDownloadUrl(ref: string, name: string): URL {
+  return new URL(
+    `https://raw.githubusercontent.com/${SCHEMA_REPO}/${assertSha(ref, 'ref')}/${encodeURIComponent(assertSchemaFileName(name))}`,
+  )
 }
 ```
 
-- [ ] **Step 4: Replace `scripts/fetch-schemas.ts` with**
+- [ ] **Step 4: Create `scripts/codegen/fetch.ts`**
 
 ```ts
-import { mkdir, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { assertSchemaDownloadUrl, gitBlobSha } from './codegen/integrity.js'
+import { mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import {
+  SCHEMA_REPO, assertSchemaFileName, assertSha, gitBlobSha, schemaDownloadUrl, type SchemaLock,
+} from './integrity.js'
 
-// Pin to a specific commit for reproducibility. Update deliberately.
-const REF = '1ca3d11c8dfc9dd17484eabad051d364e767c50d'
-const API = `https://api.github.com/repos/vtex/openapi-schemas/contents?ref=${REF}`
+/** Largest accepted schema; the biggest VTEX schema today is about 3 MB. */
+export const MAX_SCHEMA_BYTES = 32 * 1024 * 1024
+/** Repository files that are tooling, not API schemas. */
 const SKIP = new Set(['config.json', 'package.json', 'package-lock.json', 'rating-config.json'])
+/** GitHub's contents API truncates a directory listing at 1,000 entries. */
+const MAX_LISTING_ENTRIES = 1000
+const USER_AGENT = 'vtex-sdk-codegen'
 
-async function main() {
-  const headers: Record<string, string> = { 'User-Agent': 'vtex-sdk-codegen' }
-  // Optional: avoids the anonymous GitHub API rate limit (e.g. in CI).
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
-  const res = await fetch(API, { headers })
-  if (!res.ok) throw new Error(`GitHub listing failed: ${res.status}`)
-  const entries = (await res.json()) as Array<{ name: string; download_url: string; sha: string }>
-  const schemas = entries.filter((e) => e.name.endsWith('.json') && !SKIP.has(e.name))
-  await mkdir('schemas', { recursive: true })
-  for (const e of schemas) {
-    const url = assertSchemaDownloadUrl(e.download_url)
-    const raw = await fetch(url, { headers: { 'User-Agent': 'vtex-sdk-codegen' }, redirect: 'error' })
-    if (!raw.ok) throw new Error(`Download failed for ${e.name}: ${raw.status}`)
-    const content = new Uint8Array(await raw.arrayBuffer())
-    const sha = gitBlobSha(content)
-    if (sha !== e.sha) throw new Error(`Integrity check failed for ${e.name}: expected blob ${e.sha}, got ${sha}`)
-    await writeFile(join('schemas', e.name), content)
-    console.log(`saved ${e.name}`)
-  }
-  console.log(`\nDownloaded and verified ${schemas.length} API schemas (skipped ${SKIP.size} tooling files).`)
+export interface FetchSchemasOptions {
+  lock: SchemaLock
+  outDir: string
+  fetch?: typeof fetch
+  timeoutMs?: number
+  log?: (line: string) => void
 }
 
-main().catch((err) => { console.error(err); process.exit(1) })
+async function readCapped(res: Response, name: string): Promise<Uint8Array> {
+  const declared = Number(res.headers.get('content-length'))
+  if (Number.isFinite(declared) && declared > MAX_SCHEMA_BYTES) throw new Error(`${name} is larger than ${MAX_SCHEMA_BYTES} bytes`)
+  if (!res.body) return new Uint8Array(0)
+  const reader = res.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > MAX_SCHEMA_BYTES) {
+      await reader.cancel()
+      throw new Error(`${name} is larger than ${MAX_SCHEMA_BYTES} bytes`)
+    }
+    chunks.push(value)
+  }
+  const out = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return out
+}
+
+/**
+ * Downloads every schema in the lock from the pinned commit, verifies each git blob SHA, and
+ * only then replaces `outDir` as a whole. Any failure leaves `outDir` untouched, and files
+ * that are not in the lock never survive a successful run.
+ */
+export async function fetchSchemas(opts: FetchSchemasOptions): Promise<number> {
+  const doFetch = opts.fetch ?? fetch
+  const log = opts.log ?? (() => {})
+  const target = resolve(opts.outDir)
+  const parent = dirname(target)
+  await mkdir(parent, { recursive: true })
+  const stage = await mkdtemp(join(parent, '.schemas-'))
+  let count = 0
+  try {
+    for (const [name, expected] of Object.entries(opts.lock.files)) {
+      const file = assertSchemaFileName(name)
+      const res = await doFetch(schemaDownloadUrl(opts.lock.ref, file), {
+        headers: { 'User-Agent': USER_AGENT },
+        redirect: 'error',
+        signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
+      })
+      if (!res.ok) throw new Error(`Download failed for ${file}: HTTP ${res.status}`)
+      const content = await readCapped(res, file)
+      const actual = gitBlobSha(content)
+      if (actual !== expected) throw new Error(`Integrity check failed for ${file}: expected blob ${expected}, got ${actual}`)
+      const dest = join(stage, file)
+      if (dirname(dest) !== stage) throw new Error(`Refusing unsafe schema file name ${JSON.stringify(file)}`)
+      await writeFile(dest, content, { flag: 'wx' })
+      log(`verified ${file}`)
+      count++
+    }
+    const old = `${target}.old`
+    await rm(old, { recursive: true, force: true })
+    let hadPrevious = true
+    try {
+      await rename(target, old)
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+      hadPrevious = false
+    }
+    try {
+      await rename(stage, target)
+    } catch (err) {
+      if (hadPrevious) await rename(old, target)
+      throw err
+    }
+    await rm(old, { recursive: true, force: true })
+    return count
+  } catch (err) {
+    await rm(stage, { recursive: true, force: true })
+    throw err
+  }
+}
+
+export interface ListSchemaLockOptions {
+  ref: string
+  fetch?: typeof fetch
+  token?: string
+  timeoutMs?: number
+}
+
+/**
+ * Builds a lock from GitHub's listing of the repository root at `ref` (a full commit SHA).
+ * Used only to re-pin: the resulting lock file is a reviewed diff, and downloads trust it alone.
+ */
+export async function listSchemaLock(opts: ListSchemaLockOptions): Promise<SchemaLock> {
+  const ref = assertSha(opts.ref, 'ref')
+  const headers: Record<string, string> = { 'User-Agent': USER_AGENT, Accept: 'application/vnd.github+json' }
+  if (opts.token) headers.Authorization = `Bearer ${opts.token}`
+  const res = await (opts.fetch ?? fetch)(`https://api.github.com/repos/${SCHEMA_REPO}/contents?ref=${ref}`, {
+    headers,
+    redirect: 'error',
+    signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
+  })
+  if (!res.ok) throw new Error(`GitHub listing failed: HTTP ${res.status}`)
+  const entries: unknown = await res.json()
+  if (!Array.isArray(entries)) throw new Error('GitHub listing is not an array')
+  if (entries.length >= MAX_LISTING_ENTRIES) throw new Error('GitHub listing may be truncated (1,000 entries)')
+  const files: Record<string, string> = {}
+  for (const entry of entries as Array<{ type?: unknown; name?: unknown; sha?: unknown }>) {
+    if (entry?.type !== 'file' || typeof entry.name !== 'string' || !entry.name.endsWith('.json')) continue
+    if (SKIP.has(entry.name)) continue
+    const name = assertSchemaFileName(entry.name)
+    files[name] = assertSha(entry.sha, `blob SHA for ${name}`)
+  }
+  if (Object.keys(files).length === 0) throw new Error('GitHub listing has no schema files')
+  const sorted = Object.fromEntries(Object.entries(files).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
+  return { repo: SCHEMA_REPO, ref, files: sorted }
+}
 ```
 
-- [ ] **Step 5: Run the tests**
+- [ ] **Step 5: Create `scripts/schemas.lock.json`**
+
+These are the blob SHAs GitHub reports for `vtex/openapi-schemas` at the pinned commit. They match the 75 committed `schemas/*.json` byte for byte.
+
+```json
+{
+  "repo": "vtex/openapi-schemas",
+  "ref": "1ca3d11c8dfc9dd17484eabad051d364e767c50d",
+  "files": {
+    "VTEX - Ads API.json": "c7ff63ab425949005cc16b9f23b571a00603bd79",
+    "VTEX - Antifraud Provider API.json": "27c52ce5e9dcce5714cfe95e0b957ccc3d69e7f6",
+    "VTEX - Audience API.json": "5635b7ff1268b56fb2c1a3a751c2ce7df3679ed9",
+    "VTEX - B2B Addresses API.json": "f48e1fb33b50f157193a24760757b8bcf8c5faee",
+    "VTEX - B2B Buyer Data API.json": "7b6e1b9119c4b8a3135abee8a36bfd0651feebd5",
+    "VTEX - B2B Contracts API.json": "85c9b10938851b0a15deda3bd434f891ffc51e4b",
+    "VTEX - B2B Password Migration Protocol.json": "c3c64de695bfc7f0e582b41d87c7d655a7aac1da",
+    "VTEX - Budgets API.json": "ff51ef0610b44dfa7391bfb13f009f93a91e8693",
+    "VTEX - Bulk Pricing API.json": "35afa75761ea14c30f0284c5b02e31e02cc5b996",
+    "VTEX - Buyer Organizations.json": "cbe10c6e989a302726d12372102548fa4cb60920",
+    "VTEX - Buying Policies API.json": "d485ad2eb20c547d84134e834db3bc11f7036630",
+    "VTEX - Card Token Vault API.json": "0c0144634c99264906b018b7ef4a46becd9d12f8",
+    "VTEX - Catalog API Seller Portal.json": "27115675ea8fcaa083f0ffb21a989089bf11615d",
+    "VTEX - Catalog API.json": "4887e238b7a70a21871034045e56c2305a90e35a",
+    "VTEX - Checkout API.json": "2d36c630bef7e8bdb779632f0883aff3fc950056",
+    "VTEX - Checkout Custom Card Payment API.json": "a3d04d848febf902e830bc5b74112cbabb510781",
+    "VTEX - Custom Fields API.json": "8406533624f6bd12339af752b1f00eed3063dcf0",
+    "VTEX - Customer Credit API.json": "a3e80b5717da0ef56763858ba52a224834cdb1b2",
+    "VTEX - Data Subject Rights.json": "ca6e61206f9bf1f5da2f3df2b77e832bce6bb741",
+    "VTEX - Default Values API.json": "3cc5561ae930df640eea22b013fb326a4a6f4b03",
+    "VTEX - Delivery Promise Notification API.json": "b7eb5c902c12db83d7cf1e462398232c583088fe",
+    "VTEX - Delivery Promise Suggestions API.json": "bc644bd7d23b4928e7b24606713afbcc92f4c6a1",
+    "VTEX - External Promotions Protocol API.json": "f36b399fa9585c24f7d3bac9a8a04731f39c3619",
+    "VTEX - GiftCard Hub API.json": "0a3059a34938d72cd68e3f5e15a3ddcff25fd0c7",
+    "VTEX - Giftcard API.json": "02356ae68ae86972a0eb55c205ab80e810ed3448",
+    "VTEX - Giftcard Provider Protocol.json": "eb71b21f493c327faf8d6cc8a3132bc9ee31ecee",
+    "VTEX - Headless CMS API.json": "c322340c01ccf15edcd558181f8e936022f41436",
+    "VTEX - Intelligent Search API - v1.json": "7a92253c6e81c000a10ad3563e2fcffe41cc0ba2",
+    "VTEX - Intelligent Search API.json": "b8c6085545ddc229ea60686276f6b3b9fea73aa2",
+    "VTEX - Intelligent Search Events API - Headless.json": "c4b9d5c9d73b6f16a639f5b62cd063a0742c0d9b",
+    "VTEX - Legacy CMS Portal API.json": "a4468f1da7d551ca930edb01e60638250c1a5214",
+    "VTEX - License Manager API.json": "69b58245574e41b1cdb4dd7113cd8ae9f09b3f57",
+    "VTEX - Logistics API.json": "87bc1186acaa108e14e3d48dba418eee8a55fc70",
+    "VTEX - Marketplace APIs - Sent Offers.json": "896b7477c4d12cf3347804f95d44132783a90926",
+    "VTEX - Marketplace APIs - Suggestions.json": "b22e90bbc2345bd83ef2296735f8a2eee49d8374",
+    "VTEX - Marketplace APIs.json": "b2c6d307adf7d6e4a4f91ff601734f5c2d5a9643",
+    "VTEX - Marketplace Protocol - External Marketplace Mapper.json": "bd53686ac8f36e2b8b6f1fe9d4bea9f68f1482d6",
+    "VTEX - Marketplace Protocol - External Marketplace Orders.json": "1de63ca8c1bcb26f0552812f0162c6deaa7be04f",
+    "VTEX - Marketplace Protocol - External Seller Fulfillment.json": "2f6d58bcaa9005377a2609cff78ad94184d5b921",
+    "VTEX - Marketplace Protocol - External Seller Marketplace.json": "10ed40158a50ad561916850b9a2235bc80ffe48d",
+    "VTEX - Master Data API - v2.json": "07ad88bbbf98acde2ccc38eae7663ecd2277f81f",
+    "VTEX - MasterData API - v10.2.json": "56520e7ae127aba1ed4ac49b55c3562baf1122ce",
+    "VTEX - Message Center API.json": "e4fc7a09014fd67bce91e624650ce2f03c6d7b60",
+    "VTEX - Operational Capacity API.json": "d0977b7b362f129f29528eed5f3b267e3db54441",
+    "VTEX - Orders API PII version.json": "b820c43e3af426c89610b9f18e811c909de98dd8",
+    "VTEX - Orders API.json": "8034b592dc36e312b94d91aa82e8fa7add92babc",
+    "VTEX - Organization Units API.json": "f88fb918e0af6c719d9ae8f0ff626878564eb439",
+    "VTEX - Payment Policies API.json": "95f62581b455e5420852678907ea616ac2455f1e",
+    "VTEX - Payment Provider Protocol.json": "365cf6f2d987af4f59a914a746b17aaedd27b050",
+    "VTEX - Payments Gateway API.json": "9bfd6588d0936c77dc284f479726c0f4febd741f",
+    "VTEX - Pick and Pack API.json": "7248210fe8f11562429fe31e92dfc3d7b4106268",
+    "VTEX - Pick and Pack Last Mile Protocol API.json": "0ca2fcf0e2f6da0605553bd93bd02c111f5a0420",
+    "VTEX - Pick and Pack Order Changes API.json": "43a6f86bdb1f753840c96c0a8081e3b54dc08581",
+    "VTEX - Policies System API.json": "1f2a1316b90dcdb7e68d751ac6da42511380dba5",
+    "VTEX - Pricing API.json": "a7d5ca2dd1c65b07a1b47c6f06cbfea56cb028d0",
+    "VTEX - Pricing Hub.json": "af10e02cced441e571724c64e01c6cb9795dfec6",
+    "VTEX - Profile System.json": "79445315a8dedf46f3012c8899ffe994a557171d",
+    "VTEX - Promotions & Taxes API - v2.json": "77b2e9940633b833ca84cda900b0398681851665",
+    "VTEX - Promotions & Taxes API.json": "8aa830579497c551136414ebce6e3c8f178f2a2d",
+    "VTEX - Punchout API.json": "803a27b549f803c9be7c1b4ed62d30fb318ce77c",
+    "VTEX - Recommendations BFF API.json": "e1322cee7c823bb28f44b35d8a9ccf093dca220d",
+    "VTEX - Reviews and Ratings API.json": "774d0d8d75dd7149cf77dfa83b162e703d601c74",
+    "VTEX - SKU Bindings API.json": "e054846df475fbdf7f9d6a5151fba9f4e5d63aed",
+    "VTEX - SSL Certificates API.json": "8e5e8dad37178948070e29f51f856bd3c32e390f",
+    "VTEX - Search API.json": "611bc110bfde2db0f159f2833cd84158cc20a4cb",
+    "VTEX - Session Manager API.json": "4292b33860bb74a012f6860c39a07b5418fd434a",
+    "VTEX - Shopee Integration API.json": "f1e207521059ed854a34f95cf39a2c359e0410dd",
+    "VTEX - Storefront Roles API.json": "d40e4e81fbf9e279cdcc872b6080f9d9bfbfc7a9",
+    "VTEX - Subscriptions API v3.json": "f054cb8bfee2479752cb1759ce3d03c18ca44ab9",
+    "VTEX - Tracking.json": "393a89742d179034ea631fb0924f7c4ff6481fde",
+    "VTEX - User Rights API.json": "12e9948e326a5d5146332d53551fc22bd2949a84",
+    "VTEX - VTEX Do API.json": "6cbd6491f58eadb678baaa9f66a85006ab59d652",
+    "VTEX - VTEX ID API.json": "c4206af9702c1972c711c5b9a160a70f3747408d",
+    "VTEX - VTEX Shipping Network API.json": "fab6c929f487b1be10856226f1c4fe600125fb4c",
+    "VTEX - mTLS API.json": "80bd722558506a917bb183b06d6fee7c86d72efa"
+  }
+}
+```
+
+- [ ] **Step 6: Replace `scripts/fetch-schemas.ts` with**
+
+```ts
+/**
+ * npm run fetch-schemas                    downloads the locked schemas into schemas/ (verified)
+ * npm run fetch-schemas -- --update-lock <commit-sha>
+ *                                          re-pins: rewrites scripts/schemas.lock.json from the
+ *                                          GitHub listing at that commit; review the diff
+ */
+import { readFile, writeFile } from 'node:fs/promises'
+import { fetchSchemas, listSchemaLock } from './codegen/fetch.js'
+import { parseSchemaLock } from './codegen/integrity.js'
+
+const LOCK_FILE = 'scripts/schemas.lock.json'
+
+async function main(args: string[]): Promise<void> {
+  if (args[0] === '--update-lock') {
+    if (!args[1]) throw new Error('Usage: npm run fetch-schemas -- --update-lock <commit-sha>')
+    // Optional: avoids the anonymous GitHub API rate limit.
+    const lock = await listSchemaLock({ ref: args[1], token: process.env.GITHUB_TOKEN })
+    await writeFile(LOCK_FILE, `${JSON.stringify(lock, null, 2)}\n`)
+    console.log(`Wrote ${LOCK_FILE}: ${Object.keys(lock.files).length} schemas at ${lock.ref}. Review the diff before committing.`)
+    return
+  }
+  const lock = parseSchemaLock(JSON.parse(await readFile(LOCK_FILE, 'utf8')))
+  const count = await fetchSchemas({ lock, outDir: 'schemas', log: (line) => console.log(line) })
+  console.log(`\nDownloaded and verified ${count} API schemas from ${lock.repo}@${lock.ref}.`)
+}
+
+main(process.argv.slice(2)).catch((err) => {
+  console.error(err instanceof Error ? err.message : err)
+  process.exit(1)
+})
+```
+
+- [ ] **Step 7: Run the tests**
 
 ```bash
-npx vitest run test/codegen/integrity.test.ts
+npx vitest run test/codegen/integrity.test.ts test/codegen/fetch.test.ts
 npm run typecheck
 ```
 
 Expected: PASS; typecheck clean. Do not run `fetch-schemas` here: the committed `schemas/` is still the generator input until Task 15.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add scripts/codegen/integrity.ts scripts/fetch-schemas.ts test/codegen/integrity.test.ts
+git add scripts/codegen/integrity.ts scripts/codegen/fetch.ts scripts/schemas.lock.json scripts/fetch-schemas.ts test/codegen/integrity.test.ts test/codegen/fetch.test.ts
 git commit -F - <<'EOF'
-fix(scripts): verify schema downloads by git blob SHA and source host
+fix(scripts): lock-file schema downloads: pinned URLs, blob SHAs, safe names, atomic swap
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 EOF
 ```
 
 ---
-
 ## Task 14: Codegen driver and regeneration (spec §4.1–§4.7)
 
 **Files:**
@@ -5673,7 +6554,36 @@ function client() {
   return { fetchMock, vtex: new VtexClient({ account: 'acme', appKey: 'K', appToken: 'T', fetch: fetchMock }) }
 }
 
+/** Every host template credentials may be sent to. A schema re-pin that changes this list needs review. */
+const EXPECTED_TEMPLATES = [
+  'https://api.vtex.com',
+  'https://api.vtex.com/{accountName}',
+  'https://api.{environment}.com.br',
+  'https://logistics.{environment}.com.br/{accountName}',
+  'https://portal.{environment}.com.br',
+  'https://prchub.{environment}.com.br',
+  'https://rnb.{environment}.com.br/api/pricing/pvt',
+  'https://sp.vtex.com/event-api/v1/{accountName}',
+  'https://{accountName}.myvtex.com',
+  'https://{accountName}.myvtex.com/pickpack/bin-location',
+  'https://{accountName}.myvtex.com/pickpack/warehouses',
+  'https://{accountName}.pcs.vtexcommercestable.com.br',
+  'https://{accountName}.vtexcommercestable.com.br',
+  'https://{accountName}.vtexpayments.com.br',
+  'https://{accountName}.{environment}.com.br',
+  'https://{accountName}.{environment}.com.br/api',
+  'https://{accountName}.{environment}.com.br/api/do',
+  'https://{accountName}.{environment}.com.br/api/intelligent-search/v0',
+  'https://{accountName}.{environment}.com.br/api/intelligent-search/v1',
+  'https://{accountName}.{environment}.com.br/api/io/_v/api/intelligent-search',
+  'https://{accountName}.{environment}.com.br/vtex_pickandpack',
+].sort()
+
 describe('generated hosts', () => {
+  it('uses exactly the reviewed set of server templates', () => {
+    expect(generatedServerTemplates().sort()).toEqual(EXPECTED_TEMPLATES)
+  })
+
   it('every generated server template resolves to an allowlisted https VTEX origin', () => {
     const templates = generatedServerTemplates()
     expect(templates.length).toBeGreaterThan(10)
@@ -5722,7 +6632,8 @@ Run: `npx vitest run test/generated-hosts.test.ts`
 Expected: FAIL:
 - gift cards still go to `/giftcards` on the account host, with no body;
 - Pricing goes to the account host;
-- the myvtex API goes to the account host.
+- the myvtex API goes to the account host;
+- the set of server templates differs from the reviewed list.
 
 - [ ] **Step 3: Replace `scripts/codegen.ts` with**
 
@@ -5731,7 +6642,8 @@ Expected: FAIL:
  * Codegen driver.
  *
  * Reads every OpenAPI document in `schemas/*.json` (downloaded by `npm run fetch-schemas`;
- * not committed) and emits, per API:
+ * not committed), after checking that the set and every git blob SHA match
+ * `scripts/schemas.lock.json`, and emits, per API:
  *   - `src/generated/<slug>/types.ts`  — every `components.schemas` entry as an exported type.
  *   - `src/generated/<slug>/index.ts`  — a class per tag (namespace), grouping generated
  *     methods, aggregated into one exported `<Api>` class constructed from a `VtexHttpClient`.
@@ -5762,6 +6674,7 @@ import { schemaToType } from './codegen/types.js'
 import { generateMethod } from './codegen/operation.js'
 import { applyOverrides, OVERRIDES } from './codegen/overrides.js'
 import { pickServer, trimBasePathOverlap } from './codegen/servers.js'
+import { gitBlobSha, parseSchemaLock } from './codegen/integrity.js'
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const
 type HttpMethod = (typeof HTTP_METHODS)[number]
@@ -5881,6 +6794,20 @@ async function main() {
     throw new Error('schemas/ is missing: run `npm run fetch-schemas` first (schemas are not committed).')
   }
   const files = (await readdir(dir)).filter((f) => f.endsWith('.json')).sort()
+  // Generate only from exactly the reviewed, locked schemas: no stale, extra or edited files.
+  const lock = parseSchemaLock(JSON.parse(await readFile('scripts/schemas.lock.json', 'utf8')))
+  const locked = Object.keys(lock.files).sort()
+  if (files.join('\n') !== locked.join('\n')) {
+    throw new Error('schemas/ does not match scripts/schemas.lock.json: run `npm run fetch-schemas`.')
+  }
+  const contents = new Map<string, Buffer>()
+  for (const file of files) {
+    const bytes = await readFile(join(dir, file))
+    if (gitBlobSha(bytes) !== lock.files[file]) {
+      throw new Error(`schemas/${file} differs from the locked blob: run \`npm run fetch-schemas\`.`)
+    }
+    contents.set(file, bytes)
+  }
   await rm('src/generated', { recursive: true, force: true })
   await mkdir('src/generated', { recursive: true })
 
@@ -5900,7 +6827,7 @@ async function main() {
   let basePathsTrimmed = 0
 
   for (const file of files) {
-    const doc = JSON.parse(await readFile(join(dir, file), 'utf8'))
+    const doc = JSON.parse(contents.get(file)!.toString('utf8'))
     overridesApplied += applyOverrides(file, doc)
     const title: string = doc.info?.title ?? file.replace(/\.json$/, '')
     // Disambiguation source for collisions: several files legitimately share an
@@ -6066,8 +6993,8 @@ Run: `npm run codegen`
 Expected output, exactly:
 
 ```
-Generated 63 raw APIs (235 namespaces, 966 methods) and 75 type modules into src/generated/.
-Excluded 95 operations served by non-VTEX or variable hosts (12 APIs in full: Ads API, Antifraud Provider API, B2B Password Migration Protocol, External Promotions Protocol API, Giftcard Provider Protocol, Marketplace Protocol - External Seller Fulfillment, Marketplace Protocol - External Seller Marketplace, Payment Provider Protocol, Pick and Pack API, Pick and Pack Last Mile Protocol API, Punchout API, Tracking).
+Generated 62 raw APIs (233 namespaces, 964 methods) and 75 type modules into src/generated/.
+Excluded 97 operations served by non-VTEX or variable hosts (13 APIs in full: Ads API, Antifraud Provider API, B2B Password Migration Protocol, External Promotions Protocol API, Giftcard Provider Protocol, Marketplace Protocol - External Seller Fulfillment, Marketplace Protocol - External Seller Marketplace, Payment Provider Protocol, Pick and Pack API, Pick and Pack Last Mile Protocol API, Punchout API, Tracking, VTEX Shipping Network API).
 Applied 5 schema overrides; trimmed 7 overlapping base paths.
 ```
 
@@ -6122,6 +7049,8 @@ dist
 *.log
 .DS_Store
 schemas/
+schemas.old/
+.schemas-*/
 coverage/
 .env
 .env.*
@@ -6155,8 +7084,8 @@ git add .gitignore
 git commit -F - <<'EOF'
 chore: stop committing upstream OpenAPI schemas; extend .gitignore
 
-Schemas are downloaded on demand by `npm run fetch-schemas` (pinned commit,
-verified by git blob SHA). The generated code stays committed.
+Schemas are downloaded on demand by `npm run fetch-schemas` from the commit and
+blob SHAs in scripts/schemas.lock.json. The generated code stays committed.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 EOF
@@ -6876,7 +7805,7 @@ The generated code in src/generated/ (method signatures and TypeScript types)
 is derived from the OpenAPI documents published by VTEX at
 https://github.com/vtex/openapi-schemas (© VTEX). Those documents are not
 redistributed in this repository: `npm run fetch-schemas` downloads them from
-the upstream repository at a pinned commit.
+the upstream repository at the commit pinned in scripts/schemas.lock.json.
 ```
 
 - [ ] **Step 3: Create `CHANGELOG.md`**
@@ -6906,7 +7835,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - Redirects are handled manually: same origin only, at most 3 hops.
 - `console.log(client)` and `JSON.stringify(client)` no longer reveal credentials.
 - The factory takes only credentials from its resolver, normalizes accounts, bounds its cache and evicts a client after 401/403.
-- Codegen refuses unsafe schema paths. Schema downloads are verified by host and git blob SHA.
+- Codegen refuses unsafe schema paths, parameter names and server templates, and never sends credentials to third-party VTEX IO app routes (`app.io.vtex.com`).
 
 ### Added
 - Per-call options on every generated and facade method: `headers`, `signal`, `timeoutMs`, `retry`, `idempotent`.
@@ -6937,7 +7866,7 @@ Unofficial TypeScript SDK for the [VTEX APIs](https://developers.vtex.com/docs/a
 It is generated from VTEX's public OpenAPI documents and adds hand-written facades over the most used APIs.
 This project is not affiliated with, endorsed by or sponsored by VTEX.
 
-- **`raw.*`**: 966 operations across 63 VTEX APIs.
+- **`raw.*`**: 964 operations across 62 VTEX APIs.
   - Each call goes to the host and base path its API reference declares: for example Gift Card under `/api`, Pricing on `api.vtex.com/{account}`, and several APIs on `{account}.myvtex.com`.
   - Protocols that *you* implement are not callable here: payment, antifraud and gift card providers, external promotions, and the seller protocols. Their types are exported.
 - **Facades**: orders, catalog, master data, pricing, logistics and checkout, with auto-pagination.
@@ -7164,7 +8093,8 @@ npm ci
 npm run typecheck
 npm test
 npm run build
-npm run fetch-schemas   # download the pinned OpenAPI documents (verified)
+npm run fetch-schemas   # download the locked OpenAPI documents (verified)
+npm run fetch-schemas -- --update-lock <commit-sha>   # re-pin; review the lock diff
 npm run codegen         # regenerate src/generated from them
 VTEX_ACCOUNT=... VTEX_APP_KEY=... VTEX_APP_TOKEN=... npm run live-check   # optional, read-only
 ```
@@ -7245,18 +8175,20 @@ They are server-side secrets: never ship them to a browser. The SDK is Node-only
 
 `src/generated/` is produced by `scripts/codegen.ts` from the OpenAPI documents at
 [github.com/vtex/openapi-schemas](https://github.com/vtex/openapi-schemas). They are pinned to commit
-`1ca3d11c8dfc9dd17484eabad051d364e767c50d` in `scripts/fetch-schemas.ts`.
+`1ca3d11c8dfc9dd17484eabad051d364e767c50d` in `scripts/schemas.lock.json`, together with each file's git blob SHA.
 
 **How it is produced**
-- The schemas are not committed. `npm run fetch-schemas` downloads them into `schemas/`, accepting only `raw.githubusercontent.com` and verifying each file's git blob SHA against the pinned listing.
+- The schemas are not committed. `npm run fetch-schemas` downloads exactly the files in the lock from `raw.githubusercontent.com/vtex/openapi-schemas/<commit>/`, verifies each git blob SHA and replaces `schemas/` only when every file verifies.
+- `npm run codegen` refuses to run when `schemas/` has extra, missing or edited files.
+- Re-pinning (`--update-lock <commit>`) rewrites the lock from GitHub's listing; the lock diff is the review point.
 - `npm run codegen` applies targeted fixes from `scripts/codegen/overrides.ts`, picks each operation's server (`scripts/codegen/servers.ts`) and regenerates everything. Consumers never run codegen.
 - CI regenerates from the pinned schemas and fails if the result differs from the committed tree.
 - `npm run typecheck` is a separate step; codegen itself does not run `tsc`.
 
 **Coverage at the current pin**
 - 75 OpenAPI documents with 1,061 operations.
-- 966 operations in 63 APIs are callable through `raw.*`.
-- 95 operations are excluded, 12 APIs of them in full, because their servers are third-party or variable hosts: provider protocols, Ads, Pick and Pack, Punchout and Tracking. Their types are still exported.
+- 964 operations in 62 APIs are callable through `raw.*`.
+- 97 operations are excluded, 13 APIs of them in full, because their servers are third-party or variable hosts: provider protocols, Ads, Pick and Pack, Punchout, Tracking and the Shipping Network API (served by third-party VTEX IO apps on `app.io.vtex.com`, which must never receive the merchant's app key). Their types are still exported.
 - 7 Pricing operations declare a duplicated `/pricing` base path, which the generator trims.
 
 **Method names**
@@ -7369,8 +8301,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run fetch-schemas
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run codegen
       - name: Generated code matches the committed tree
         run: |
@@ -7484,7 +8414,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  464 passed (464)`;
+- `Test Files  26 passed (26)` and `Tests  565 passed (565)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
