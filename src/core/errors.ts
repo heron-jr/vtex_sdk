@@ -20,7 +20,7 @@ export class VtexRequestError extends VtexError {
   constructor(message: string, opts: { status: number; body: unknown; requestId?: string; retryAfter?: number }) {
     super(message)
     this.status = opts.status
-    Object.defineProperty(this, 'body', { value: opts.body, enumerable: false, writable: false, configurable: true })
+    Object.defineProperty(this, 'body', { value: opts.body, enumerable: false, writable: true, configurable: true })
     this.requestId = opts.requestId
     this.retryAfter = opts.retryAfter
   }
@@ -62,7 +62,7 @@ export class VtexUnexpectedResponseError extends VtexError {
 
   constructor(message: string, body: unknown) {
     super(message)
-    Object.defineProperty(this, 'body', { value: body, enumerable: false, writable: false, configurable: true })
+    Object.defineProperty(this, 'body', { value: body, enumerable: false, writable: true, configurable: true })
   }
 }
 

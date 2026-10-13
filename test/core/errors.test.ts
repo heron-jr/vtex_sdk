@@ -1,5 +1,5 @@
 import { inspect } from 'node:util'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   mapResponseToError, VtexAuthError, VtexNotFoundError,
   VtexValidationError, VtexRateLimitError, VtexServerError, VtexRequestError,
@@ -51,11 +51,26 @@ describe('mapResponseToError', () => {
     expect(err).toBeInstanceOf(VtexRateLimitError)
     expect(err.retryAfter).toBeUndefined()
   })
+  it('converts delta-seconds Retry-After to whole seconds, rounding up', () => {
+    const retryAfter = (value: string) => (mapResponseToError(429, {}, h({ 'Retry-After': value })) as VtexRateLimitError).retryAfter
+    expect(retryAfter('1.5')).toBe(2)
+    expect(retryAfter('0')).toBe(0)
+  })
   it('parses an HTTP-date Retry-After into seconds', () => {
-    const inTenSeconds = new Date(Date.now() + 10_000).toUTCString()
-    const err = mapResponseToError(429, {}, h({ 'Retry-After': inTenSeconds })) as VtexRateLimitError
-    expect(err.retryAfter).toBeGreaterThanOrEqual(8)
-    expect(err.retryAfter).toBeLessThanOrEqual(11)
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-12T12:00:00Z'))
+    try {
+      const retryAfter = (value: string) => (mapResponseToError(429, {}, h({ 'Retry-After': value })) as VtexRateLimitError).retryAfter
+      expect(retryAfter('Mon, 12 Oct 2026 12:00:10 GMT')).toBe(10)
+      expect(retryAfter('Mon, 12 Oct 2026 11:00:00 GMT')).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+  it('ignores Retry-After values that are neither delta-seconds nor an HTTP-date', () => {
+    for (const value of ['abc 5', '-5', '.5', '2026-10-12', '9'.repeat(400)]) {
+      expect((mapResponseToError(429, {}, h({ 'Retry-After': value })) as VtexRateLimitError).retryAfter).toBeUndefined()
+    }
   })
   it('unmapped status code (405) maps to plain VtexRequestError, not a subclass', () => {
     const err = mapResponseToError(405, {}, h())
