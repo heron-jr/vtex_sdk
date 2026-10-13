@@ -1,32 +1,30 @@
-import { mkdir, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { assertSchemaDownloadUrl, gitBlobSha } from './codegen/integrity.js'
+/**
+ * npm run fetch-schemas                    downloads the locked schemas into schemas/ (verified)
+ * npm run fetch-schemas -- --update-lock <commit-sha>
+ *                                          re-pins: rewrites scripts/schemas.lock.json from the
+ *                                          GitHub listing at that commit; review the diff
+ */
+import { readFile, writeFile } from 'node:fs/promises'
+import { fetchSchemas, listSchemaLock } from './codegen/fetch.js'
+import { parseSchemaLock } from './codegen/integrity.js'
 
-// Pin to a specific commit for reproducibility. Update deliberately.
-const REF = '1ca3d11c8dfc9dd17484eabad051d364e767c50d'
-const API = `https://api.github.com/repos/vtex/openapi-schemas/contents?ref=${REF}`
-const SKIP = new Set(['config.json', 'package.json', 'package-lock.json', 'rating-config.json'])
+const LOCK_FILE = 'scripts/schemas.lock.json'
 
-async function main() {
-  const headers: Record<string, string> = { 'User-Agent': 'vtex-sdk-codegen' }
-  // Optional: avoids the anonymous GitHub API rate limit (e.g. in CI).
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
-  const res = await fetch(API, { headers })
-  if (!res.ok) throw new Error(`GitHub listing failed: ${res.status}`)
-  const entries = (await res.json()) as Array<{ name: string; download_url: string; sha: string }>
-  const schemas = entries.filter((e) => e.name.endsWith('.json') && !SKIP.has(e.name))
-  await mkdir('schemas', { recursive: true })
-  for (const e of schemas) {
-    const url = assertSchemaDownloadUrl(e.download_url)
-    const raw = await fetch(url, { headers: { 'User-Agent': 'vtex-sdk-codegen' }, redirect: 'error' })
-    if (!raw.ok) throw new Error(`Download failed for ${e.name}: ${raw.status}`)
-    const content = new Uint8Array(await raw.arrayBuffer())
-    const sha = gitBlobSha(content)
-    if (sha !== e.sha) throw new Error(`Integrity check failed for ${e.name}: expected blob ${e.sha}, got ${sha}`)
-    await writeFile(join('schemas', e.name), content)
-    console.log(`saved ${e.name}`)
+async function main(args: string[]): Promise<void> {
+  if (args[0] === '--update-lock') {
+    if (!args[1]) throw new Error('Usage: npm run fetch-schemas -- --update-lock <commit-sha>')
+    // Optional: avoids the anonymous GitHub API rate limit.
+    const lock = await listSchemaLock({ ref: args[1], token: process.env.GITHUB_TOKEN })
+    await writeFile(LOCK_FILE, `${JSON.stringify(lock, null, 2)}\n`)
+    console.log(`Wrote ${LOCK_FILE}: ${Object.keys(lock.files).length} schemas at ${lock.ref}. Review the diff before committing.`)
+    return
   }
-  console.log(`\nDownloaded and verified ${schemas.length} API schemas (skipped ${SKIP.size} tooling files).`)
+  const lock = parseSchemaLock(JSON.parse(await readFile(LOCK_FILE, 'utf8')))
+  const count = await fetchSchemas({ lock, outDir: 'schemas', log: (line) => console.log(line) })
+  console.log(`\nDownloaded and verified ${count} API schemas from ${lock.repo}@${lock.ref}.`)
 }
 
-main().catch((err) => { console.error(err); process.exit(1) })
+main(process.argv.slice(2)).catch((err) => {
+  console.error(err instanceof Error ? err.message : err)
+  process.exit(1)
+})
