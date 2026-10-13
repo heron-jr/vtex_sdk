@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { TotalsUpdated, ItemsUpdated, ClientProfileDataUpdated, GiftRegistryDataUpdated, MarketingDataUpdated, RatesAndBenefitsDataUpdated, ShippingDataUpdated, PickupStoreInfoUpdated, PaymentDataUpdated, PackageAttachmentUpdated, SellersUpdated, InvoiceDataUpdated, ChangesAttachmentUpdated, CallCenterOperatorDataUpdated, StorePreferencesDataUpdated, MarketplaceUpdated, ItemMetadataUpdated, SubscriptionDataUpdated, TaxDataUpdated, CancellationDataUpdated, CancellationRequestsUpdated, ClientPreferencesDataUpdated, Total, Item, ItemAttachment, AdditionalInfo, Dimension, ClientProfileData, RatesAndBenefitsData, ShippingData, Address, LogisticsInfo, Sla, PickupStoreInfo, DeliveryId, SelectedAddress, PaymentData, Transaction, Payment, PackageAttachment, Seller, ChangesAttachment, ChangesDatum, ItemsRemoved, Receipt, StorePreferencesData, CurrencyFormatInfo, Marketplace, ListOrders, List, Paging, Stats, Stats1, TotalValue, Facets, Origin, Fulfillment, Marketplace1, CurrencyCode, BRL, TotalItems, Facets1, Origin1, Fulfillment1, Marketplace2, CurrencyCode1, BRL1, UpdatepartialinvoiceSendTrackingNumberRequest, UpdatepartialinvoiceSendTrackingNumber, UpdateTrackingStatusRequest, Event, UpdateTrackingStatus, GetConversation, From, To, GetPaymenttransaction, Payment1, ConnectorResponses, ConfirmitemfeedorderstatusRequest, Getfeedorderstatus, HookFilter, HookConfigurationRequest, Hook, Headers, HookConfiguration, Origin2, Userorderslist, List1, Item2, Stats2, Stats3, TotalValue1, TotalItems1, Userorderdetails, Createchange, Replace, Response202, Replace1, PaymentDataV2, ShippingData1, Item3, AdditionalInfoV2, LogisticsInfo1, SlaV2, PickupStoreInfoV2, OriginV2, Settings, From2, Item4, ShippingData3, LogisticsInfo2, DeliveryIdV2, DeliveryChannel, To2, PriceDefinition, ChangeOrderSettingsResponse, AuthorizationPolicyData, ChangeSummary, DeliveryIdResponse } from './types.js'
 
 class OrdersApi_orders {
@@ -6,7 +8,7 @@ class OrdersApi_orders {
 
   getOrder(params: {
   orderId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderId?: string
   sequence?: string
   marketplaceOrderId?: string
@@ -15,7 +17,7 @@ class OrdersApi_orders {
   origin?: "Marketplace" | "Fulfillment" | "Chain"
   affiliateId?: string
   salesChannel?: string
-  merchantName?: string
+  merchantName?: string | null
   status?: string
   workflowIsInError?: boolean
   statusDescription?: string
@@ -24,7 +26,7 @@ class OrdersApi_orders {
   lastChange?: string
   orderGroup?: string
   followUpEmail?: string
-  lastMessage?: string
+  lastMessage?: string | null
   hostname?: string
   isCompleted?: boolean
   roundingError?: number
@@ -32,27 +34,27 @@ class OrdersApi_orders {
   allowCancellation?: boolean
   allowEdition?: boolean
   isCheckedIn?: boolean
-  authorizedDate?: string
-  invoicedDate?: string
-  cancelReason?: string
-  checkedInPickupPointId?: string
+  authorizedDate?: string | null
+  invoicedDate?: string | null
+  cancelReason?: string | null
+  checkedInPickupPointId?: string | null
   totals?: TotalsUpdated
   sellers?: SellersUpdated
   clientPreferencesData?: ClientPreferencesDataUpdated
   cancellationData?: {
-  RequestedByUser?: boolean
-  RequestedBySystem?: boolean
-  RequestedBySellerNotification?: boolean
-  RequestedByPaymentNotification?: boolean
-  Reason?: string
-  CancellationDate?: string
-}
+  RequestedByUser?: boolean | null
+  RequestedBySystem?: boolean | null
+  RequestedBySellerNotification?: boolean | null
+  RequestedByPaymentNotification?: boolean | null
+  Reason?: string | null
+  CancellationDate?: string | null
+} | null
   taxData?: TaxDataUpdated
   subscriptionData?: {
-  SubscriptionGroupId?: string
+  SubscriptionGroupId?: string | null
   Subscriptions?: {
   ExecutionCount?: number
-  PriceAtSubscriptionDate?: number
+  PriceAtSubscriptionDate?: number | null
   ItemIndex?: number
   Plan?: {
   type?: string
@@ -62,11 +64,11 @@ class OrdersApi_orders {
 }
   validity?: {
   begin?: string
-  end?: string
+  end?: string | null
 }
 }
-}[]
-}
+}[] | null
+} | null
   itemMetadata?: {
   Items?: {
   Id?: string
@@ -82,15 +84,19 @@ class OrdersApi_orders {
   Id?: string
   Name?: string
   Required?: boolean
-  InputValues?: Record<string, unknown>
-  Composition?: Record<string, unknown>
-}[]
+  InputValues?: {
+  [key: string]: unknown
+} | null
+  Composition?: {
+  [key: string]: unknown
+} | null
+}[] | null
 }[]
 }
   marketplace?: MarketplaceUpdated
   storePreferencesData?: StorePreferencesDataUpdated
   customData?: {
-  customApps?: {
+  customApps?: ({
   id?: string
   major?: number
   fields?: {
@@ -99,7 +105,7 @@ class OrdersApi_orders {
   marketplacePaymentCreditCardBrands?: string
   marketplacePaymentMethods?: string
 }
-}[]
+} | null)[] | null
   customFields?: {
   linkedEntity?: {
   type?: string
@@ -110,9 +116,11 @@ class OrdersApi_orders {
   value?: string
 }[]
 }[]
-}
-  commercialConditionData?: string
-  openTextField?: Record<string, unknown>
+} | null
+  commercialConditionData?: string | null
+  openTextField?: {
+  [key: string]: string
+} | null
   invoiceData?: InvoiceDataUpdated
   changesAttachment?: ChangesAttachmentUpdated
   callCenterOperatorData?: CallCenterOperatorDataUpdated
@@ -122,21 +130,21 @@ class OrdersApi_orders {
   itemIndex?: number
   quantity?: number
   price?: number
-  description?: string
-  unitMultiplier?: number
+  description?: string | null
+  unitMultiplier?: number | null
 }[]
-  courier?: string
+  courier?: string | null
   invoiceNumber?: string
   invoiceValue?: number
-  invoiceUrl?: string
+  invoiceUrl?: string | null
   issuanceDate?: string
-  trackingNumber?: string
-  invoiceKey?: string
-  trackingUrl?: string
+  trackingNumber?: string | null
+  invoiceKey?: string | null
+  trackingUrl?: string | null
   embeddedInvoice?: string
   type?: "Output" | "Input"
   courierStatus?: {
-  status?: string
+  status?: string | null
   finished?: boolean
   deliveredDate?: string
   data?: {
@@ -146,27 +154,27 @@ class OrdersApi_orders {
   description?: string
   createDate?: string
 }[]
-}
-  cfop?: string
+} | null
+  cfop?: string | null
   restitutions?: {
   Refund?: {
   value?: number
-  giftCardData?: string
+  giftCardData?: string | null
   items?: {
-  useFreight?: boolean
+  useFreight?: boolean | null
   isCompensation?: boolean
   compensationValue?: number
   id?: string
   quantity?: number
   price?: number
   description?: string
-}[]
+}[] | null
 }
 }
   volumes?: number
-  EnableInferItems?: boolean
+  EnableInferItems?: boolean | null
 }[]
-}
+} | null
   paymentData?: PaymentDataUpdated
   shippingData?: {
   id?: string
@@ -174,8 +182,8 @@ class OrdersApi_orders {
   addressType?: string
   receiverName?: string
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -184,7 +192,7 @@ class OrdersApi_orders {
   number?: string
   neighborhood?: string
   complement?: string
-  reference?: string
+  reference?: string | null
   geoCoordinates?: number[]
 }
   logisticsInfo?: {
@@ -194,7 +202,7 @@ class OrdersApi_orders {
   price?: number
   listPrice?: number
   sellingPrice?: number
-  deliveryWindow?: string
+  deliveryWindow?: string | null
   deliveryCompany?: string
   shippingEstimate?: string
   shippingEstimateDate?: string
@@ -202,33 +210,33 @@ class OrdersApi_orders {
   id?: string
   name?: string
   shippingEstimate?: string
-  deliveryWindow?: string
+  deliveryWindow?: string | null
   price?: number
   selectedDeliveryChannel?: string
   pickupStoreInfo?: {
-  additionalInfo?: string
+  additionalInfo?: string | null
   address?: {
-  addressType?: string
-  receiverName?: string
-  addressId?: string
-  versionId?: string
-  entityId?: string
-  postalCode?: string
-  city?: string
-  state?: string
-  country?: string
-  street?: string
-  number?: string
-  neighborhood?: string
-  complement?: string
-  reference?: string
-  geoCoordinates?: number[]
-}
-  dockId?: string
-  friendlyName?: string
+  addressType?: string | null
+  receiverName?: string | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
+  postalCode?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  street?: string | null
+  number?: string | null
+  neighborhood?: string | null
+  complement?: string | null
+  reference?: string | null
+  geoCoordinates?: (number | null)[] | null
+} | null
+  dockId?: string | null
+  friendlyName?: string | null
   isPickupStore?: boolean
 }
-  polygonName?: string
+  polygonName?: string | null
   lockTTL?: string
   pickupPointId?: string
   transitTime?: string
@@ -242,7 +250,7 @@ class OrdersApi_orders {
   quantity?: number
   warehouseId?: string
   accountCarrierName?: string
-  kitItemDetails?: string[]
+  kitItemDetails?: string[] | null
 }[]
   deliveryChannels?: {
   id?: string
@@ -250,29 +258,29 @@ class OrdersApi_orders {
 }[]
   selectedDeliveryChannel?: string
   pickupStoreInfo?: {
-  additionalInfo?: string
-  address?: string
-  dockId?: string
-  friendlyName?: string
+  additionalInfo?: string | null
+  address?: string | null
+  dockId?: string | null
+  friendlyName?: string | null
   isPickupStore?: boolean
-}
-  addressId?: string
-  versionId?: string
-  entityId?: string
-  polygonName?: string
-  pickupPointId?: string
-  transitTime?: string
+} | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
+  polygonName?: string | null
+  pickupPointId?: string | null
+  transitTime?: string | null
 }[]
   trackingHints?: {
   trackingId?: string
   courierName?: string
   trackingUrl?: string
   trackingLabel?: string
-}[]
+}[] | null
   selectedAddresses?: {
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   addressType?: string
   receiverName?: string
   street?: string
@@ -283,7 +291,7 @@ class OrdersApi_orders {
   city?: string
   state?: string
   country?: string
-  reference?: string
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   contactInformation?: {
@@ -301,12 +309,14 @@ class OrdersApi_orders {
   ratesAndBenefitsData?: {
   id?: string
   rateAndBenefitsIdentifiers?: {
-  description?: string
+  description?: string | null
   featured?: boolean
   id?: string
   name?: string
-  matchedParameters?: Record<string, unknown>
-  additionalInfo?: Record<string, unknown>
+  matchedParameters?: {
+  [key: string]: unknown
+}
+  additionalInfo?: Record<string, unknown> | null
 }[]
 }
   marketingData?: {
@@ -320,14 +330,14 @@ class OrdersApi_orders {
   utmipage?: string
   utmiPart?: string
   marketingTags?: string[]
-}
+} | null
   giftRegistryData?: {
   giftRegistryId?: string
   giftRegistryType?: string
   giftRegistryTypeName?: string
   addressId?: string
   description?: string
-}
+} | null
   clientProfileData?: {
   id?: string
   email?: string
@@ -336,26 +346,26 @@ class OrdersApi_orders {
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   userProfileId?: string
-  userProfileVersion?: string
-  customerClass?: string
-  customerCode?: string
+  userProfileVersion?: string | null
+  customerClass?: string | null
+  customerCode?: string | null
 }
   items?: {
   uniqueId?: string
   id?: string
   productId?: string
-  ean?: string
+  ean?: string | null
   lockId?: string
   itemAttachment?: {
   content?: Record<string, unknown>
-  name?: string
+  name?: string | null
 }
   attachments?: string[]
   quantity?: number
@@ -364,7 +374,7 @@ class OrdersApi_orders {
   refId?: string
   price?: number
   listPrice?: number
-  manualPrice?: string
+  manualPrice?: string | null
   priceTags?: string[]
   imageUrl?: string
   detailUrl?: string
@@ -376,15 +386,15 @@ class OrdersApi_orders {
   params?: string[]
   offerings?: string[]
   attachmentOfferings?: {
-  name?: string
-  required?: boolean
-  schema?: Record<string, unknown>
-}[]
+  name?: string | null
+  required?: boolean | null
+  schema?: Record<string, unknown> | null
+}[] | null
   sellerSku?: string
-  priceValidUntil?: string
+  priceValidUntil?: string | null
   commission?: number
   tax?: number
-  preSaleDate?: string
+  preSaleDate?: string | null
   additionalInfo?: {
   brandName?: string
   brandId?: string
@@ -402,15 +412,15 @@ class OrdersApi_orders {
   weight?: number
   width?: number
 }
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
   measurementUnit?: string
   unitMultiplier?: number
   sellingPrice?: number
   isGift?: boolean
-  shippingPrice?: string
+  shippingPrice?: string | null
   rewardValue?: number
   freightCommission?: number
   priceDefinitions?: {
@@ -421,12 +431,12 @@ class OrdersApi_orders {
   calculatedSellingPrice?: number
   total?: number
 }
-  taxCode?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
-  callCenterOperator?: string
-  serialNumbers?: string
-  assemblies?: string[]
+  taxCode?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
+  callCenterOperator?: string | null
+  serialNumbers?: string | null
+  assemblies?: string[] | null
   costPrice?: number
 }[]
   marketplaceItems?: string[]
@@ -441,7 +451,7 @@ class OrdersApi_orders {
   origin?: "Marketplace" | "Fulfillment" | "Chain"
   affiliateId?: string
   salesChannel?: string
-  merchantName?: string
+  merchantName?: string | null
   status?: string
   workflowIsInError?: boolean
   statusDescription?: string
@@ -450,7 +460,7 @@ class OrdersApi_orders {
   lastChange?: string
   orderGroup?: string
   followUpEmail?: string
-  lastMessage?: string
+  lastMessage?: string | null
   hostname?: string
   isCompleted?: boolean
   roundingError?: number
@@ -458,27 +468,27 @@ class OrdersApi_orders {
   allowCancellation?: boolean
   allowEdition?: boolean
   isCheckedIn?: boolean
-  authorizedDate?: string
-  invoicedDate?: string
-  cancelReason?: string
-  checkedInPickupPointId?: string
+  authorizedDate?: string | null
+  invoicedDate?: string | null
+  cancelReason?: string | null
+  checkedInPickupPointId?: string | null
   totals?: TotalsUpdated
   sellers?: SellersUpdated
   clientPreferencesData?: ClientPreferencesDataUpdated
   cancellationData?: {
-  RequestedByUser?: boolean
-  RequestedBySystem?: boolean
-  RequestedBySellerNotification?: boolean
-  RequestedByPaymentNotification?: boolean
-  Reason?: string
-  CancellationDate?: string
-}
+  RequestedByUser?: boolean | null
+  RequestedBySystem?: boolean | null
+  RequestedBySellerNotification?: boolean | null
+  RequestedByPaymentNotification?: boolean | null
+  Reason?: string | null
+  CancellationDate?: string | null
+} | null
   taxData?: TaxDataUpdated
   subscriptionData?: {
-  SubscriptionGroupId?: string
+  SubscriptionGroupId?: string | null
   Subscriptions?: {
   ExecutionCount?: number
-  PriceAtSubscriptionDate?: number
+  PriceAtSubscriptionDate?: number | null
   ItemIndex?: number
   Plan?: {
   type?: string
@@ -488,11 +498,11 @@ class OrdersApi_orders {
 }
   validity?: {
   begin?: string
-  end?: string
+  end?: string | null
 }
 }
-}[]
-}
+}[] | null
+} | null
   itemMetadata?: {
   Items?: {
   Id?: string
@@ -508,15 +518,19 @@ class OrdersApi_orders {
   Id?: string
   Name?: string
   Required?: boolean
-  InputValues?: Record<string, unknown>
-  Composition?: Record<string, unknown>
-}[]
+  InputValues?: {
+  [key: string]: unknown
+} | null
+  Composition?: {
+  [key: string]: unknown
+} | null
+}[] | null
 }[]
 }
   marketplace?: MarketplaceUpdated
   storePreferencesData?: StorePreferencesDataUpdated
   customData?: {
-  customApps?: {
+  customApps?: ({
   id?: string
   major?: number
   fields?: {
@@ -525,7 +539,7 @@ class OrdersApi_orders {
   marketplacePaymentCreditCardBrands?: string
   marketplacePaymentMethods?: string
 }
-}[]
+} | null)[] | null
   customFields?: {
   linkedEntity?: {
   type?: string
@@ -536,9 +550,11 @@ class OrdersApi_orders {
   value?: string
 }[]
 }[]
-}
-  commercialConditionData?: string
-  openTextField?: Record<string, unknown>
+} | null
+  commercialConditionData?: string | null
+  openTextField?: {
+  [key: string]: string
+} | null
   invoiceData?: InvoiceDataUpdated
   changesAttachment?: ChangesAttachmentUpdated
   callCenterOperatorData?: CallCenterOperatorDataUpdated
@@ -548,21 +564,21 @@ class OrdersApi_orders {
   itemIndex?: number
   quantity?: number
   price?: number
-  description?: string
-  unitMultiplier?: number
+  description?: string | null
+  unitMultiplier?: number | null
 }[]
-  courier?: string
+  courier?: string | null
   invoiceNumber?: string
   invoiceValue?: number
-  invoiceUrl?: string
+  invoiceUrl?: string | null
   issuanceDate?: string
-  trackingNumber?: string
-  invoiceKey?: string
-  trackingUrl?: string
+  trackingNumber?: string | null
+  invoiceKey?: string | null
+  trackingUrl?: string | null
   embeddedInvoice?: string
   type?: "Output" | "Input"
   courierStatus?: {
-  status?: string
+  status?: string | null
   finished?: boolean
   deliveredDate?: string
   data?: {
@@ -572,27 +588,27 @@ class OrdersApi_orders {
   description?: string
   createDate?: string
 }[]
-}
-  cfop?: string
+} | null
+  cfop?: string | null
   restitutions?: {
   Refund?: {
   value?: number
-  giftCardData?: string
+  giftCardData?: string | null
   items?: {
-  useFreight?: boolean
+  useFreight?: boolean | null
   isCompensation?: boolean
   compensationValue?: number
   id?: string
   quantity?: number
   price?: number
   description?: string
-}[]
+}[] | null
 }
 }
   volumes?: number
-  EnableInferItems?: boolean
+  EnableInferItems?: boolean | null
 }[]
-}
+} | null
   paymentData?: PaymentDataUpdated
   shippingData?: {
   id?: string
@@ -600,8 +616,8 @@ class OrdersApi_orders {
   addressType?: string
   receiverName?: string
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -610,7 +626,7 @@ class OrdersApi_orders {
   number?: string
   neighborhood?: string
   complement?: string
-  reference?: string
+  reference?: string | null
   geoCoordinates?: number[]
 }
   logisticsInfo?: {
@@ -620,7 +636,7 @@ class OrdersApi_orders {
   price?: number
   listPrice?: number
   sellingPrice?: number
-  deliveryWindow?: string
+  deliveryWindow?: string | null
   deliveryCompany?: string
   shippingEstimate?: string
   shippingEstimateDate?: string
@@ -628,33 +644,33 @@ class OrdersApi_orders {
   id?: string
   name?: string
   shippingEstimate?: string
-  deliveryWindow?: string
+  deliveryWindow?: string | null
   price?: number
   selectedDeliveryChannel?: string
   pickupStoreInfo?: {
-  additionalInfo?: string
+  additionalInfo?: string | null
   address?: {
-  addressType?: string
-  receiverName?: string
-  addressId?: string
-  versionId?: string
-  entityId?: string
-  postalCode?: string
-  city?: string
-  state?: string
-  country?: string
-  street?: string
-  number?: string
-  neighborhood?: string
-  complement?: string
-  reference?: string
-  geoCoordinates?: number[]
-}
-  dockId?: string
-  friendlyName?: string
+  addressType?: string | null
+  receiverName?: string | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
+  postalCode?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  street?: string | null
+  number?: string | null
+  neighborhood?: string | null
+  complement?: string | null
+  reference?: string | null
+  geoCoordinates?: (number | null)[] | null
+} | null
+  dockId?: string | null
+  friendlyName?: string | null
   isPickupStore?: boolean
 }
-  polygonName?: string
+  polygonName?: string | null
   lockTTL?: string
   pickupPointId?: string
   transitTime?: string
@@ -668,7 +684,7 @@ class OrdersApi_orders {
   quantity?: number
   warehouseId?: string
   accountCarrierName?: string
-  kitItemDetails?: string[]
+  kitItemDetails?: string[] | null
 }[]
   deliveryChannels?: {
   id?: string
@@ -676,29 +692,29 @@ class OrdersApi_orders {
 }[]
   selectedDeliveryChannel?: string
   pickupStoreInfo?: {
-  additionalInfo?: string
-  address?: string
-  dockId?: string
-  friendlyName?: string
+  additionalInfo?: string | null
+  address?: string | null
+  dockId?: string | null
+  friendlyName?: string | null
   isPickupStore?: boolean
-}
-  addressId?: string
-  versionId?: string
-  entityId?: string
-  polygonName?: string
-  pickupPointId?: string
-  transitTime?: string
+} | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
+  polygonName?: string | null
+  pickupPointId?: string | null
+  transitTime?: string | null
 }[]
   trackingHints?: {
   trackingId?: string
   courierName?: string
   trackingUrl?: string
   trackingLabel?: string
-}[]
+}[] | null
   selectedAddresses?: {
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   addressType?: string
   receiverName?: string
   street?: string
@@ -709,7 +725,7 @@ class OrdersApi_orders {
   city?: string
   state?: string
   country?: string
-  reference?: string
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   contactInformation?: {
@@ -727,12 +743,14 @@ class OrdersApi_orders {
   ratesAndBenefitsData?: {
   id?: string
   rateAndBenefitsIdentifiers?: {
-  description?: string
+  description?: string | null
   featured?: boolean
   id?: string
   name?: string
-  matchedParameters?: Record<string, unknown>
-  additionalInfo?: Record<string, unknown>
+  matchedParameters?: {
+  [key: string]: unknown
+}
+  additionalInfo?: Record<string, unknown> | null
 }[]
 }
   marketingData?: {
@@ -746,14 +764,14 @@ class OrdersApi_orders {
   utmipage?: string
   utmiPart?: string
   marketingTags?: string[]
-}
+} | null
   giftRegistryData?: {
   giftRegistryId?: string
   giftRegistryType?: string
   giftRegistryTypeName?: string
   addressId?: string
   description?: string
-}
+} | null
   clientProfileData?: {
   id?: string
   email?: string
@@ -762,26 +780,26 @@ class OrdersApi_orders {
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   userProfileId?: string
-  userProfileVersion?: string
-  customerClass?: string
-  customerCode?: string
+  userProfileVersion?: string | null
+  customerClass?: string | null
+  customerCode?: string | null
 }
   items?: {
   uniqueId?: string
   id?: string
   productId?: string
-  ean?: string
+  ean?: string | null
   lockId?: string
   itemAttachment?: {
   content?: Record<string, unknown>
-  name?: string
+  name?: string | null
 }
   attachments?: string[]
   quantity?: number
@@ -790,7 +808,7 @@ class OrdersApi_orders {
   refId?: string
   price?: number
   listPrice?: number
-  manualPrice?: string
+  manualPrice?: string | null
   priceTags?: string[]
   imageUrl?: string
   detailUrl?: string
@@ -802,15 +820,15 @@ class OrdersApi_orders {
   params?: string[]
   offerings?: string[]
   attachmentOfferings?: {
-  name?: string
-  required?: boolean
-  schema?: Record<string, unknown>
-}[]
+  name?: string | null
+  required?: boolean | null
+  schema?: Record<string, unknown> | null
+}[] | null
   sellerSku?: string
-  priceValidUntil?: string
+  priceValidUntil?: string | null
   commission?: number
   tax?: number
-  preSaleDate?: string
+  preSaleDate?: string | null
   additionalInfo?: {
   brandName?: string
   brandId?: string
@@ -828,15 +846,15 @@ class OrdersApi_orders {
   weight?: number
   width?: number
 }
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
   measurementUnit?: string
   unitMultiplier?: number
   sellingPrice?: number
   isGift?: boolean
-  shippingPrice?: string
+  shippingPrice?: string | null
   rewardValue?: number
   freightCommission?: number
   priceDefinitions?: {
@@ -847,33 +865,33 @@ class OrdersApi_orders {
   calculatedSellingPrice?: number
   total?: number
 }
-  taxCode?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
-  callCenterOperator?: string
-  serialNumbers?: string
-  assemblies?: string[]
+  taxCode?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
+  callCenterOperator?: string | null
+  serialNumbers?: string | null
+  assemblies?: string[] | null
   costPrice?: number
 }[]
   marketplaceItems?: string[]
   authorizationPolicyData?: AuthorizationPolicyData
-}>({ method: 'GET', path: `/api/oms/pvt/orders/${params.orderId}` })
+}>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}` }, opts))
   }
 
   getApiOmsPvtOrdersOrderGroupByOrderGroup(params: {
   orderGroup: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderId?: string
   sequence?: string
-  marketplaceOrderId?: string
-  marketplaceServicesEndpoint?: string
+  marketplaceOrderId?: string | null
+  marketplaceServicesEndpoint?: string | null
   sellerOrderId?: string
   origin?: "Marketplace" | "Fulfillment" | "Chain"
-  affiliateId?: string
+  affiliateId?: string | null
   salesChannel?: string
-  merchantName?: string
+  merchantName?: string | null
   status?: string
-  statusDescription?: string
+  statusDescription?: string | null
   value?: number
   creationDate?: string
   lastChange?: string
@@ -891,17 +909,19 @@ class OrdersApi_orders {
   sellers?: SellersUpdated
   callCenterOperatorData?: CallCenterOperatorDataUpdated
   followUpEmail?: string
-  lastMessage?: string
+  lastMessage?: string | null
   hostname?: string
   invoiceData?: InvoiceDataUpdated
   changesAttachment?: ChangesAttachmentUpdated
-  openTextField?: Record<string, unknown>
+  openTextField?: {
+  [key: string]: string
+} | null
   roundingError?: number
   orderFormId?: string
-  commercialConditionData?: string
+  commercialConditionData?: string | null
   isCompleted?: boolean
   customData?: {
-  customApps?: string[]
+  customApps?: (string | null)[] | null
   customFields?: {
   linkedEntity?: {
   type?: string
@@ -912,19 +932,19 @@ class OrdersApi_orders {
   value?: string
 }[]
 }[]
-}
+} | null
   storePreferencesData?: StorePreferencesDataUpdated
   allowCancellation?: boolean
   allowEdition?: boolean
   isCheckedIn?: boolean
   marketplace?: MarketplaceUpdated
-  authorizedDate?: string
-  invoicedDate?: string
-  cancelReason?: string
+  authorizedDate?: string | null
+  invoicedDate?: string | null
+  cancelReason?: string | null
   itemMetadata?: ItemMetadataUpdated
   subscriptionData?: SubscriptionDataUpdated
   taxData?: TaxDataUpdated
-  checkedInPickupPointId?: string
+  checkedInPickupPointId?: string | null
   cancellationData?: CancellationDataUpdated
   cancellationRequests?: CancellationRequestsUpdated
   clientPreferencesData?: ClientPreferencesDataUpdated
@@ -932,15 +952,15 @@ class OrdersApi_orders {
     return this.http.request<{
   orderId?: string
   sequence?: string
-  marketplaceOrderId?: string
-  marketplaceServicesEndpoint?: string
+  marketplaceOrderId?: string | null
+  marketplaceServicesEndpoint?: string | null
   sellerOrderId?: string
   origin?: "Marketplace" | "Fulfillment" | "Chain"
-  affiliateId?: string
+  affiliateId?: string | null
   salesChannel?: string
-  merchantName?: string
+  merchantName?: string | null
   status?: string
-  statusDescription?: string
+  statusDescription?: string | null
   value?: number
   creationDate?: string
   lastChange?: string
@@ -958,17 +978,19 @@ class OrdersApi_orders {
   sellers?: SellersUpdated
   callCenterOperatorData?: CallCenterOperatorDataUpdated
   followUpEmail?: string
-  lastMessage?: string
+  lastMessage?: string | null
   hostname?: string
   invoiceData?: InvoiceDataUpdated
   changesAttachment?: ChangesAttachmentUpdated
-  openTextField?: Record<string, unknown>
+  openTextField?: {
+  [key: string]: string
+} | null
   roundingError?: number
   orderFormId?: string
-  commercialConditionData?: string
+  commercialConditionData?: string | null
   isCompleted?: boolean
   customData?: {
-  customApps?: string[]
+  customApps?: (string | null)[] | null
   customFields?: {
   linkedEntity?: {
   type?: string
@@ -979,23 +1001,23 @@ class OrdersApi_orders {
   value?: string
 }[]
 }[]
-}
+} | null
   storePreferencesData?: StorePreferencesDataUpdated
   allowCancellation?: boolean
   allowEdition?: boolean
   isCheckedIn?: boolean
   marketplace?: MarketplaceUpdated
-  authorizedDate?: string
-  invoicedDate?: string
-  cancelReason?: string
+  authorizedDate?: string | null
+  invoicedDate?: string | null
+  cancelReason?: string | null
   itemMetadata?: ItemMetadataUpdated
   subscriptionData?: SubscriptionDataUpdated
   taxData?: TaxDataUpdated
-  checkedInPickupPointId?: string
+  checkedInPickupPointId?: string | null
   cancellationData?: CancellationDataUpdated
   cancellationRequests?: CancellationRequestsUpdated
   clientPreferencesData?: ClientPreferencesDataUpdated
-}[]>({ method: 'GET', path: `/api/oms/pvt/orders/order-group/${params.orderGroup}` })
+}[]>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/order-group/${encodePathParam(params.orderGroup)}` }, opts))
   }
 
   listOrders(params: {
@@ -1020,14 +1042,14 @@ class OrdersApi_orders {
   f_RnB?: string
   searchField?: string
   f_isInstore?: boolean
-}): Promise<ListOrders> {
-    return this.http.request<ListOrders>({ method: 'GET', path: `/api/oms/pvt/orders`, query: { 'orderBy': params.orderBy, 'page': params.page, 'per_page': params.per_page, 'f_hasInputInvoice': params.f_hasInputInvoice, 'q': params.q, 'f_shippingEstimate': params.f_shippingEstimate, 'f_invoicedDate': params.f_invoicedDate, 'f_creationDate': params.f_creationDate, 'f_authorizedDate': params.f_authorizedDate, 'f_UtmSource': params.f_UtmSource, 'f_sellerNames': params.f_sellerNames, 'f_callCenterOperatorName': params.f_callCenterOperatorName, 'f_salesChannel': params.f_salesChannel, 'salesChannelId': params.salesChannelId, 'f_affiliateId': params.f_affiliateId, 'f_status': params.f_status, 'incompleteOrders': params.incompleteOrders, 'f_paymentNames': params.f_paymentNames, 'f_RnB': params.f_RnB, 'searchField': params.searchField, 'f_isInstore': params.f_isInstore } })
+} = {}, opts?: CallOptions): Promise<ListOrders> {
+    return this.http.request<ListOrders>(withCall({ method: 'GET', path: `/api/oms/pvt/orders`, query: { 'orderBy': params.orderBy, 'page': params.page, 'per_page': params.per_page, 'f_hasInputInvoice': params.f_hasInputInvoice, 'q': params.q, 'f_shippingEstimate': params.f_shippingEstimate, 'f_invoicedDate': params.f_invoicedDate, 'f_creationDate': params.f_creationDate, 'f_authorizedDate': params.f_authorizedDate, 'f_UtmSource': params.f_UtmSource, 'f_sellerNames': params.f_sellerNames, 'f_callCenterOperatorName': params.f_callCenterOperatorName, 'f_salesChannel': params.f_salesChannel, 'salesChannelId': params.salesChannelId, 'f_affiliateId': params.f_affiliateId, 'f_status': params.f_status, 'incompleteOrders': params.incompleteOrders, 'f_paymentNames': params.f_paymentNames, 'f_RnB': params.f_RnB, 'searchField': params.searchField, 'f_isInstore': params.f_isInstore } }, opts))
   }
 
   startHandling(params: {
   orderId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/oms/pvt/orders/${params.orderId}/start-handling` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/start-handling` }, opts))
   }
 
   cancelOrder(params: {
@@ -1035,7 +1057,7 @@ class OrdersApi_orders {
   body: {
   reason?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   date?: string
   orderId?: string
   receipt?: string
@@ -1044,7 +1066,7 @@ class OrdersApi_orders {
   date?: string
   orderId?: string
   receipt?: string
-}>({ method: 'POST', path: `/api/oms/pvt/orders/${params.orderId}/cancel`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/cancel`, body: params.body }, opts))
   }
 
   registerChange(params: {
@@ -1065,7 +1087,7 @@ class OrdersApi_orders {
   quantity: number
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   date?: string
   orderId?: string
   receipt?: string
@@ -1074,7 +1096,7 @@ class OrdersApi_orders {
   date?: string
   orderId?: string
   receipt?: string
-}>({ method: 'POST', path: `/api/oms/pvt/orders/${params.orderId}/changes`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/changes`, body: params.body }, opts))
   }
 
   addLog(params: {
@@ -1083,8 +1105,8 @@ class OrdersApi_orders {
   source: string
   message: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/oms/pvt/orders/${params.orderId}/interactions`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/interactions`, body: params.body }, opts))
   }
 }
 class OrdersApi_invoice {
@@ -1095,15 +1117,15 @@ class OrdersApi_invoice {
   body: {
   type: "Output" | "Input"
   issuanceDate: string
-  invoiceNumber: string
+  invoiceNumber: string | null
   invoiceValue: string
-  invoiceKey?: string
-  invoiceUrl?: string
-  embeddedInvoice?: string
+  invoiceKey?: string | null
+  invoiceUrl?: string | null
+  embeddedInvoice?: string | null
   courier?: string
-  trackingNumber?: string
-  trackingUrl?: string
-  dispatchedDate?: string
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  dispatchedDate?: string | null
   items: {
   id: string
   price: number
@@ -1111,7 +1133,7 @@ class OrdersApi_invoice {
   quantity: number
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   date?: string
   orderId?: string
   receipt?: string
@@ -1120,15 +1142,15 @@ class OrdersApi_invoice {
   date?: string
   orderId?: string
   receipt?: string
-}>({ method: 'POST', path: `/api/oms/pvt/orders/${params.orderId}/invoice`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/invoice`, body: params.body }, opts))
   }
 
   updatepartialinvoiceSendTrackingNumber(params: {
   orderId: string
   invoiceNumber: string
   body: UpdatepartialinvoiceSendTrackingNumberRequest
-}): Promise<UpdatepartialinvoiceSendTrackingNumber> {
-    return this.http.request<UpdatepartialinvoiceSendTrackingNumber>({ method: 'PATCH', path: `/api/oms/pvt/orders/${params.orderId}/invoice/${params.invoiceNumber}`, body: params.body })
+}, opts?: CallOptions): Promise<UpdatepartialinvoiceSendTrackingNumber> {
+    return this.http.request<UpdatepartialinvoiceSendTrackingNumber>(withCall({ method: 'PATCH', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/invoice/${encodePathParam(params.invoiceNumber)}`, body: params.body }, opts))
   }
 }
 class OrdersApi_tracking {
@@ -1138,8 +1160,8 @@ class OrdersApi_tracking {
   orderId: string
   invoiceNumber: string
   body: UpdateTrackingStatusRequest
-}): Promise<UpdateTrackingStatus> {
-    return this.http.request<UpdateTrackingStatus>({ method: 'PUT', path: `/api/oms/pvt/orders/${params.orderId}/invoice/${params.invoiceNumber}/tracking`, body: params.body })
+}, opts?: CallOptions): Promise<UpdateTrackingStatus> {
+    return this.http.request<UpdateTrackingStatus>(withCall({ method: 'PUT', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/invoice/${encodePathParam(params.invoiceNumber)}/tracking`, body: params.body }, opts))
   }
 }
 class OrdersApi_conversation {
@@ -1147,8 +1169,8 @@ class OrdersApi_conversation {
 
   getConversation(params: {
   orderId: string
-}): Promise<GetConversation[]> {
-    return this.http.request<GetConversation[]>({ method: 'GET', path: `/api/oms/pvt/orders/${params.orderId}/conversation-message` })
+}, opts?: CallOptions): Promise<GetConversation[]> {
+    return this.http.request<GetConversation[]>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/conversation-message` }, opts))
   }
 }
 class OrdersApi_payment {
@@ -1156,15 +1178,15 @@ class OrdersApi_payment {
 
   getPaymenttransaction(params: {
   orderId: string
-}): Promise<GetPaymenttransaction> {
-    return this.http.request<GetPaymenttransaction>({ method: 'GET', path: `/api/oms/pvt/orders/${params.orderId}/payment-transaction` })
+}, opts?: CallOptions): Promise<GetPaymenttransaction> {
+    return this.http.request<GetPaymenttransaction>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/payment-transaction` }, opts))
   }
 
   sendPaymentNotification(params: {
   orderId: string
   paymentId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/oms/pvt/orders/${params.orderId}/payments/${params.paymentId}/payment-notification` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/payments/${encodePathParam(params.paymentId)}/payment-notification` }, opts))
   }
 }
 class OrdersApi_feedV2Deprecated {
@@ -1172,14 +1194,14 @@ class OrdersApi_feedV2Deprecated {
 
   getfeedorderstatus(params: {
   maxLot: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/oms/pvt/feed/orders/status`, query: { 'maxLot': params.maxLot } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/oms/pvt/feed/orders/status`, query: { 'maxLot': params.maxLot } }, opts))
   }
 }
 class OrdersApi_feedV3 {
   constructor(private http: VtexHttpClient) {}
 
-  getFeedConfiguration(params: Record<string, never>): Promise<{
+  getFeedConfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   filter?: {
   type?: string
   status?: string[]
@@ -1206,7 +1228,7 @@ class OrdersApi_feedV3 {
 }
   quantity?: number
   approximateAgeOfOldestMessageInSeconds?: number
-}>({ method: 'GET', path: `/api/orders/feed/config` })
+}>(withCall({ method: 'GET', path: `/api/orders/feed/config` }, opts))
   }
 
   feedConfiguration(params: {
@@ -1222,26 +1244,26 @@ class OrdersApi_feedV3 {
   MessageRetentionPeriodInSeconds: number
 }
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/orders/feed/config`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/feed/config`, body: params.body }, opts))
   }
 
-  feedConfigurationDelete(params: Record<string, never>): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/orders/feed/config` })
+  feedConfigurationDelete(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/orders/feed/config` }, opts))
   }
 
   getfeedorderstatus1(params: {
   maxlot: string
-}): Promise<Getfeedorderstatus[]> {
-    return this.http.request<Getfeedorderstatus[]>({ method: 'GET', path: `/api/orders/feed`, query: { 'maxlot': params.maxlot } })
+}, opts?: CallOptions): Promise<Getfeedorderstatus[]> {
+    return this.http.request<Getfeedorderstatus[]>(withCall({ method: 'GET', path: `/api/orders/feed`, query: { 'maxlot': params.maxlot } }, opts))
   }
 
   commititemfeedorderstatus(params: {
   body: {
   handles: string[]
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/orders/feed`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/feed`, body: params.body }, opts))
   }
 
   testJSONataExpression(params: {
@@ -1249,8 +1271,8 @@ class OrdersApi_feedV3 {
   Expression: string
   Document: string
 }
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'POST', path: `/api/orders/expressions/jsonata`, body: params.body })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/orders/expressions/jsonata`, body: params.body }, opts))
   }
 }
 class OrdersApi_orderHook {
@@ -1260,18 +1282,18 @@ class OrdersApi_orderHook {
   clientEmail?: string
   page?: string
   per_page?: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/orders/hook/config`, query: { 'clientEmail': params.clientEmail, 'page': params.page, 'per_page': params.per_page } })
+} = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/orders/hook/config`, query: { 'clientEmail': params.clientEmail, 'page': params.page, 'per_page': params.per_page } }, opts))
   }
 
   hookConfiguration(params: {
   body: HookConfigurationRequest
-}): Promise<HookConfiguration> {
-    return this.http.request<HookConfiguration>({ method: 'POST', path: `/api/orders/hook/config`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/hook/config`, body: params.body }, opts))
   }
 
-  deleteHookConfiguration(params: Record<string, never>): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/orders/hook/config` })
+  deleteHookConfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/orders/hook/config` }, opts))
   }
 }
 class OrdersApi_orderModifications {
@@ -1279,14 +1301,14 @@ class OrdersApi_orderModifications {
 
   getChangeSummary(params: {
   orderId: string
-}): Promise<ChangeSummary> {
-    return this.http.request<ChangeSummary>({ method: 'GET', path: `/api/orders/pvt/document/${params.orderId}/change-summary` })
+}, opts?: CallOptions): Promise<ChangeSummary> {
+    return this.http.request<ChangeSummary>(withCall({ method: 'GET', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/change-summary` }, opts))
   }
 
   getChangeHistory(params: {
   changeOrderId: string
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   requests: {
   requestId: string
   workflowId: string
@@ -1299,8 +1321,8 @@ class OrdersApi_orderModifications {
   name?: string
   value?: number
 }[]
-  add: Record<string, unknown>
-  remove: Record<string, unknown>
+  add: Record<string, unknown> | null
+  remove: Record<string, unknown> | null
   replace: {
   from: From2
   to: To2
@@ -1309,7 +1331,7 @@ class OrdersApi_orderModifications {
   origin: OriginV2
   settings: Settings
 }[]
-  actions: Record<string, unknown>[]
+  actions: (Record<string, unknown> | null)[]
 }> {
     return this.http.request<{
   requests: {
@@ -1324,8 +1346,8 @@ class OrdersApi_orderModifications {
   name?: string
   value?: number
 }[]
-  add: Record<string, unknown>
-  remove: Record<string, unknown>
+  add: Record<string, unknown> | null
+  remove: Record<string, unknown> | null
   replace: {
   from: From2
   to: To2
@@ -1334,23 +1356,23 @@ class OrdersApi_orderModifications {
   origin: OriginV2
   settings: Settings
 }[]
-  actions: Record<string, unknown>[]
-}>({ method: 'GET', path: `/api/order-system/orders/${params.changeOrderId}/changes`, query: { 'an': params.an } })
+  actions: (Record<string, unknown> | null)[]
+}>(withCall({ method: 'GET', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes`, query: { 'an': params.an } }, opts))
   }
 
   createchange(params: {
   changeOrderId: string
   accountName: string
   body: Createchange
-}): Promise<Response202> {
-    return this.http.request<Response202>({ method: 'PATCH', path: `/api/order-system/orders/${params.changeOrderId}/changes`, query: { 'accountName': params.accountName }, body: params.body })
+}, opts?: CallOptions): Promise<Response202> {
+    return this.http.request<Response202>(withCall({ method: 'PATCH', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes`, query: { 'accountName': params.accountName }, body: params.body }, opts))
   }
 
   getChangeDetail(params: {
   changeOrderId: string
   changeRequestId: string
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   requestId: string
   workflowId: string
   status: string
@@ -1364,8 +1386,8 @@ class OrdersApi_orderModifications {
   name?: string
   value?: number
 }[]
-  add: string[]
-  remove: string[]
+  add: string[] | null
+  remove: string[] | null
   replace: Replace1[]
   date: string
   origin: OriginV2
@@ -1385,13 +1407,13 @@ class OrdersApi_orderModifications {
   name?: string
   value?: number
 }[]
-  add: string[]
-  remove: string[]
+  add: string[] | null
+  remove: string[] | null
   replace: Replace1[]
   date: string
   origin: OriginV2
   settings: Settings
-}>({ method: 'GET', path: `/api/order-system/orders/${params.changeOrderId}/changes/${params.changeRequestId}`, query: { 'an': params.an } })
+}>(withCall({ method: 'GET', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/${encodePathParam(params.changeRequestId)}`, query: { 'an': params.an } }, opts))
   }
 
   previewChange(params: {
@@ -1401,7 +1423,7 @@ class OrdersApi_orderModifications {
   reason: string
   replace: Replace[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   reason: string
   manualDiscountValue: number
   manualIncrementValue: number
@@ -1411,8 +1433,8 @@ class OrdersApi_orderModifications {
   name?: string
   value?: number
 }[]
-  add: string[]
-  remove: string[]
+  add: string[] | null
+  remove: string[] | null
   replace: {
   from: From2
   to: To2
@@ -1431,8 +1453,8 @@ class OrdersApi_orderModifications {
   name?: string
   value?: number
 }[]
-  add: string[]
-  remove: string[]
+  add: string[] | null
+  remove: string[] | null
   replace: {
   from: From2
   to: To2
@@ -1440,7 +1462,7 @@ class OrdersApi_orderModifications {
   date: string
   origin: OriginV2
   settings: Settings
-}>({ method: 'POST', path: `/api/order-system/orders/${params.changeOrderId}/changes/preview`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/preview`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   retryChange(params: {
@@ -1448,8 +1470,8 @@ class OrdersApi_orderModifications {
   changeRequestId: string
   an: string
   body: Createchange
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/order-system/orders/${params.changeOrderId}/changes/${params.changeRequestId}/retry`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/${encodePathParam(params.changeRequestId)}/retry`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   cancelChangeStoppedonError(params: {
@@ -1459,14 +1481,14 @@ class OrdersApi_orderModifications {
   body: {
   reason: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/order-system/orders/${params.changeOrderId}/changes/${params.changeRequestId}/cancel`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/${encodePathParam(params.changeRequestId)}/cancel`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   getApiOrderSystemOrdersChangesSettings(params: {
   an: string
-}): Promise<ChangeOrderSettingsResponse> {
-    return this.http.request<ChangeOrderSettingsResponse>({ method: 'GET', path: `/api/order-system/orders/changes/settings`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<ChangeOrderSettingsResponse> {
+    return this.http.request<ChangeOrderSettingsResponse>(withCall({ method: 'GET', path: `/api/order-system/orders/changes/settings`, query: { 'an': params.an } }, opts))
   }
 
   putApiOrderSystemOrdersChangesSettings(params: {
@@ -1489,8 +1511,8 @@ class OrdersApi_orderModifications {
   compensateShippingChanges?: boolean
 }
 }
-}): Promise<ChangeOrderSettingsResponse> {
-    return this.http.request<ChangeOrderSettingsResponse>({ method: 'PUT', path: `/api/order-system/orders/changes/settings`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<ChangeOrderSettingsResponse> {
+    return this.http.request<ChangeOrderSettingsResponse>(withCall({ method: 'PUT', path: `/api/order-system/orders/changes/settings`, query: { 'an': params.an }, body: params.body }, opts))
   }
 }
 class OrdersApi_userOrders {
@@ -1505,8 +1527,8 @@ class OrdersApi_userOrders {
   creation_date?: string
   purchase_agent_id?: string
   my_pending_approvals?: boolean
-}): Promise<Userorderslist> {
-    return this.http.request<Userorderslist>({ method: 'GET', path: `/api/oms/user/orders`, query: { 'clientEmail': params.clientEmail, 'page': params.page, 'per_page': params.per_page, 'text': params.text, 'status': params.status, 'creation_date': params.creation_date, 'purchase_agent_id': params.purchase_agent_id, 'my_pending_approvals': params.my_pending_approvals } })
+} = {}, opts?: CallOptions): Promise<Userorderslist> {
+    return this.http.request<Userorderslist>(withCall({ method: 'GET', path: `/api/oms/user/orders`, query: { 'clientEmail': params.clientEmail, 'page': params.page, 'per_page': params.per_page, 'text': params.text, 'status': params.status, 'creation_date': params.creation_date, 'purchase_agent_id': params.purchase_agent_id, 'my_pending_approvals': params.my_pending_approvals } }, opts))
   }
 
   userorderdetails(params: {
@@ -1517,23 +1539,23 @@ class OrdersApi_userOrders {
   creation_date?: string
   purchase_agent_id?: string
   my_pending_approvals?: boolean
-}): Promise<Userorderdetails> {
-    return this.http.request<Userorderdetails>({ method: 'GET', path: `/api/oms/user/orders/${params.orderId}`, query: { 'clientEmail': params.clientEmail, 'text': params.text, 'status': params.status, 'creation_date': params.creation_date, 'purchase_agent_id': params.purchase_agent_id, 'my_pending_approvals': params.my_pending_approvals } })
+}, opts?: CallOptions): Promise<Userorderdetails> {
+    return this.http.request<Userorderdetails>(withCall({ method: 'GET', path: `/api/oms/user/orders/${encodePathParam(params.orderId)}`, query: { 'clientEmail': params.clientEmail, 'text': params.text, 'status': params.status, 'creation_date': params.creation_date, 'purchase_agent_id': params.purchase_agent_id, 'my_pending_approvals': params.my_pending_approvals } }, opts))
   }
 }
 class OrdersApi_changeSeller {
   constructor(private http: VtexHttpClient) {}
 
-  getWindowToChangeSeller(params: Record<string, never>): Promise<number> {
-    return this.http.request<number>({ method: 'GET', path: `/api/checkout/pvt/configuration/window-to-change-seller` })
+  getWindowToChangeSeller(params: Record<string, never> = {}, opts?: CallOptions): Promise<number> {
+    return this.http.request<number>(withCall({ method: 'GET', path: `/api/checkout/pvt/configuration/window-to-change-seller` }, opts))
   }
 
   updateWindowToChangeSeller(params: {
   body: {
   waitingTime: number
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/checkout/pvt/configuration/window-to-change-seller`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/checkout/pvt/configuration/window-to-change-seller`, body: params.body }, opts))
   }
 }
 

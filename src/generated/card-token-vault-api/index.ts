@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CardTokenAddress, CardTokenCard, CardTokenDataResponse, CardTokenAddressInput, CardTokenCardInput, CardTokenData, CardToken, CreateCardTokenRequest, UpdateCardTokenRequest, ImportCardTokensResponse, ImportStatus } from './types.js'
 
 class CardTokenVaultApi_cardToken {
@@ -6,46 +8,48 @@ class CardTokenVaultApi_cardToken {
 
   createCardToken(params: {
   body: CreateCardTokenRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/card-token-vault/tokens`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/card-token-vault/tokens`, body: params.body, server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 
   updateCardToken(params: {
   id: string
   body: UpdateCardTokenRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/card-token-vault/tokens/${params.id}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/card-token-vault/tokens/${encodePathParam(params.id)}`, body: params.body, server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 
   getCardTokenById(params: {
   id: string
-}): Promise<CardToken> {
-    return this.http.request<CardToken>({ method: 'GET', path: `/api/payments/pvt/accounts/${params.id}` })
+}, opts?: CallOptions): Promise<CardToken> {
+    return this.http.request<CardToken>(withCall({ method: 'GET', path: `/api/payments/pvt/accounts/${encodePathParam(params.id)}`, server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 
   deleteCardToken(params: {
   id: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/payments/pvt/accounts/${params.id}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/payments/pvt/accounts/${encodePathParam(params.id)}`, server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 }
 class CardTokenVaultApi_cardTokenImport {
   constructor(private http: VtexHttpClient) {}
 
-  importCardTokens(params: Record<string, never>): Promise<ImportCardTokensResponse> {
-    return this.http.request<ImportCardTokensResponse>({ method: 'POST', path: `/api/card-token-vault/tokens/import` })
+  importCardTokens(params: {
+  body: FormData
+}, opts?: CallOptions): Promise<ImportCardTokensResponse> {
+    return this.http.request<ImportCardTokensResponse>(withCall({ method: 'POST', path: `/api/card-token-vault/tokens/import`, body: params.body, contentType: 'multipart/form-data', server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 
   getCardTokenImportStatus(params: {
   importId: string
-}): Promise<ImportStatus> {
-    return this.http.request<ImportStatus>({ method: 'GET', path: `/api/card-token-vault/tokens/import/${params.importId}` })
+}, opts?: CallOptions): Promise<ImportStatus> {
+    return this.http.request<ImportStatus>(withCall({ method: 'GET', path: `/api/card-token-vault/tokens/import/${encodePathParam(params.importId)}`, server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 
   getCardTokenImportReport(params: {
   importId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/card-token-vault/tokens/import/${params.importId}/report` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/card-token-vault/tokens/import/${encodePathParam(params.importId)}/report`, server: 'https://{accountName}.vtexcommercestable.com.br' }, opts))
   }
 }
 

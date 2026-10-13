@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class StorefrontRolesApi_storefrontRoles {
   constructor(private http: VtexHttpClient) {}
@@ -8,8 +10,8 @@ class StorefrontRolesApi_storefrontRoles {
   roleId: number
   userId: string
 }
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'POST', path: `/api/license-manager/storefront/roles/assign`, body: params.body })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/license-manager/storefront/roles/assign`, body: params.body }, opts))
   }
 
   postApiLicenseManagerStorefrontUserRoles(params: {
@@ -17,7 +19,7 @@ class StorefrontRolesApi_storefrontRoles {
   id: string
   roleIds: number[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   roles?: {
   id?: number
@@ -30,7 +32,7 @@ class StorefrontRolesApi_storefrontRoles {
   id?: number
   name?: string
 }[]
-}>({ method: 'POST', path: `/api/license-manager/storefront/user/roles`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/license-manager/storefront/user/roles`, body: params.body }, opts))
   }
 
   deleteApiLicenseManagerStorefrontUserRoles(params: {
@@ -38,7 +40,7 @@ class StorefrontRolesApi_storefrontRoles {
   id: string
   roleIds: number[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   roles?: {
   id?: number
@@ -51,25 +53,25 @@ class StorefrontRolesApi_storefrontRoles {
   id?: number
   name?: string
 }[]
-}>({ method: 'DELETE', path: `/api/license-manager/storefront/user/roles`, body: params.body })
+}>(withCall({ method: 'DELETE', path: `/api/license-manager/storefront/user/roles`, body: params.body }, opts))
   }
 
   getApiLicenseManagerStorefrontUsersByUserIdResourcesByResourceKeyGranted(params: {
   userId: string
   resourceKey: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'GET', path: `/api/license-manager/storefront/users/${params.userId}/resources/${params.resourceKey}/granted` })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.userId)}/resources/${encodePathParam(params.resourceKey)}/granted` }, opts))
   }
 
   deleteApiLicenseManagerStorefrontRemoveUsersByUserId(params: {
   userId: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'DELETE', path: `/api/license-manager/storefront/remove/users/${params.userId}` })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/api/license-manager/storefront/remove/users/${encodePathParam(params.userId)}` }, opts))
   }
 
   getApiLicenseManagerStorefrontUsersByUserIdRoles(params: {
   userId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   userId?: string
   identifier?: string
   roles?: {
@@ -84,12 +86,12 @@ class StorefrontRolesApi_storefrontRoles {
   id?: number
   name?: string
 }[]
-}>({ method: 'GET', path: `/api/license-manager/storefront/users/${params.userId}/roles` })
+}>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.userId)}/roles` }, opts))
   }
 
   getApiLicenseManagerStorefrontUsersByEmailRoles(params: {
   email: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   userId?: string
   email?: string
   roles?: string[]
@@ -98,17 +100,17 @@ class StorefrontRolesApi_storefrontRoles {
   userId?: string
   email?: string
   roles?: string[]
-}>({ method: 'GET', path: `/api/license-manager/storefront/users/${params.email}/roles` })
+}>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.email)}/roles` }, opts))
   }
 
   getApiLicenseManagerStorefrontUsersByUserId(params: {
   userId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   email?: string
 }> {
     return this.http.request<{
   email?: string
-}>({ method: 'GET', path: `/api/license-manager/storefront/users/${params.userId}` })
+}>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.userId)}` }, opts))
   }
 }
 class StorefrontRolesApi_customStorefrontRoles {
@@ -116,7 +118,7 @@ class StorefrontRolesApi_customStorefrontRoles {
 
   getApiLicenseManagerStorefrontRole(params: {
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: number
   Name?: string
   IsCustom?: boolean
@@ -135,7 +137,7 @@ class StorefrontRolesApi_customStorefrontRoles {
   Key?: string
   IsCustom?: boolean
 }[]
-}[]>({ method: 'GET', path: `/api/license-manager/storefront/role`, query: { 'an': params.an } })
+}[]>(withCall({ method: 'GET', path: `/api/license-manager/storefront/role`, query: { 'an': params.an } }, opts))
   }
 
   postApiLicenseManagerStorefrontRole(params: {
@@ -144,7 +146,7 @@ class StorefrontRolesApi_customStorefrontRoles {
   Name: string
   Resources: number[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: number
   Name?: string
   Resources?: {
@@ -161,13 +163,13 @@ class StorefrontRolesApi_customStorefrontRoles {
   Key?: string
   IsCustom?: boolean
 }[]
-}>({ method: 'POST', path: `/api/license-manager/storefront/role`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/license-manager/storefront/role`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   getApiLicenseManagerStorefrontRoleByRoleId(params: {
   roleId: number
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: number
   Name?: string
   IsCustom?: boolean
@@ -186,7 +188,7 @@ class StorefrontRolesApi_customStorefrontRoles {
   Key?: string
   IsCustom?: boolean
 }[]
-}>({ method: 'GET', path: `/api/license-manager/storefront/role/${params.roleId}`, query: { 'an': params.an } })
+}>(withCall({ method: 'GET', path: `/api/license-manager/storefront/role/${encodePathParam(params.roleId)}`, query: { 'an': params.an } }, opts))
   }
 
   putApiLicenseManagerStorefrontRoleByRoleId(params: {
@@ -195,7 +197,7 @@ class StorefrontRolesApi_customStorefrontRoles {
   body: {
   Resources: number[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: number
   Name?: string
   Resources?: {
@@ -212,14 +214,14 @@ class StorefrontRolesApi_customStorefrontRoles {
   Key?: string
   IsCustom?: boolean
 }[]
-}>({ method: 'PUT', path: `/api/license-manager/storefront/role/${params.roleId}`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/license-manager/storefront/role/${encodePathParam(params.roleId)}`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   deleteApiLicenseManagerStorefrontRoleByRoleId(params: {
   roleId: number
   an: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/license-manager/storefront/role/${params.roleId}`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/license-manager/storefront/role/${encodePathParam(params.roleId)}`, query: { 'an': params.an } }, opts))
   }
 }
 class StorefrontRolesApi_customStorefrontResources {
@@ -227,20 +229,20 @@ class StorefrontRolesApi_customStorefrontResources {
 
   getApiLicenseManagerStorefrontResource(params: {
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: number
   Key?: string
-  Name?: string
-  Description?: string
+  Name?: string | null
+  Description?: string | null
   IsCustom?: boolean
 }[]> {
     return this.http.request<{
   Id?: number
   Key?: string
-  Name?: string
-  Description?: string
+  Name?: string | null
+  Description?: string | null
   IsCustom?: boolean
-}[]>({ method: 'GET', path: `/api/license-manager/storefront/resource`, query: { 'an': params.an } })
+}[]>(withCall({ method: 'GET', path: `/api/license-manager/storefront/resource`, query: { 'an': params.an } }, opts))
   }
 
   postApiLicenseManagerStorefrontResource(params: {
@@ -250,7 +252,7 @@ class StorefrontRolesApi_customStorefrontResources {
   Name?: string
   Description?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: number
   Key?: string
   Name?: string
@@ -261,14 +263,14 @@ class StorefrontRolesApi_customStorefrontResources {
   Key?: string
   Name?: string
   Description?: string
-}>({ method: 'POST', path: `/api/license-manager/storefront/resource`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/license-manager/storefront/resource`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   deleteApiLicenseManagerStorefrontResourceById(params: {
   id: number
   an: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/license-manager/storefront/resource/${params.id}`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/license-manager/storefront/resource/${encodePathParam(params.id)}`, query: { 'an': params.an } }, opts))
   }
 }
 

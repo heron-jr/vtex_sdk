@@ -33,7 +33,7 @@ export type OrderPlacement = {
   unitMultiplier?: number
   isGift?: boolean
 }[]
-  paymentData?: Record<string, unknown>
+  paymentData?: Record<string, unknown> | null
   clientProfileData?: {
   email: string
   firstName: string
@@ -41,12 +41,12 @@ export type OrderPlacement = {
   documentType: string
   document: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
-  isCorporate: boolean
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
+  isCorporate: boolean | null
 }
   shippingData?: {
   address?: {
@@ -125,12 +125,12 @@ export type ResponseOrderPlacement = {
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
-  isCorporate?: boolean
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
+  isCorporate?: boolean | null
 }
   shippingData?: {
   address?: {
@@ -161,7 +161,7 @@ export type ResponseOrderPlacement = {
 }
 }[]
 }
-  paymentData?: Record<string, unknown>
+  paymentData?: Record<string, unknown> | null
   customData?: Record<string, unknown>
   allowMultipleDeliveries?: boolean
 }
@@ -201,7 +201,7 @@ export type ResponseFulfillmentSimulation = {
 }[]
   price: number
   priceTags: string[]
-  priceValidUntil: string
+  priceValidUntil: string | null
   quantity: number
   requestIndex: number
   seller: string
@@ -227,7 +227,7 @@ export type ResponseFulfillmentSimulation = {
   friendlyName: string
   address: {
   addressType: string
-  receiverName: string
+  receiverName: string | null
   addressId: string
   postalCode: string
   city: string
@@ -237,11 +237,11 @@ export type ResponseFulfillmentSimulation = {
   number: string
   neighborhood: string
   complement: string
-  reference: string
+  reference: string | null
   geoCoordinates: number[]
 }
   additionalInfo: string
-}
+} | null
 }[]
   stockBalance: number
   deliveryChannels: {
@@ -281,12 +281,12 @@ export type RepsonseOrderId = {
 }
 
 export type ConnectorResponses = {
-  Message?: string
-  tid?: string
-  authorizationId?: string
-  status?: string
-  delayToAutoSettle?: number
-  ReturnCode?: string
+  Message?: string | null
+  tid?: string | null
+  authorizationId?: string | null
+  status?: string | null
+  delayToAutoSettle?: number | null
+  ReturnCode?: string | null
   nsu?: string
   code?: string
   message?: string

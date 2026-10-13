@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { withCall } from '../../core/call.js'
 
 class DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights {
   constructor(private http: VtexHttpClient) {}
@@ -8,7 +10,7 @@ class DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights {
   body: {
   email?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   uuid?: string
   requestType?: string
   email?: string
@@ -35,7 +37,7 @@ class DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights {
   errorDetail?: string
   updateAt?: string
 }[]
-}>({ method: 'POST', path: `/api/user-rights/createAndProcessDeleteUserData`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/user-rights/createAndProcessDeleteUserData`, query: { 'an': params.an }, body: params.body, server: 'https://api.vtex.com' }, opts))
   }
 }
 

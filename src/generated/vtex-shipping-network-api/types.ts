@@ -2,30 +2,30 @@ export type Account = {
   name: string
   accountName: string
   isOperating: boolean
-  defaultUrl: string
-  district: string
+  defaultUrl: string | null
+  district: string | null
   country: string
-  complement: string
+  complement: string | null
   companyName: string
   cnpj: string
-  city: string
-  address: string
-  number: string
-  postalCode: string
-  state: string
-  telephone: string
+  city: string | null
+  address: string | null
+  number: string | null
+  postalCode: string | null
+  state: string | null
+  telephone: string | null
   tradingName: string
 }
 
 export type Address = {
-  postalCode: string
+  postalCode: string | null
   country: Country
   subregion1: Subregion1
   subregion2: Subregion2
   subregion3: Subregion3
   street: string
   number: string
-  complement: string
+  complement: string | null
   location: Location
 }
 
@@ -52,7 +52,7 @@ export type Subregion3 = {
 export type Location = {
   lat: number
   lng: number
-}
+} | null
 
 export type NotifyCarrierwithAppRequest = {
   account: Account
@@ -69,13 +69,13 @@ export type DispatchOrder = {
 
 export type Sender = {
   cnpj: string
-  fantasyName: string
-  stateRegistration: string
-  id: string
+  fantasyName: string | null
+  stateRegistration: string | null
+  id: string | null
   name: string
   address: Address
-  email: string
-  phone: string
+  email: string | null
+  phone: string | null
 }
 
 export type Carrier = {
@@ -86,7 +86,7 @@ export type Carrier = {
   name: string
   address: Address
   email: string
-  phone: string
+  phone: string | null
 }
 
 export type TrackingEventsRequest = {

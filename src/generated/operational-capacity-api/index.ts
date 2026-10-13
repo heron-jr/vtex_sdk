@@ -1,11 +1,13 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { LocationCapacity, CapacityConfigurationRequest, CapacityConfigurationResponse, CapacityDetail, Location, LocationsList, UpdateLocationStatusRequest } from './types.js'
 
 class OperationalCapacityApi_capacity {
   constructor(private http: VtexHttpClient) {}
 
-  getApiFulfillmentLocationsCapacityByParentAccountName(params: Record<string, never>): Promise<LocationCapacity[]> {
-    return this.http.request<LocationCapacity[]>({ method: 'GET', path: `/api/fulfillment-locations/capacity/by-parent-account-name` })
+  getApiFulfillmentLocationsCapacityByParentAccountName(params: Record<string, never> = {}, opts?: CallOptions): Promise<LocationCapacity[]> {
+    return this.http.request<LocationCapacity[]>(withCall({ method: 'GET', path: `/api/fulfillment-locations/capacity/by-parent-account-name` }, opts))
   }
 }
 class OperationalCapacityApi_capacityConfiguration {
@@ -15,8 +17,8 @@ class OperationalCapacityApi_capacityConfiguration {
   locationId: string
   code: string
   body: CapacityConfigurationRequest
-}): Promise<CapacityConfigurationResponse> {
-    return this.http.request<CapacityConfigurationResponse>({ method: 'PUT', path: `/api/fulfillment-locations/location/${params.locationId}/capacities/${params.code}`, body: params.body })
+}, opts?: CallOptions): Promise<CapacityConfigurationResponse> {
+    return this.http.request<CapacityConfigurationResponse>(withCall({ method: 'PUT', path: `/api/fulfillment-locations/location/${encodePathParam(params.locationId)}/capacities/${encodePathParam(params.code)}`, body: params.body }, opts))
   }
 }
 class OperationalCapacityApi_capacityDetails {
@@ -25,8 +27,8 @@ class OperationalCapacityApi_capacityDetails {
   getApiFulfillmentLocationsLocationsByLocationIdCapacities(params: {
   locationId: string
   daysRequested?: number
-}): Promise<CapacityDetail[]> {
-    return this.http.request<CapacityDetail[]>({ method: 'GET', path: `/api/fulfillment-locations/locations/${params.locationId}/capacities`, query: { 'daysRequested': params.daysRequested } })
+}, opts?: CallOptions): Promise<CapacityDetail[]> {
+    return this.http.request<CapacityDetail[]>(withCall({ method: 'GET', path: `/api/fulfillment-locations/locations/${encodePathParam(params.locationId)}/capacities`, query: { 'daysRequested': params.daysRequested } }, opts))
   }
 }
 class OperationalCapacityApi_locations {
@@ -37,8 +39,8 @@ class OperationalCapacityApi_locations {
   pageSize?: number
   status?: "ACTIVE" | "MANUALLY_PAUSED" | "PAUSED"
   search?: string
-}): Promise<LocationsList> {
-    return this.http.request<LocationsList>({ method: 'GET', path: `/api/fulfillment-locations/location`, query: { 'page': params.page, 'pageSize': params.pageSize, 'status': params.status, 'search': params.search } })
+} = {}, opts?: CallOptions): Promise<LocationsList> {
+    return this.http.request<LocationsList>(withCall({ method: 'GET', path: `/api/fulfillment-locations/location`, query: { 'page': params.page, 'pageSize': params.pageSize, 'status': params.status, 'search': params.search } }, opts))
   }
 }
 class OperationalCapacityApi_locationStatus {
@@ -47,8 +49,8 @@ class OperationalCapacityApi_locationStatus {
   putApiFulfillmentLocationsLocationsByLocationIdStatus(params: {
   locationId: string
   body: UpdateLocationStatusRequest
-}): Promise<Location> {
-    return this.http.request<Location>({ method: 'PUT', path: `/api/fulfillment-locations/locations/${params.locationId}/status`, body: params.body })
+}, opts?: CallOptions): Promise<Location> {
+    return this.http.request<Location>(withCall({ method: 'PUT', path: `/api/fulfillment-locations/locations/${encodePathParam(params.locationId)}/status`, body: params.body }, opts))
   }
 }
 

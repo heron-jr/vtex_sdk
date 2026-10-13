@@ -3,7 +3,7 @@ export type PickupPoint = {
   name?: string
   description?: string
   instructions?: string
-  formatted_address?: string
+  formatted_address?: string | null
   address?: {
   postalCode?: string
   country?: {
@@ -41,14 +41,14 @@ export type PickupPoint = {
   accountOwnerName?: string
   accountOwnerId?: string
   parentAccountName?: string
-  originalId?: string
+  originalId?: string | null
 }
 
 export type ListDocksById = {
   pickupStoreInfo?: {
-  isPickupStore?: boolean
-  storeId?: string
-  friendlyName?: string
+  isPickupStore?: boolean | null
+  storeId?: string | null
+  friendlyName?: string | null
   address?: {
   postalCode?: string
   country?: {
@@ -60,25 +60,25 @@ export type ListDocksById = {
   neighborhood?: string
   street?: string
   number?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   location?: {
   latitude?: number
   longitude?: number
 }
-}
-  additionalInfo?: string
-  dockId?: string
-  distance?: number
-  businessHours?: string
-  pickupHolidays?: string
-  sellerId?: string
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
+  distance?: number | null
+  businessHours?: string | null
+  pickupHolidays?: string | null
+  sellerId?: string | null
   isThirdPartyPickup?: boolean
 }
-  storeId?: string
+  storeId?: string | null
   pickupInStoreInfo?: {
   isActice?: boolean
-  additionalInfo?: string
+  additionalInfo?: string | null
 }
   deliveryFromStoreInfo?: {
   isActice?: boolean
@@ -98,8 +98,8 @@ export type ListDocksById = {
   neighborhood?: string
   street?: string
   number?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   location?: {
   latitude?: number
   longitude?: number
@@ -110,11 +110,11 @@ export type ListDocksById = {
   country?: string
   inStore?: {
   IsCheckedIn?: boolean
-  StoreId?: string
+  StoreId?: string | null
 }
-}
-  shippingRatesProviders?: string[]
-  deliveryAgreementsIds?: string[]
+} | null
+  shippingRatesProviders?: string[] | null
+  deliveryAgreementsIds?: string[] | null
   id?: string
   name?: string
   priority?: number
@@ -123,7 +123,7 @@ export type ListDocksById = {
   salesChannels?: string[]
   salesChannel?: string
   freightTableIds?: string[]
-  wmsEndPoint?: string
+  wmsEndPoint?: string | null
   isActive?: boolean
 }
 
@@ -180,10 +180,10 @@ export type ShippingPolicy = {
   deliveryCapacity?: {
   capacityType?: string
   maxValue?: number
+}[] | null
 }[]
 }[]
-}[]
-  dayOfWeekBlockeds?: string[]
+  dayOfWeekBlockeds?: string[] | null
 }
   carrierSchedule?: {
   dayOfWeek?: number
@@ -194,7 +194,7 @@ export type ShippingPolicy = {
   minimunAcceptableVolumetricWeight?: number
 }
   modalSettings?: {
-  modals?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"[]
+  modals?: ("CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS")[]
   useOnlyItemsWithDefinedModal?: boolean
 }
   businessHourSettings?: {
@@ -212,13 +212,13 @@ export type ShippingPolicy = {
 }
   processingStatus?: {
   status?: number
-  errorMessage?: string
-  errorsMetadata?: string
+  errorMessage?: string | null
+  errorsMetadata?: string | null
 }
   deliveryChannel?: string
   calculationType?: number
   isActive?: boolean
-  lastIndexedAt?: string
+  lastIndexedAt?: string | null
   shippingHoursSettings?: {
   shippingHours?: {
   dayOfWeek?: number
@@ -229,7 +229,7 @@ export type ShippingPolicy = {
 }
   carrierInfo?: {
   carrierAccountName?: string
-  deliveryAgreementId?: string
+  deliveryAgreementId?: string | null
   linkedDocks?: {
   id?: string
   name?: string

@@ -1,9 +1,9 @@
 export type GetPricesRequestObject = {
   items: Items
-  UtmSource?: string
-  UtmMedium?: string
+  UtmSource?: string | null
+  UtmMedium?: string | null
   UtmCampaign?: string
-  UtmInternalCampaign?: string
+  UtmInternalCampaign?: string | null
   salesChannel: string
   email: string
 }

@@ -1,11 +1,11 @@
 export type SimulationItemResult = {
-  id?: string
+  id?: string | null
   quantity?: number
-  unitPrice?: number
+  unitPrice?: number | null
   status?: string
-  price?: number
+  price?: number | null
   sellingPrice?: number
-  manualPrice?: number
+  manualPrice?: number | null
 }
 
 export type SubscriptionCycleResponse = {
@@ -19,50 +19,50 @@ export type SubscriptionCycleResponse = {
   lastUpdate?: string
   cycleCount?: number
   isInRetry?: boolean
-  message?: string
-  friendlyMessage?: string
+  message?: string | null
+  friendlyMessage?: string | null
   plan?: PlanResponse
   orderInfo?: {
   orderId?: string
   orderGroup?: string
-  paymentURL?: string
+  paymentURL?: string | null
   value?: number
 }
   context?: {
   items?: {
-  subscriptionItemId?: string
-  skuId?: string
-  quantity?: number
-  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING"
-  isSkipped?: boolean
-  cycleCount?: number
-}[]
-  paymentSystem?: string
-  paymentSystemName?: string
-  paymentSystemGroup?: string
-  paymentAccountId?: string
-  addressId?: string
-  addressType?: string
-  catalogAttachment?: string
+  subscriptionItemId?: string | null
+  skuId?: string | null
+  quantity?: number | null
+  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING" | null
+  isSkipped?: boolean | null
+  cycleCount?: number | null
+}[] | null
+  paymentSystem?: string | null
+  paymentSystemName?: string | null
+  paymentSystemGroup?: string | null
+  paymentAccountId?: string | null
+  addressId?: string | null
+  addressType?: string | null
+  catalogAttachment?: string | null
 }
-  simulationItems?: SimulationItemResult[]
+  simulationItems?: SimulationItemResult[] | null
 }
 
 export type StorePlan = {
   id?: string
   frequencies?: {
-  periodicity?: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY"
+  periodicity?: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | null
   interval?: number
 }[]
   isActive?: boolean
   importInProgress?: boolean
   attachmentId?: number
   isValid?: boolean
-  validationMessages?: string[]
+  validationMessages?: string[] | null
   validity?: {
   begin?: string
-  end?: string
-}
+  end?: string | null
+} | null
   purchaseDays?: string[]
 }
 
@@ -70,31 +70,31 @@ export type ReportResponse = {
   id?: string
   finished?: boolean
   recordsProcessed?: number
-  recordsSum?: number
-  startDate?: string
-  lastUpdateTime?: string
-  completedDate?: string
-  errorCount?: number
+  recordsSum?: number | null
+  startDate?: string | null
+  lastUpdateTime?: string | null
+  completedDate?: string | null
+  errorCount?: number | null
   percentageProcessed?: number
-  enqueueDate?: string
+  enqueueDate?: string | null
   email?: string
   canceled?: boolean
-  outputType?: string
+  outputType?: string | null
   zipped?: boolean
-  linkToDownload?: string
-  lastErrorMessage?: string
+  linkToDownload?: string | null
+  lastErrorMessage?: string | null
   statusMessage?: string
 }
 
 export type PlanResponse = {
-  id: string
+  id: string | null
   frequency: {
-  periodicity: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY"
+  periodicity: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | null
   interval: number
 }
   validity: {
   begin: string
-  end?: string
+  end?: string | null
 }
   purchaseDay: string
 }
@@ -103,11 +103,11 @@ export type SubscriptionGroupResponse = {
   id: string
   customerId: string
   customerEmail: string
-  title?: string
+  title?: string | null
   status: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING"
   isSkipped: boolean
   nextPurchaseDate: string
-  lastPurchaseDate?: string
+  lastPurchaseDate?: string | null
   plan: PlanResponse
   shippingAddress: {
   addressId: string
@@ -115,7 +115,7 @@ export type SubscriptionGroupResponse = {
 }
   purchaseSettings: {
   paymentMethod: {
-  paymentAccountId?: string
+  paymentAccountId?: string | null
   paymentSystem: string
   installments?: number
   paymentSystemName?: string
@@ -128,7 +128,7 @@ export type SubscriptionGroupResponse = {
 }
   cycleCount: number
   createdAt: string
-  lastUpdate: string
+  lastUpdate: string | null
   items: {
   id: string
   skuId: string
@@ -140,14 +140,16 @@ export type SubscriptionGroupResponse = {
   priceAtSubscriptionDate?: number
   manualPrice?: number
   attachments?: {
-  name?: string
-  content?: Record<string, unknown>
+  name?: string | null
+  content?: {
+  [key: string]: string
+} | null
+}[] | null
 }[]
-}[]
-  lastCycleId?: string
+  lastCycleId?: string | null
   customData?: {
-  customApps?: string[]
-}
+  customApps?: (string | null)[] | null
+} | null
 }
 
 export type PlanRequest = {
@@ -157,10 +159,10 @@ export type PlanRequest = {
   interval: number
 }
   validity?: {
-  begin?: string
-  end?: string
+  begin?: string | null
+  end?: string | null
 }
-  purchaseDay?: string
+  purchaseDay?: string | null
 }
 
 export type ShippingAddressRequest = {
@@ -172,9 +174,9 @@ export type PurchaseSettingsRequest = {
   paymentMethod: {
   paymentAccountId: string
   paymentSystem: string
-  installments?: number
-  paymentSystemName?: string
-  paymentSystemGroup?: string
+  installments?: number | null
+  paymentSystemName?: string | null
+  paymentSystemGroup?: string | null
 }
   currencyCode?: string
   selectedSla?: string
@@ -184,131 +186,137 @@ export type PurchaseSettingsRequest = {
 
 export type SubscriptionGroupRequest = {
   customerEmail: string
-  title?: string
-  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING"
+  title?: string | null
+  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING" | null
   nextPurchaseDate?: string
-  catalogAttachment?: string
+  catalogAttachment?: string | null
   plan: PlanRequest
   shippingAddress: ShippingAddressRequest
   purchaseSettings: PurchaseSettingsRequest
   items: {
   skuId: string
   quantity: number
-  manualPrice?: number
+  manualPrice?: number | null
   attachments?: {
   name: string
-  content: Record<string, unknown>
+  content: {
+  [key: string]: string
+}
 }[]
 }[]
 }
 
 export type PriceTag = {
-  name?: string
+  name?: string | null
   valueAsInt?: number
   rawValue?: number
   isPercentual?: boolean
-  identifier?: string
+  identifier?: string | null
 }
 
 export type SimulateResponseVO = {
   simulation?: {
   items?: {
-  id?: string
-  seller?: string
+  id?: string | null
+  seller?: string | null
   quantity?: number
-  price?: number
-  sellingPrice?: number
-  manualPrice?: number
+  price?: number | null
+  sellingPrice?: number | null
+  manualPrice?: number | null
   unitMultiplier?: number
   measurementUnit?: string
   attachments?: {
-  name?: string
-  content?: Record<string, unknown>
-}[]
-  name?: string
+  name?: string | null
+  content?: {
+  [key: string]: string
+} | null
+}[] | null
+  name?: string | null
   isGift?: boolean
-  priceTags?: PriceTag[]
+  priceTags?: PriceTag[] | null
 }[]
   logisticsInfo?: {
   itemIndex?: number
   quantity?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: "delivery" | "pickup-in-point"
-  lockTTL?: string
-  shippingEstimate?: string
-  addressId?: string
-  pickupId?: string
-  price?: number
-  deliveryWindow?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: "delivery" | "pickup-in-point" | null
+  lockTTL?: string | null
+  shippingEstimate?: string | null
+  addressId?: string | null
+  pickupId?: string | null
+  price?: number | null
+  deliveryWindow?: string | null
   slas?: {
-  id?: string
-  pickupPointId?: string
-  deliveryChannel?: "delivery" | "pickup-in-point"
+  id?: string | null
+  pickupPointId?: string | null
+  deliveryChannel?: "delivery" | "pickup-in-point" | null
   price?: number
-  shippingEstimate?: string
-  lockTTL?: string
+  shippingEstimate?: string | null
+  lockTTL?: string | null
   deliveryWindows?: {
-  startDateUtc?: string
-  endDateUtc?: string
-  price?: number
-}[]
+  startDateUtc?: string | null
+  endDateUtc?: string | null
+  price?: number | null
+}[] | null
   availableDeliveryWindows?: {
-  startDateUtc?: string
-  endDateUtc?: string
-  price?: number
-}[]
+  startDateUtc?: string | null
+  endDateUtc?: string | null
+  price?: number | null
+}[] | null
 }[]
 }[]
   paymentData?: {
-  payments?: {
-  id?: string
-  paymentSystem?: string
-  group?: string
-  bin?: string
-  accountId?: string
-  parentAccountId?: string
-  referenceValue?: number
-  value?: number
-  installments?: number
-  url?: string
-  cardNumber?: string
+  payments?: ({
+  id?: string | null
+  paymentSystem?: string | null
+  group?: string | null
+  bin?: string | null
+  accountId?: string | null
+  parentAccountId?: string | null
+  referenceValue?: number | null
+  value?: number | null
+  installments?: number | null
+  url?: string | null
+  cardNumber?: string | null
   fields?: {
-  name?: string
-  value?: string
-}[]
-  paymentSystemName?: string
-}[]
-  transactions?: {
-  isActive?: boolean
-}[]
-}
-  country?: string
-  postalCode?: string
-  messages?: {
-  code?: string
-  status?: string
-  text?: string
-}[]
+  name?: string | null
+  value?: string | null
+}[] | null
+  paymentSystemName?: string | null
+} | null)[] | null
+  transactions?: ({
+  isActive?: boolean | null
+} | null)[] | null
+} | null
+  country?: string | null
+  postalCode?: string | null
+  messages?: ({
+  code?: string | null
+  status?: string | null
+  text?: string | null
+} | null)[] | null
   selectableGifts?: {
-  id?: string
-  availableQuantity?: number
-  availableGifts?: {
-  id?: string
-  seller?: string
-  quantity?: number
-  price?: number
-  sellingPrice?: number
-  unitMultiplier?: number
-  attachments?: {
-  name?: string
-  content?: Record<string, unknown>
-}[]
-  name?: string
-  isGift?: boolean
-  priceTags?: PriceTag[]
-  isSelected?: boolean
-}[]
-}[]
+  id?: string | null
+  availableQuantity?: number | null
+  availableGifts?: ({
+  id?: string | null
+  seller?: string | null
+  quantity?: number | null
+  price?: number | null
+  sellingPrice?: number | null
+  unitMultiplier?: number | null
+  attachments?: ({
+  name?: string | null
+  content?: {
+  [key: string]: string | null
+} | null
+} | null)[] | null
+  name?: string | null
+  isGift?: boolean | null
+  priceTags?: PriceTag[] | null
+  isSelected?: boolean | null
+} | null)[] | null
+}[] | null
   totals?: {
   id?: "Items" | "Discounts" | "Shipping" | "Tax"
   name?: string
@@ -332,12 +340,12 @@ export type SimulateResponseVO = {
 
 export type Settings = {
   slaOption: "NONE" | "CHEAPEST" | "CUSTOMER_CHOICE" | "STORE_CHOICE"
-  defaultSla: string
+  defaultSla: string | null
   isUsingV3: boolean
   onMigrationProcess: boolean
   executionHourInUtc: number
   workflowVersion: string
-  deliveryChannels: "delivery" | "pickupInPoint"[]
+  deliveryChannels: ("delivery" | "pickupInPoint")[]
   randomIdGeneration: boolean
   isMultipleInstallmentsEnabledOnCreation: boolean
   isMultipleInstallmentsEnabledOnUpdate: boolean
@@ -345,7 +353,7 @@ export type Settings = {
   enableAttachments?: boolean
   splitSameSkuWithDifferentAttachments?: boolean
 }
-  orderCustomDataAppId: string
+  orderCustomDataAppId: string | null
   postponeExpiration: boolean
   manualPriceAllowed: boolean
   useItemPriceFromOriginalOrder: boolean

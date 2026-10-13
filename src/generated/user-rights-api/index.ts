@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class UserRightsApi_dataErasure {
   constructor(private http: VtexHttpClient) {}
@@ -7,24 +9,24 @@ class UserRightsApi_dataErasure {
   body: {
   email: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   jobId: string
 }> {
     return this.http.request<{
   jobId: string
-}>({ method: 'POST', path: `/api/user-rights/forget/jobs`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/user-rights/forget/jobs`, body: params.body }, opts))
   }
 
   getApiUserRightsForgetJobsByJobId(params: {
   jobId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   status: "InProgress" | "Success" | "Failed"
   message: string
 }> {
     return this.http.request<{
   status: "InProgress" | "Success" | "Failed"
   message: string
-}>({ method: 'GET', path: `/api/user-rights/forget/jobs/${params.jobId}` })
+}>(withCall({ method: 'GET', path: `/api/user-rights/forget/jobs/${encodePathParam(params.jobId)}` }, opts))
   }
 }
 

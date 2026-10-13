@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class CheckoutCustomCardPaymentApi_profileManagement {
   constructor(private http: VtexHttpClient) {}
@@ -17,19 +19,33 @@ class CheckoutCustomCardPaymentApi_profileManagement {
   businessPhone?: string
   isPJ?: boolean
 }
-  addresses: Record<string, unknown>
+  addresses: {
+  [key: string]: {
+  addressId?: string
+  receiverName?: string
+  isDisposable?: boolean
+  addressType?: string
+  postalCode?: string
+  street?: string
+  neighborhood?: string
+  city?: string
+  state?: string
+  country?: string
+  number?: string
 }
-}): Promise<{
+}
+}
+}, opts?: CallOptions): Promise<{
   profileId?: string
 }> {
     return this.http.request<{
   profileId?: string
-}>({ method: 'POST', path: `/api/profile-system/pvt/profiles`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/profile-system/pvt/profiles`, body: params.body }, opts))
   }
 
   getApiProfileSystemPvtProfilesByProfileIdVcsCheckout(params: {
   profileId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   paymentData?: string
   orderFormIds?: string
   lastOrderTimestamp?: string
@@ -40,14 +56,14 @@ class CheckoutCustomCardPaymentApi_profileManagement {
   orderFormIds?: string
   lastOrderTimestamp?: string
   lastUserPurchases?: string
-}>({ method: 'GET', path: `/api/profile-system/pvt/profiles/${params.profileId}/vcs-checkout` })
+}>(withCall({ method: 'GET', path: `/api/profile-system/pvt/profiles/${encodePathParam(params.profileId)}/vcs-checkout` }, opts))
   }
 
   deleteApiProfileSystemPvtProfilesByProfileIdPersonalData(params: {
   profileId: string
   an: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/profile-system/pvt/profiles/${params.profileId}/personalData`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/profile-system/pvt/profiles/${encodePathParam(params.profileId)}/personalData`, query: { 'an': params.an } }, opts))
   }
 }
 class CheckoutCustomCardPaymentApi_cardTokenVault {
@@ -82,7 +98,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
 }
   email: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   accountName?: string
   providerId?: string
@@ -94,7 +110,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
   holderName?: string
   address?: {
   addressType?: string
-  addressId?: string
+  addressId?: string | null
   postalCode?: string
   street?: string
   neighborhood?: string
@@ -102,7 +118,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
   state?: string
   country?: string
   number?: string
-  complement?: string
+  complement?: string | null
 }
 }
   cardTokenData?: {
@@ -125,7 +141,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
   holderName?: string
   address?: {
   addressType?: string
-  addressId?: string
+  addressId?: string | null
   postalCode?: string
   street?: string
   neighborhood?: string
@@ -133,7 +149,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
   state?: string
   country?: string
   number?: string
-  complement?: string
+  complement?: string | null
 }
 }
   cardTokenData?: {
@@ -143,7 +159,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
   label?: string
   useCvvForAuthorization?: boolean
 }
-}>({ method: 'POST', path: `/api/card-token-vault/tokens`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/card-token-vault/tokens`, body: params.body }, opts))
   }
 }
 class CheckoutCustomCardPaymentApi_checkoutOperations {
@@ -158,17 +174,17 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   quantity: number
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -178,31 +194,31 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
   modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   assemblies?: string[]
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: Record<string, unknown>
   quantity?: number
@@ -219,7 +235,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -227,7 +243,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   value?: number
   quantity?: number
 }[]
-  reason?: string
+  reason?: string | null
 }
   taxCode?: string
 }[]
@@ -238,12 +254,12 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   value?: number
 }[]
   shippingData?: {
-  address?: Record<string, unknown>
+  address?: Record<string, unknown> | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: string[]
   shipsTo?: string[]
   itemId?: string
@@ -271,14 +287,14 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   isCorporate?: boolean
   userProfileId?: string
   customerClass?: string
-}
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: string
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -301,11 +317,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   name?: string
   groupName?: string
   validator?: {
-  regex?: string
-  mask?: string
-  cardCodeRegex?: string
-  cardCodeMask?: string
-  weights?: number[]
+  regex?: string | null
+  mask?: string | null
+  cardCodeRegex?: string | null
+  cardCodeMask?: string | null
+  weights?: number[] | null
   useCvv?: boolean
   useExpirationDate?: boolean
   useCardHolderName?: boolean
@@ -316,10 +332,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   requiresDocument?: boolean
   displayDocument?: boolean
   isCustom?: boolean
-  description?: string
+  description?: string | null
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: Record<string, unknown>
+  availablePayments?: Record<string, unknown> | null
 }[]
   payments?: {
   id?: string
@@ -335,7 +351,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -346,7 +362,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
@@ -355,11 +371,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }[]
   clientPreferencesData?: {
   locale?: string
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -377,12 +393,12 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }
   giftRegistryData?: {
   id?: string
-}
-  openTextField?: string
-  invoiceData?: Record<string, unknown>
+} | null
+  openTextField?: string | null
+  invoiceData?: Record<string, unknown> | null
   customData?: {
-  customApps?: Record<string, unknown>[]
-  customFields?: {
+  customApps?: (Record<string, unknown> | null)[] | null
+  customFields?: ({
   linkedEntity?: {
   type?: "order" | "item" | "address"
   id?: string
@@ -392,8 +408,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   value?: string
   refId?: string
 }[]
-}[]
-}
+} | null)[] | null
+} | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -402,7 +418,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
   assemblyOptions?: {
@@ -410,7 +426,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }[]
 }[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: {
   id?: string
@@ -419,22 +435,22 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
-  itemsOrdination?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
+  itemsOrdination?: Record<string, unknown> | null
 }> {
     return this.http.request<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -444,31 +460,31 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
   modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   assemblies?: string[]
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: Record<string, unknown>
   quantity?: number
@@ -485,7 +501,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -493,7 +509,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   value?: number
   quantity?: number
 }[]
-  reason?: string
+  reason?: string | null
 }
   taxCode?: string
 }[]
@@ -504,12 +520,12 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   value?: number
 }[]
   shippingData?: {
-  address?: Record<string, unknown>
+  address?: Record<string, unknown> | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: string[]
   shipsTo?: string[]
   itemId?: string
@@ -537,14 +553,14 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   isCorporate?: boolean
   userProfileId?: string
   customerClass?: string
-}
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: string
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -567,11 +583,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   name?: string
   groupName?: string
   validator?: {
-  regex?: string
-  mask?: string
-  cardCodeRegex?: string
-  cardCodeMask?: string
-  weights?: number[]
+  regex?: string | null
+  mask?: string | null
+  cardCodeRegex?: string | null
+  cardCodeMask?: string | null
+  weights?: number[] | null
   useCvv?: boolean
   useExpirationDate?: boolean
   useCardHolderName?: boolean
@@ -582,10 +598,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   requiresDocument?: boolean
   displayDocument?: boolean
   isCustom?: boolean
-  description?: string
+  description?: string | null
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: Record<string, unknown>
+  availablePayments?: Record<string, unknown> | null
 }[]
   payments?: {
   id?: string
@@ -601,7 +617,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -612,7 +628,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
@@ -621,11 +637,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }[]
   clientPreferencesData?: {
   locale?: string
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -643,12 +659,12 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }
   giftRegistryData?: {
   id?: string
-}
-  openTextField?: string
-  invoiceData?: Record<string, unknown>
+} | null
+  openTextField?: string | null
+  invoiceData?: Record<string, unknown> | null
   customData?: {
-  customApps?: Record<string, unknown>[]
-  customFields?: {
+  customApps?: (Record<string, unknown> | null)[] | null
+  customFields?: ({
   linkedEntity?: {
   type?: "order" | "item" | "address"
   id?: string
@@ -658,8 +674,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   value?: string
   refId?: string
 }[]
-}[]
-}
+} | null)[] | null
+} | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -668,7 +684,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
   assemblyOptions?: {
@@ -676,7 +692,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }[]
 }[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: {
   id?: string
@@ -685,11 +701,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
-  itemsOrdination?: Record<string, unknown>
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items`, body: params.body })
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
+  itemsOrdination?: Record<string, unknown> | null
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items`, body: params.body }, opts))
   }
 
   postApiCheckoutPubOrderFormByOrderFormIdAttachmentsClientProfileData(params: {
@@ -697,17 +713,17 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   body: {
   email: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: {
@@ -737,10 +753,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   id?: string
 }[]
@@ -757,8 +773,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
@@ -774,8 +790,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   pickupPoints?: {
@@ -792,23 +808,23 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
   profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  customerClass?: string | null
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -823,7 +839,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -832,7 +848,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   description?: string
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -856,7 +872,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -867,11 +883,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
   clientPreferencesData?: {
   locale?: string
@@ -879,7 +895,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -895,8 +911,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   startsWithCurrencySymbol?: boolean
 }
 }
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -910,45 +926,45 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   reference?: string
   geoCoordinates?: number[]
 }
-}
-  customData?: Record<string, unknown>
+} | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
-}
-  hooksData?: Record<string, unknown>
+} | null)[]
+} | null
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
+} | null
 }> {
     return this.http.request<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: {
@@ -978,10 +994,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   id?: string
 }[]
@@ -998,8 +1014,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
@@ -1015,8 +1031,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   pickupPoints?: {
@@ -1033,23 +1049,23 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
   profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  customerClass?: string | null
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -1064,7 +1080,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -1073,7 +1089,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   description?: string
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -1097,7 +1113,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -1108,11 +1124,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
   clientPreferencesData?: {
   locale?: string
@@ -1120,7 +1136,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -1136,8 +1152,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   startsWithCurrencySymbol?: boolean
 }
 }
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -1151,34 +1167,34 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   reference?: string
   geoCoordinates?: number[]
 }
-}
-  customData?: Record<string, unknown>
+} | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
-}
-  hooksData?: Record<string, unknown>
+} | null)[]
+} | null
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/clientProfileData`, body: params.body })
+} | null
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/clientProfileData`, body: params.body }, opts))
   }
 
   postApiCheckoutPubOrderFormByOrderFormIdAttachmentsPaymentData(params: {
@@ -1186,7 +1202,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   body: {
   payments: {
   hasDefaultBillingAddress?: boolean
-  installmentsInterestRate?: number
+  installmentsInterestRate?: number | null
   referenceValue?: number
   bin?: string
   accountId?: string
@@ -1195,17 +1211,17 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   installments: number
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: {
@@ -1235,10 +1251,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   id?: string
 }[]
@@ -1255,8 +1271,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
@@ -1272,8 +1288,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   pickupPoints?: {
@@ -1290,23 +1306,23 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
   profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  customerClass?: string | null
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -1321,7 +1337,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -1330,7 +1346,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   description?: string
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -1354,7 +1370,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -1365,11 +1381,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
   clientPreferencesData?: {
   locale?: string
@@ -1377,7 +1393,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -1393,8 +1409,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   startsWithCurrencySymbol?: boolean
 }
 }
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -1408,45 +1424,45 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   reference?: string
   geoCoordinates?: number[]
 }
-}
-  customData?: Record<string, unknown>
+} | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
-}
-  hooksData?: Record<string, unknown>
+} | null)[]
+} | null
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
+} | null
 }> {
     return this.http.request<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: {
@@ -1476,10 +1492,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   id?: string
 }[]
@@ -1496,8 +1512,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
@@ -1513,8 +1529,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   pickupPoints?: {
@@ -1531,23 +1547,23 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
   profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  customerClass?: string | null
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -1562,7 +1578,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -1571,7 +1587,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   description?: string
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -1595,7 +1611,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -1606,11 +1622,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
   clientPreferencesData?: {
   locale?: string
@@ -1618,7 +1634,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -1634,8 +1650,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   startsWithCurrencySymbol?: boolean
 }
 }
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -1649,34 +1665,34 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   reference?: string
   geoCoordinates?: number[]
 }
-}
-  customData?: Record<string, unknown>
+} | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
-}
-  hooksData?: Record<string, unknown>
+} | null)[]
+} | null
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/paymentData`, body: params.body })
+} | null
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/paymentData`, body: params.body }, opts))
   }
 
   postApiCheckoutPubOrderFormByOrderFormIdTransaction(params: {
@@ -1688,37 +1704,37 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   referenceValue: number
   interestValue?: number
 }
-}): Promise<{
-  id?: string
+}, opts?: CallOptions): Promise<{
+  id?: string | null
   merchantTransactions?: {
   id?: string
   transactionId?: string
   merchantName?: string
   payments?: {
   paymentSystem?: number
-  bin?: string
-  accountId?: string
-  tokenId?: string
+  bin?: string | null
+  accountId?: string | null
+  tokenId?: string | null
   value?: number
   referenceValue?: number
-  giftCardRedemptionCode?: string
-  giftCardProvider?: string
-  giftCardId?: string
+  giftCardRedemptionCode?: string | null
+  giftCardProvider?: string | null
+  giftCardId?: string | null
 }[]
 }[]
-  receiverUri?: string
-  gatewayCallbackTemplatePath?: string
-  orderGroup?: string
+  receiverUri?: string | null
+  gatewayCallbackTemplatePath?: string | null
+  orderGroup?: string | null
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: {
@@ -1748,10 +1764,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   id?: string
 }[]
@@ -1768,8 +1784,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
@@ -1785,8 +1801,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   pickupPoints?: {
@@ -1803,23 +1819,23 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
   profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  customerClass?: string | null
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -1834,16 +1850,16 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
   displayDocument?: boolean
   isCustom?: boolean
-  description?: string
+  description?: string | null
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -1867,7 +1883,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -1878,11 +1894,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
   clientPreferencesData?: {
   locale?: string
@@ -1890,7 +1906,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -1906,8 +1922,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   startsWithCurrencySymbol?: boolean
 }
 }
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -1921,65 +1937,65 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   reference?: string
   geoCoordinates?: number[]
 }
-}
-  customData?: Record<string, unknown>
+} | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
-}
-  hooksData?: Record<string, unknown>
+} | null)[]
+} | null
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
+} | null
 }> {
     return this.http.request<{
-  id?: string
+  id?: string | null
   merchantTransactions?: {
   id?: string
   transactionId?: string
   merchantName?: string
   payments?: {
   paymentSystem?: number
-  bin?: string
-  accountId?: string
-  tokenId?: string
+  bin?: string | null
+  accountId?: string | null
+  tokenId?: string | null
   value?: number
   referenceValue?: number
-  giftCardRedemptionCode?: string
-  giftCardProvider?: string
-  giftCardId?: string
+  giftCardRedemptionCode?: string | null
+  giftCardProvider?: string | null
+  giftCardId?: string | null
 }[]
 }[]
-  receiverUri?: string
-  gatewayCallbackTemplatePath?: string
-  orderGroup?: string
+  receiverUri?: string | null
+  gatewayCallbackTemplatePath?: string | null
+  orderGroup?: string | null
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
-  checkedInPickupPointId?: string
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
-  userType?: string
+  userProfileId?: string | null
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: {
@@ -2009,10 +2025,10 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   id?: string
 }[]
@@ -2029,8 +2045,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
@@ -2046,8 +2062,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   pickupPoints?: {
@@ -2064,23 +2080,23 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
   profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  customerClass?: string | null
+} | null
   paymentData?: {
   updateStatus?: string
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -2095,16 +2111,16 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
   displayDocument?: boolean
   isCustom?: boolean
-  description?: string
+  description?: string | null
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -2128,7 +2144,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
   useCvvForAuthorization?: boolean
   isCardToken?: boolean
   cardLabel?: string
@@ -2139,11 +2155,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   id?: string
 }
 }
-  marketingData?: Record<string, unknown>
+  marketingData?: Record<string, unknown> | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
   clientPreferencesData?: {
   locale?: string
@@ -2151,7 +2167,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   savePersonalData?: boolean
   savePaymentData?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: {
   countryCode?: string
   saveUserData?: boolean
@@ -2167,8 +2183,8 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   startsWithCurrencySymbol?: boolean
 }
 }
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -2182,50 +2198,51 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
   reference?: string
   geoCoordinates?: number[]
 }
-}
-  customData?: Record<string, unknown>
+} | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
-}
-  hooksData?: Record<string, unknown>
+} | null)[]
+} | null
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
-  merchantContextData?: Record<string, unknown>
-  purchaseAgentsData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
+  merchantContextData?: Record<string, unknown> | null
+  purchaseAgentsData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/transaction`, body: params.body })
+} | null
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/transaction`, body: params.body }, opts))
   }
 }
 class CheckoutCustomCardPaymentApi_authentication {
   constructor(private http: VtexHttpClient) {}
 
-  postApiVtexidPubAuthenticationStartlogin(params: Record<string, never>): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/vtexid/pub/authentication/startlogin` })
+  postApiVtexidPubAuthenticationStartlogin(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/vtexid/pub/authentication/startlogin` }, opts))
   }
 
   postApiVtexidPubAuthenticationClassicValidate(params: {
   an: string
-}): Promise<{
+  body: URLSearchParams | Record<string, string>
+}, opts?: CallOptions): Promise<{
   authStatus?: string
   promptMFA?: boolean
-  lastAttemptAvailable?: string
-  clientToken?: string
+  lastAttemptAvailable?: string | null
+  clientToken?: string | null
   authCookie?: {
   Name?: string
   Value?: string
@@ -2236,14 +2253,14 @@ class CheckoutCustomCardPaymentApi_authentication {
 }
   expiresIn?: number
   userId?: string
-  phoneNumber?: string
-  scope?: string
+  phoneNumber?: string | null
+  scope?: string | null
 }> {
     return this.http.request<{
   authStatus?: string
   promptMFA?: boolean
-  lastAttemptAvailable?: string
-  clientToken?: string
+  lastAttemptAvailable?: string | null
+  clientToken?: string | null
   authCookie?: {
   Name?: string
   Value?: string
@@ -2254,9 +2271,9 @@ class CheckoutCustomCardPaymentApi_authentication {
 }
   expiresIn?: number
   userId?: string
-  phoneNumber?: string
-  scope?: string
-}>({ method: 'POST', path: `/api/vtexid/pub/authentication/classic/validate`, query: { 'an': params.an } })
+  phoneNumber?: string | null
+  scope?: string | null
+}>(withCall({ method: 'POST', path: `/api/vtexid/pub/authentication/classic/validate`, query: { 'an': params.an }, body: params.body, contentType: 'application/x-www-form-urlencoded' }, opts))
   }
 }
 class CheckoutCustomCardPaymentApi_paymentGateway {
@@ -2264,20 +2281,20 @@ class CheckoutCustomCardPaymentApi_paymentGateway {
 
   getApiPvtTransactionsByTransactionId(params: {
   transactionId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   status?: "Approved"
   transactionId?: string
 }> {
     return this.http.request<{
   status?: "Approved"
   transactionId?: string
-}>({ method: 'GET', path: `/api/pvt/transactions/${params.transactionId}` })
+}>(withCall({ method: 'GET', path: `/api/pvt/transactions/${encodePathParam(params.transactionId)}` }, opts))
   }
 
   getApiPvtTransactionsByTransactionIdPayments(params: {
   transactionId: string
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   fields?: {
   name?: string
@@ -2290,12 +2307,12 @@ class CheckoutCustomCardPaymentApi_paymentGateway {
   name?: string
   value?: string
 }[]
-}[]>({ method: 'GET', path: `/api/pvt/transactions/${params.transactionId}/payments`, query: { 'an': params.an } })
+}[]>(withCall({ method: 'GET', path: `/api/pvt/transactions/${encodePathParam(params.transactionId)}/payments`, query: { 'an': params.an } }, opts))
   }
 
   getApiPvtAccountsByAccountId(params: {
   accountId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   bin?: string
   lastDigits?: string
   expiryMonth?: string
@@ -2304,17 +2321,17 @@ class CheckoutCustomCardPaymentApi_paymentGateway {
   paymentSystem?: number
   paymentSystemName?: string
   address?: string
-  document?: string
+  document?: string | null
   label?: string
   tokens?: {
   providerId?: string
   type?: string
   value?: string
   expiration?: string
-  href?: string
+  href?: string | null
   providerCardTokentId?: string
   useCvvForAuthorization?: boolean
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown> | null
 }[]
 }> {
     return this.http.request<{
@@ -2326,19 +2343,19 @@ class CheckoutCustomCardPaymentApi_paymentGateway {
   paymentSystem?: number
   paymentSystemName?: string
   address?: string
-  document?: string
+  document?: string | null
   label?: string
   tokens?: {
   providerId?: string
   type?: string
   value?: string
   expiration?: string
-  href?: string
+  href?: string | null
   providerCardTokentId?: string
   useCvvForAuthorization?: boolean
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown> | null
 }[]
-}>({ method: 'GET', path: `/api/pvt/accounts/${params.accountId}` })
+}>(withCall({ method: 'GET', path: `/api/pvt/accounts/${encodePathParam(params.accountId)}` }, opts))
   }
 }
 

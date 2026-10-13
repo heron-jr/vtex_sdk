@@ -63,23 +63,23 @@ export type Getversion = {
 }
 
 export type Document = {
-  "{customProperty}"?: string
   id: string
   accountId: string
   accountName: string
   dataEntityId: string
+  [key: string]: unknown
 }
 
 export type CreateUpdateProfileRequests = {
-  email?: string
-  firstName?: string
-  lastName?: string
-  phone?: string
-  documentType?: string
-  document?: string
-  isCorporate?: boolean
-  isNewsletterOptIn?: boolean
-  localeDefault?: string
+  email?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  documentType?: string | null
+  document?: string | null
+  isCorporate?: boolean | null
+  isNewsletterOptIn?: boolean | null
+  localeDefault?: string | null
   corporateDocument?: string
   homePhone?: string
   cellPhone?: string
@@ -102,21 +102,21 @@ export type CreateUpdateProfileRequests = {
 }
 
 export type CreateUpdateAddressRequests = {
-  addressName?: string
-  addressLabel?: string
-  addressType?: "commercial" | "invoice"
-  receiverName?: string
-  city?: string
-  state?: string
-  country?: string
-  postalCode?: string
-  street?: string
-  number?: string
-  neighborhood?: string
-  complement?: string
-  reference?: string
-  geoCoordinate?: string
-  userId?: string
+  addressName?: string | null
+  addressLabel?: string | null
+  addressType?: "commercial" | "invoice" | null
+  receiverName?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  postalCode?: string | null
+  street?: string | null
+  number?: string | null
+  neighborhood?: string | null
+  complement?: string | null
+  reference?: string | null
+  geoCoordinate?: string | null
+  userId?: string | null
 }
 
 export type DocumentResponse = {
@@ -131,34 +131,34 @@ export type CreateAddressResponse = {
 }
 
 export type AddressResponse = {
-  addressLabel?: string
-  addressType?: "commercial" | "invoice"
-  city?: string
-  complement?: string
-  country?: string
-  countryfake?: string
-  geoCoordinate?: string
-  neighborhood?: string
-  number?: string
-  postalCode?: string
-  receiverName?: string
-  reference?: string
-  state?: string
-  street?: string
-  userId?: string
-  id?: string
-  accountId?: string
-  accountName?: string
-  dataEntityId?: string
-  createdBy?: string
-  createdIn?: string
-  updatedBy?: string
-  updatedIn?: string
-  lastInteractionBy?: string
-  lastInteractionIn?: string
-  followers?: string[]
-  tags?: string[]
-  auto_filter?: string
+  addressLabel?: string | null
+  addressType?: "commercial" | "invoice" | null
+  city?: string | null
+  complement?: string | null
+  country?: string | null
+  countryfake?: string | null
+  geoCoordinate?: string | null
+  neighborhood?: string | null
+  number?: string | null
+  postalCode?: string | null
+  receiverName?: string | null
+  reference?: string | null
+  state?: string | null
+  street?: string | null
+  userId?: string | null
+  id?: string | null
+  accountId?: string | null
+  accountName?: string | null
+  dataEntityId?: string | null
+  createdBy?: string | null
+  createdIn?: string | null
+  updatedBy?: string | null
+  updatedIn?: string | null
+  lastInteractionBy?: string | null
+  lastInteractionIn?: string | null
+  followers?: string[] | null
+  tags?: string[] | null
+  auto_filter?: string | null
 }
 
 export type Acronym = unknown

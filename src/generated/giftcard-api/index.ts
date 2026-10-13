@@ -1,16 +1,20 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CreateGiftCardRequest, Response, Transactions, GetGiftCardusingJSONRequest, Cart, Item, Client, Response2, Item1, Self, Paging, Response3, CreateGiftCardTransactionRequest, OrderInfo, Cart1, Item2, PriceTag, ClientProfile, Shipping, Response5, Response6, Response7, GiftCardTransactionRequest } from './types.js'
 
 class GiftcardApi_giftCard {
   constructor(private http: VtexHttpClient) {}
 
-  createGiftCard(params: Record<string, never>): Promise<Response> {
-    return this.http.request<Response>({ method: 'POST', path: `/giftcards` })
+  createGiftCard(params: {
+  body: CreateGiftCardRequest
+}, opts?: CallOptions): Promise<Response> {
+    return this.http.request<Response>(withCall({ method: 'POST', path: `/giftcards`, body: params.body, contentType: 'application/vnd.vtex.giftcard.v1+json', server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   getGiftCardbyID(params: {
   giftCardId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   redemptionToken: string
   redemptionCode: string
@@ -29,13 +33,14 @@ class GiftcardApi_giftCard {
   expiringDate: string
   currencyCode?: string
   transactions: Transactions
-}>({ method: 'GET', path: `/giftcards/${params.giftCardId}` })
+}>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   searchGiftCardsfromcartdata(params: {
+  'REST-Range'?: string
   body: GetGiftCardusingJSONRequest
-}): Promise<Response2> {
-    return this.http.request<Response2>({ method: 'POST', path: `/giftcards/_search`, body: params.body })
+}, opts?: CallOptions): Promise<Response2> {
+    return this.http.request<Response2>(withCall({ method: 'POST', path: `/giftcards/_search`, headers: { 'REST-Range': params['REST-Range'] }, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 }
 class GiftcardApi_transactions {
@@ -43,59 +48,59 @@ class GiftcardApi_transactions {
 
   getGiftCardTransactions(params: {
   giftCardId: string
-}): Promise<Response3[]> {
-    return this.http.request<Response3[]>({ method: 'GET', path: `/giftcards/${params.giftCardId}/transactions` })
+}, opts?: CallOptions): Promise<Response3[]> {
+    return this.http.request<Response3[]>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   createGiftCardTransaction(params: {
   giftCardId: string
   body: CreateGiftCardTransactionRequest
-}): Promise<Response3> {
-    return this.http.request<Response3>({ method: 'POST', path: `/giftcards/${params.giftCardId}/transactions`, body: params.body })
+}, opts?: CallOptions): Promise<Response3> {
+    return this.http.request<Response3>(withCall({ method: 'POST', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   getGiftCardTransactionbyID(params: {
   giftCardId: string
   transactionId: string
-}): Promise<Response5> {
-    return this.http.request<Response5>({ method: 'GET', path: `/giftcards/${params.giftCardId}/transactions/${params.transactionId}` })
+}, opts?: CallOptions): Promise<Response5> {
+    return this.http.request<Response5>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   getTransactionAuthorizations(params: {
   giftCardId: string
   transactionId: string
-}): Promise<Response6> {
-    return this.http.request<Response6>({ method: 'GET', path: `/giftcards/${params.giftCardId}/transactions/${params.transactionId}/authorization` })
+}, opts?: CallOptions): Promise<Response6> {
+    return this.http.request<Response6>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/authorization`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   getTransactionCancellations(params: {
   giftCardId: string
   transactionId: string
-}): Promise<Response7[]> {
-    return this.http.request<Response7[]>({ method: 'GET', path: `/giftcards/${params.giftCardId}/transactions/${params.transactionId}/cancellations` })
+}, opts?: CallOptions): Promise<Response7[]> {
+    return this.http.request<Response7[]>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/cancellations`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   cancelGiftCardTransaction(params: {
   giftCardId: string
   transactionId: string
   body: GiftCardTransactionRequest
-}): Promise<Response6> {
-    return this.http.request<Response6>({ method: 'POST', path: `/giftcards/${params.giftCardId}/transactions/${params.transactionId}/cancellations`, body: params.body })
+}, opts?: CallOptions): Promise<Response6> {
+    return this.http.request<Response6>(withCall({ method: 'POST', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/cancellations`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   getTransactionSettlements(params: {
   giftCardId: string
   transactionId: string
-}): Promise<Response6[]> {
-    return this.http.request<Response6[]>({ method: 'GET', path: `/giftcards/${params.giftCardId}/transactions/${params.transactionId}/settlements` })
+}, opts?: CallOptions): Promise<Response6[]> {
+    return this.http.request<Response6[]>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/settlements`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
   settleGiftCardTransaction(params: {
   giftCardId: string
   transactionId: string
   body: GiftCardTransactionRequest
-}): Promise<Response6> {
-    return this.http.request<Response6>({ method: 'POST', path: `/giftcards/${params.giftCardId}/transactions/${params.transactionId}/settlements`, body: params.body })
+}, opts?: CallOptions): Promise<Response6> {
+    return this.http.request<Response6>(withCall({ method: 'POST', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/settlements`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 }
 

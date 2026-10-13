@@ -1,36 +1,38 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { PolicyRuleInput, PolicyRule, JsonLogicExpression, PaymentPolicySearchRequest, PaymentPolicySearchItem, PaymentPolicySearchResponse, PaymentSystemDefinition, Validator, ProblemDetails } from './types.js'
 
 class PaymentPoliciesApi_paymentPolicyRules {
   constructor(private http: VtexHttpClient) {}
 
-  listPolicyRules(params: Record<string, never>): Promise<PolicyRule[]> {
-    return this.http.request<PolicyRule[]>({ method: 'GET', path: `/api/payment-configuration-service/policy-rules` })
+  listPolicyRules(params: Record<string, never> = {}, opts?: CallOptions): Promise<PolicyRule[]> {
+    return this.http.request<PolicyRule[]>(withCall({ method: 'GET', path: `/api/payment-configuration-service/policy-rules`, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
   createPolicyRule(params: {
   body: PolicyRuleInput
-}): Promise<PolicyRule> {
-    return this.http.request<PolicyRule>({ method: 'POST', path: `/api/payment-configuration-service/policy-rules`, body: params.body })
+}, opts?: CallOptions): Promise<PolicyRule> {
+    return this.http.request<PolicyRule>(withCall({ method: 'POST', path: `/api/payment-configuration-service/policy-rules`, body: params.body, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
   getPolicyRuleById(params: {
   id: string
-}): Promise<PolicyRule> {
-    return this.http.request<PolicyRule>({ method: 'GET', path: `/api/payment-configuration-service/policy-rules/${params.id}` })
+}, opts?: CallOptions): Promise<PolicyRule> {
+    return this.http.request<PolicyRule>(withCall({ method: 'GET', path: `/api/payment-configuration-service/policy-rules/${encodePathParam(params.id)}`, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
   updatePolicyRule(params: {
   id: string
   body: PolicyRuleInput
-}): Promise<PolicyRule> {
-    return this.http.request<PolicyRule>({ method: 'PUT', path: `/api/payment-configuration-service/policy-rules/${params.id}`, body: params.body })
+}, opts?: CallOptions): Promise<PolicyRule> {
+    return this.http.request<PolicyRule>(withCall({ method: 'PUT', path: `/api/payment-configuration-service/policy-rules/${encodePathParam(params.id)}`, body: params.body, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
   deletePolicyRule(params: {
   id: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/payment-configuration-service/policy-rules/${params.id}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/payment-configuration-service/policy-rules/${encodePathParam(params.id)}`, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 }
 class PaymentPoliciesApi_paymentPolicyEvaluation {
@@ -38,8 +40,8 @@ class PaymentPoliciesApi_paymentPolicyEvaluation {
 
   evaluatePaymentPolicies(params: {
   body: PaymentPolicySearchRequest
-}): Promise<PaymentPolicySearchResponse> {
-    return this.http.request<PaymentPolicySearchResponse>({ method: 'POST', path: `/api/pvt/payment-systems/search`, body: params.body })
+}, opts?: CallOptions): Promise<PaymentPolicySearchResponse> {
+    return this.http.request<PaymentPolicySearchResponse>(withCall({ method: 'POST', path: `/api/pvt/payment-systems/search`, body: params.body, server: 'https://{accountName}.vtexpayments.com.br' }, opts))
   }
 }
 

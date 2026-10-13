@@ -3,8 +3,8 @@ export type ValidRequest = {
   installments: {
   payment: {
   id: number
-  name: string
-  bin: string
+  name: string | null
+  bin: string | null
   value: number
   isDefault: boolean
   self: {
@@ -18,8 +18,8 @@ export type ValidRequest = {
 export type Installment = {
   payment: {
   id: number
-  name: string
-  bin: string
+  name: string | null
+  bin: string | null
   value: number
   isDefault: boolean
   self: {
@@ -31,8 +31,8 @@ export type Installment = {
 
 export type Payment = {
   id: number
-  name: string
-  bin: string
+  name: string | null
+  bin: string | null
   value: number
   isDefault: boolean
   self: Self
@@ -43,19 +43,19 @@ export type Self = {
 }
 
 export type Option = {
-  ruleId: string
+  ruleId: string | null
   quantity: number
   value: number
   interestRate: number
-  isExternalInstallmentService: number
-  interestTax: number
+  isExternalInstallmentService: number | null
+  interestTax: number | null
 }
 
 export type InvalidRequestValue = {
   error: {
   code: string
   message: string
-  exception: string
+  exception: string | null
 }
 }
 
@@ -77,7 +77,7 @@ export type UpdateAffiliationRequest = {
   configuration: {
   name: string
   value: string
-  valueKey: string
+  valueKey: string | null
 }[]
   isdelivered: boolean
   isConfigured: boolean
@@ -90,7 +90,7 @@ export type AffiliationResponse = {
   configuration: {
   name: string
   value: string
-  valueKey: string
+  valueKey: string | null
 }[]
   isdelivered: boolean
   isConfigured: boolean
@@ -109,37 +109,37 @@ export type GetRulesResponse = {
   interestRateMethod: null | 0 | 1 | 2
   minimumInstallmentValue: number
   installments: {
-  ruleId: string
+  ruleId: string | null
   quantity: number
   value: number
   interestRate: number
-  isExternalInstallmentService: number
-  interestTax: number
+  isExternalInstallmentService: number | null
+  interestTax: number | null
 }[]
-}
-  isSelfAuthorized?: boolean
-  requiresAuthentication?: boolean
+} | null
+  isSelfAuthorized?: boolean | null
+  requiresAuthentication?: boolean | null
   enabled?: boolean
   installmentsService?: boolean
-  isDefault?: boolean
-  beginDate?: string
-  endDate?: string
+  isDefault?: boolean | null
+  beginDate?: string | null
+  endDate?: string | null
   condition?: {
   id: string
   pullRate: number
-  name: string
-}
-  multiMerchantList?: string[]
+  name: string | null
+} | null
+  multiMerchantList?: string[] | null
   country?: {
-  name: string
+  name: string | null
   isoCode: string
-}
+} | null
   dateIntervals?: {
   start: string
   end: string
-}[]
+}[] | null
   externalInterest?: boolean
-  minimumValue?: number
+  minimumValue?: number | null
   deadlines?: {
   paymentOptions: {
   days: number
@@ -147,12 +147,12 @@ export type GetRulesResponse = {
 }[]
 }[]
   cobrand?: {
-  name: string
+  name: string | null
 }
   cardLevel?: {
-  name: string
+  name: string | null
 }
-  excludedBinsRanges?: number
+  excludedBinsRanges?: number | null
 }[]
 
 export type RulesRequest = {
@@ -168,37 +168,37 @@ export type RulesRequest = {
   interestRateMethod: null | 0 | 1 | 2
   minimumInstallmentValue: number
   installments: {
-  ruleId: string
+  ruleId: string | null
   quantity: number
   value: number
   interestRate: number
-  isExternalInstallmentService: number
-  interestTax: number
+  isExternalInstallmentService: number | null
+  interestTax: number | null
 }[]
-}
-  isSelfAuthorized: boolean
-  requiresAuthentication: boolean
+} | null
+  isSelfAuthorized: boolean | null
+  requiresAuthentication: boolean | null
   enabled: boolean
   installmentsService: boolean
-  isDefault: boolean
-  beginDate: string
-  endDate: string
+  isDefault: boolean | null
+  beginDate: string | null
+  endDate: string | null
   condition: {
   id: string
   pullRate: number
-  name: string
-}
-  multiMerchantList: string[]
+  name: string | null
+} | null
+  multiMerchantList: string[] | null
   country: {
-  name: string
+  name: string | null
   isoCode: string
-}
+} | null
   dateIntervals: {
   start: string
   end: string
-}[]
+}[] | null
   externalInterest?: boolean
-  minimumValue?: number
+  minimumValue?: number | null
   deadlines?: {
   paymentOptions: {
   days: number
@@ -206,12 +206,12 @@ export type RulesRequest = {
 }[]
 }[]
   cobrand?: {
-  name: string
+  name: string | null
 }
   cardLevel?: {
-  name: string
+  name: string | null
 }
-  excludedBinsRanges?: number
+  excludedBinsRanges?: number | null
 }
 
 export type InsertRuleRequest = {
@@ -226,37 +226,37 @@ export type InsertRuleRequest = {
   interestRateMethod: null | 0 | 1 | 2
   minimumInstallmentValue: number
   installments: {
-  ruleId: string
+  ruleId: string | null
   quantity: number
   value: number
   interestRate: number
-  isExternalInstallmentService: number
-  interestTax: number
+  isExternalInstallmentService: number | null
+  interestTax: number | null
 }[]
-}
-  isSelfAuthorized: boolean
-  requiresAuthentication: boolean
+} | null
+  isSelfAuthorized: boolean | null
+  requiresAuthentication: boolean | null
   enabled: boolean
   installmentsService: boolean
-  isDefault: boolean
-  beginDate: string
-  endDate: string
+  isDefault: boolean | null
+  beginDate: string | null
+  endDate: string | null
   condition: {
   id: string
   pullRate: number
-  name: string
-}
-  multiMerchantList: string[]
+  name: string | null
+} | null
+  multiMerchantList: string[] | null
   country: {
-  name: string
+  name: string | null
   isoCode: string
-}
+} | null
   dateIntervals: {
   start: string
   end: string
-}[]
+}[] | null
   externalInterest?: boolean
-  minimumValue?: number
+  minimumValue?: number | null
   deadlines?: {
   paymentOptions: {
   days: number
@@ -264,12 +264,12 @@ export type InsertRuleRequest = {
 }[]
 }[]
   cobrand?: {
-  name: string
+  name: string | null
 }
   cardLevel?: {
-  name: string
+  name: string | null
 }
-  excludedBinsRanges?: number
+  excludedBinsRanges?: number | null
 }
 
 export type SalesChannel = {
@@ -279,22 +279,22 @@ export type SalesChannel = {
 export type PaymentSystem = {
   id: number
   name: string
-  implementation: string
+  implementation: string | null
 }
 
 export type Connector = {
   implementation: string
   affiliationId: string
-}
+} | null
 
 export type Issuer = {
-  name: string
+  name: string | null
 }
 
 export type Antifraud = {
-  implementation: string
-  affiliationId: string
-}
+  implementation: string | null
+  affiliationId: string | null
+} | null
 
 export type PaymentSystemsResponse = {
   id: number
@@ -302,7 +302,7 @@ export type PaymentSystemsResponse = {
   requiresDocument: boolean
   implementation: string
   connectorImplementation: string
-  antifraudConnectorImplementation: string
+  antifraudConnectorImplementation: string | null
   groupName: string
   redirect: boolean
   isCustom: boolean
@@ -317,36 +317,36 @@ export type PaymentSystemsResponse = {
   allowCommercialCondition: boolean
   allowPeriod: boolean
   isAvailable: boolean
-  description: string
+  description: string | null
   supportRecurrence: boolean
   validator: Validator
-  appDependencies: string
+  appDependencies: string | null
   displayDocument: boolean
   dueDate: string
   allowNotification: boolean
-  affiliationId: string
-  availablePayments: string
+  affiliationId: string | null
+  availablePayments: string | null
   dueDateMinutes: number
 }
 
 export type Validator = {
-  regex: string
-  mask: string
-  cardCodeMask: string
-  cardCodeRegex: string
-  weights: number[]
+  regex: string | null
+  mask: string | null
+  cardCodeMask: string | null
+  cardCodeRegex: string | null
+  weights: number[] | null
   useCvv: boolean
   useExpirationDate: boolean
   useCardHolderName: boolean
   useBillingAddress: boolean
-  validCardLengths: string
+  validCardLengths: string | null
 }
 
 export type _1CreateanewtransactionRequest = {
   value: number
   referenceId: string
   channel: string
-  urn?: string
+  urn?: string | null
   salesChannel: string
 }
 
@@ -364,35 +364,35 @@ export type StartTransactionResponse = {
   totalRefunds: number
   status: string
   value: number
-  receiverUri: string
+  receiverUri: string | null
   startDate: string
-  authorizationToken: string
-  authorizationDate: string
-  commitmentToken: string
-  commitmentDate: string
-  refundingToken: string
-  refundingDate: string
-  cancelationToken: string
-  cancelationDate: string
+  authorizationToken: string | null
+  authorizationDate: string | null
+  commitmentToken: string | null
+  commitmentDate: string | null
+  refundingToken: string | null
+  refundingDate: string | null
+  cancelationToken: string | null
+  cancelationDate: string | null
   fields: Field[]
-  ipAddress: string
-  sessionId: string
-  macId: string
-  vtexFingerprint: string
-  chargeback: string
-  whiteSignature: string
+  ipAddress: string | null
+  sessionId: string | null
+  macId: string | null
+  vtexFingerprint: string | null
+  chargeback: string | null
+  whiteSignature: string | null
   owner: string
-  orderId: string
-  userAgent: string
-  acceptHeader: string
-  antifraudTid: string
-  antifraudResponse: string
-  antifraudReference: string
-  antifraudAffiliationId: string
+  orderId: string | null
+  userAgent: string | null
+  acceptHeader: string | null
+  antifraudTid: string | null
+  antifraudResponse: string | null
+  antifraudReference: string | null
+  antifraudAffiliationId: string | null
   channel: string
   salesChannel: string
-  urn: string
-  softDescriptor: string
+  urn: string | null
+  softDescriptor: string | null
   markedForRecurrence: boolean
   buyer: {
   firstName?: string
@@ -402,7 +402,7 @@ export type StartTransactionResponse = {
   email?: string
   address?: string
   phone?: string
-}
+} | null
 }
 
 export type Interactions = {
@@ -435,24 +435,24 @@ export type Field = {
 }
 
 export type Fields = {
-  holderName: string
-  cardNumber: string
-  validationCode: string
-  dueDate: string
-  document: string
-  accountId: string
+  holderName: string | null
+  cardNumber: string | null
+  validationCode: string | null
+  dueDate: string | null
+  document: string | null
+  accountId: string | null
   address: {
   addressType?: string
   receiverName?: string
   postalCode?: string
   city?: string
   state?: string
-  country?: string
+  country?: string | null
   street?: string
   number?: number
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }
   callbackUrl: string
@@ -498,14 +498,14 @@ export type Fields3 = {
   validationCode: string
   dueDate: string
   document: string
-  accountId: string
-  address: string[]
-  callbackUrl: string
+  accountId: string | null
+  address: string[] | null
+  callbackUrl: string | null
 }
 
 export type _4DoauthorizationRequest = {
   transactionId: string
-  softDescriptor: string
+  softDescriptor: string | null
   prepareForRecurrency: boolean
 }
 
@@ -523,36 +523,36 @@ export type TransactionDetailsResponse = {
   totalRefunds: number
   status: string
   value: number
-  receiverUri: string
+  receiverUri: string | null
   startDate: string
-  authorizationToken: string
-  authorizationDate: string
-  commitmentToken: string
-  commitmentDate: string
-  refundingToken: string
-  refundingDate: string
-  cancelationToken: string
-  cancelationDate: string
+  authorizationToken: string | null
+  authorizationDate: string | null
+  commitmentToken: string | null
+  commitmentDate: string | null
+  refundingToken: string | null
+  refundingDate: string | null
+  cancelationToken: string | null
+  cancelationDate: string | null
   fields: Fields1[]
   shopperInteraction: string
-  ipAddress: string
-  sessionId: string
+  ipAddress: string | null
+  sessionId: string | null
   macId: string
-  vtexFingerprint: string
-  chargeback: string
-  whiteSignature: string
+  vtexFingerprint: string | null
+  chargeback: string | null
+  whiteSignature: string | null
   owner: string
-  orderId: string
+  orderId: string | null
   userAgent: string
   acceptHeader: string
-  antifraudTid: string
-  antifraudResponse: string
-  antifraudReference: string
-  antifraudAffiliationId: string
+  antifraudTid: string | null
+  antifraudResponse: string | null
+  antifraudReference: string | null
+  antifraudAffiliationId: string | null
   channel: string
   salesChannel: string
-  urn: string
-  softDescriptor: string
+  urn: string | null
+  softDescriptor: string | null
   markedForRecurrence: boolean
   buyer: {
   firstName?: string
@@ -562,12 +562,12 @@ export type TransactionDetailsResponse = {
   email?: string
   address?: string
   phone?: string
-}
+} | null
 }
 
 export type TransactionInteractionsResponse = {
   Id?: string
-  PaymentId?: string
+  PaymentId?: string | null
   TransactionId?: string
   Source?: string
   Status?: string
@@ -580,36 +580,36 @@ export type PaymentDetailsResponse = {
   id: string
   paymentSystem: number
   paymentSystemName: string
-  merchantName: string
+  merchantName: string | null
   group: string
-  userProfileId: string
+  userProfileId: string | null
   isCustom: boolean
   allowInstallments: boolean
   requiresAuthentication: boolean
   allowIssuer: boolean
   allowNotification: boolean
   isAvailable: boolean
-  description: string
-  authorizationDate: string
+  description: string | null
+  authorizationDate: string | null
   self: Self
-  tid: string
-  nsu?: string
-  returnCode: string
-  returnMessage: string
+  tid: string | null
+  nsu?: string | null
+  returnCode: string | null
+  returnMessage: string | null
   status: string
-  connector: string
+  connector: string | null
   ConnectorResponses: {
   Tid?: string
-  ReturnCode?: string
-  Message?: string
-  authId?: string
+  ReturnCode?: string | null
+  Message?: string | null
+  authId?: string | null
   nsu?: string
 }
   connectorResponse: {
   Tid?: string
-  ReturnCode?: string
-  Message?: string
-  authId?: string
+  ReturnCode?: string | null
+  Message?: string | null
+  authId?: string | null
   nsu?: string
 }
   ShowConnectorResponses: boolean
@@ -618,14 +618,14 @@ export type PaymentDetailsResponse = {
   installmentsValue: number
   referenceValue: number
   installments: number
-  currencyCode: string
-  provider: string
-  isBillingAddressDifferent: boolean
-  isRegexValid: boolean
-  isLuhnValid: boolean
+  currencyCode: string | null
+  provider: string | null
+  isBillingAddressDifferent: boolean | null
+  isRegexValid: boolean | null
+  isLuhnValid: boolean | null
   fields: Fields1[]
-  sheets: string
-  originalPaymentId: string
+  sheets: string | null
+  originalPaymentId: string | null
 }
 
 export type TransactionSettlementDetails = {
@@ -638,7 +638,7 @@ export type TransactionSettlementDetails = {
   date: string
   type: string
   value: number
-  connectorResponse: string
+  connectorResponse: string | null
 }[]
 }
 
@@ -654,7 +654,7 @@ export type Action = {
   date: string
   type: string
   value: number
-  connectorResponse: string
+  connectorResponse: string | null
 }
 
 export type Payment1 = {
@@ -666,15 +666,15 @@ export type SettlethetransactionRequest = {
 }
 
 export type SettleResponse = {
-  id: string
+  id: string | null
   token: string
   status: number
   statusDetail: string
   processingDate: string
   refundedValue: number
-  refundedToken: string
-  message: string
-  code: string
+  refundedToken: string | null
+  message: string | null
+  code: string | null
   connectorRefundedValue: number
   cancelledValue: number
 }

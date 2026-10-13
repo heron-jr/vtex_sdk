@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { EnqueueNewOrderRequest, Item, ClientProfileData, ShippingData, LogisticsInfo, DeliveryIds, SelectedAddress, GeoCoordinates, InvoiceData, UserPaymentInfo, CustomData, CustomApp, Fields, Deliverybyseller, Deliverybyfranchiseseller, UpdateOrderStatusRequest, Approveorder, OrderIDFulfillmentResponse, PlaceFulfillmentOrderRequest, PlaceFulfillmentOrderResponse, TaxData, TrackingHint } from './types.js'
 
 class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
@@ -8,8 +10,8 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   sc?: string
   affiliateId: string
   body: PlaceFulfillmentOrderRequest
-}): Promise<PlaceFulfillmentOrderResponse> {
-    return this.http.request<PlaceFulfillmentOrderResponse>({ method: 'POST', path: `/api/fulfillment/pvt/orders`, query: { 'sc': params.sc, 'affiliateId': params.affiliateId }, body: params.body })
+}, opts?: CallOptions): Promise<PlaceFulfillmentOrderResponse> {
+    return this.http.request<PlaceFulfillmentOrderResponse>(withCall({ method: 'POST', path: `/api/fulfillment/pvt/orders`, query: { 'sc': params.sc, 'affiliateId': params.affiliateId }, body: params.body }, opts))
   }
 
   authorizeDispatchForFulfillmentOrder(params: {
@@ -19,23 +21,23 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   body: {
   marketplaceOrderId?: string
 }
-}): Promise<OrderIDFulfillmentResponse> {
-    return this.http.request<OrderIDFulfillmentResponse>({ method: 'POST', path: `/api/fulfillment/pvt/orders/${params.orderId}/fulfill`, query: { 'sc': params.sc, 'affiliateId': params.affiliateId }, body: params.body })
+}, opts?: CallOptions): Promise<OrderIDFulfillmentResponse> {
+    return this.http.request<OrderIDFulfillmentResponse>(withCall({ method: 'POST', path: `/api/fulfillment/pvt/orders/${encodePathParam(params.orderId)}/fulfill`, query: { 'sc': params.sc, 'affiliateId': params.affiliateId }, body: params.body }, opts))
   }
 
   enqueueNewOrder(params: {
   an?: string
   affiliateId: string
   body: EnqueueNewOrderRequest
-}): Promise<Deliverybyseller> {
-    return this.http.request<Deliverybyseller>({ method: 'POST', path: `/api/order-integration/orders`, query: { 'an': params.an, 'affiliateId': params.affiliateId }, body: params.body })
+}, opts?: CallOptions): Promise<Deliverybyseller> {
+    return this.http.request<Deliverybyseller>(withCall({ method: 'POST', path: `/api/order-integration/orders`, query: { 'an': params.an, 'affiliateId': params.affiliateId }, body: params.body }, opts))
   }
 
   updateOrderStatus(params: {
   an?: string
   body: UpdateOrderStatusRequest
-}): Promise<Approveorder> {
-    return this.http.request<Approveorder>({ method: 'PUT', path: `/api/order-integration/orders/status`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<Approveorder> {
+    return this.http.request<Approveorder>(withCall({ method: 'PUT', path: `/api/order-integration/orders/status`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   fulfillmentSimulationExternalMarketplace(params: {
@@ -66,21 +68,21 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
 }
   geoCoordinates?: number[]
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   items?: {
   id?: string
   requestIndex?: number
@@ -109,8 +111,8 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
 }[]
   measurementUnit?: string
   unitMultiplier?: number
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   availability?: string
   priceDefinition?: {
   calculatedSellingPrice?: number
@@ -134,7 +136,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   paymentData?: {
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
+  bin?: string | null
   paymentName?: string
   paymentGroupName?: string
   value?: number
@@ -155,7 +157,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -167,14 +169,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   giftItemDescription?: string
   giftItemPrice?: number
 }[]
-  marketingData?: Record<string, unknown>
-  postalCode?: string
+  marketingData?: Record<string, unknown> | null
+  postalCode?: string | null
   country?: string
   logisticsInfo?: {
   itemIndex?: number
-  addressId?: string
-  selectedSla?: string
-  selectedDeliveryChannel?: string
+  addressId?: string | null
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
   quantity?: number
   shipsTo?: string[]
   slas?: {
@@ -189,7 +191,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   lockTTL?: string
   availableDeliveryWindows?: {
   startDateUtc?: string
@@ -210,14 +212,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   deliveryChannels?: {
@@ -249,7 +251,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   lockTTL?: string
   availableDeliveryWindows?: {
   startDateUtc?: string
@@ -270,14 +272,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   price?: number
@@ -286,7 +288,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
 }
   pickupPoints?: {
   pickupPointId?: string
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   street?: string
   number?: string
@@ -295,11 +297,11 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   state?: string
   country?: string
   postalCode?: string
-}
-  additionalInfo?: string
-  dockId?: string
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }[]
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   totals?: {
   id?: string
   name?: string
@@ -314,7 +316,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   name?: string
   required?: boolean
   inputValues?: Record<string, unknown>
-  composition?: string
+  composition?: string | null
 }[]
 }[]
 }
@@ -351,8 +353,8 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
 }[]
   measurementUnit?: string
   unitMultiplier?: number
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   availability?: string
   priceDefinition?: {
   calculatedSellingPrice?: number
@@ -376,7 +378,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   paymentData?: {
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
+  bin?: string | null
   paymentName?: string
   paymentGroupName?: string
   value?: number
@@ -397,7 +399,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -409,14 +411,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   giftItemDescription?: string
   giftItemPrice?: number
 }[]
-  marketingData?: Record<string, unknown>
-  postalCode?: string
+  marketingData?: Record<string, unknown> | null
+  postalCode?: string | null
   country?: string
   logisticsInfo?: {
   itemIndex?: number
-  addressId?: string
-  selectedSla?: string
-  selectedDeliveryChannel?: string
+  addressId?: string | null
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
   quantity?: number
   shipsTo?: string[]
   slas?: {
@@ -431,7 +433,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   lockTTL?: string
   availableDeliveryWindows?: {
   startDateUtc?: string
@@ -452,14 +454,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   deliveryChannels?: {
@@ -491,7 +493,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   lockTTL?: string
   availableDeliveryWindows?: {
   startDateUtc?: string
@@ -512,14 +514,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   price?: number
@@ -528,7 +530,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
 }
   pickupPoints?: {
   pickupPointId?: string
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   street?: string
   number?: string
@@ -537,11 +539,11 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   state?: string
   country?: string
   postalCode?: string
-}
-  additionalInfo?: string
-  dockId?: string
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }[]
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   totals?: {
   id?: string
   name?: string
@@ -556,14 +558,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   name?: string
   required?: boolean
   inputValues?: Record<string, unknown>
-  composition?: string
+  composition?: string | null
 }[]
 }[]
 }
 }[]
 }[]
 }
-}>({ method: 'POST', path: `/api/checkout/pub/orderForms/simulation`, query: { 'affiliateId': params.affiliateId, 'sc': params.sc }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForms/simulation`, query: { 'affiliateId': params.affiliateId, 'sc': params.sc }, body: params.body }, opts))
   }
 }
 

@@ -18,8 +18,8 @@ export type Matcher = {
   MatcherId: string
   "hook-base-address": string
   IsActive: boolean
-  UpdatesNotificationEndpoint: string
-  Description?: string
+  UpdatesNotificationEndpoint: string | null
+  Description?: string | null
 }
 
 export type ResponseGetAccountsMatcherSettings = {
@@ -47,7 +47,7 @@ export type SaveautoapproveforaccountsellerRequest = {
 
 export type PutselleraccountconfigRequest = {
   sellerId: string
-  mapping: Record<string, unknown>
+  mapping: Record<string, unknown> | null
   matchFlux: string
 }
 
@@ -98,8 +98,8 @@ export type MatchRequest = {
   matcherId: string
   matchType: string
   score: string
-  skuRef?: string
-  productRef?: string
+  skuRef?: string | null
+  productRef?: string | null
   product?: Product
   sku?: Sku
 }
@@ -109,13 +109,13 @@ export type Product = {
   description: string
   categoryId: number
   brandId: number
-  specifications: Record<string, unknown>
+  specifications: Record<string, unknown> | null
 }
 
 export type Sku = {
   name: string
-  eans: string[]
-  refId: string
+  eans: string[] | null
+  refId: string | null
   height: number
   width: number
   length: number
@@ -124,7 +124,7 @@ export type Sku = {
   "imagem1.jpg"?: string
 }
   unitMultiplier: number
-  measurementUnit: string
+  measurementUnit: string | null
   specifications: {
   Packaging: string
 }
@@ -143,10 +143,10 @@ export type MatchMultiple = {
   versionId: string
   matchId: string
   matcherId: string
-  categoryId: number
-  brandId?: number
-  skuRef?: string
-  productRef?: string
+  categoryId: number | null
+  brandId?: number | null
+  skuRef?: string | null
+  productRef?: string | null
   sellerId: string
 }[]
 

@@ -1,7 +1,7 @@
 export type FixedPrice = {
   tradePolicyId: string
   value: number
-  listPrice: number
+  listPrice: number | null
   minQuantity: number
   dateRange?: DateRange
 }
@@ -34,21 +34,23 @@ export type PricingConfiguration = {
   migrationStatus?: string
   defaultMarkup: number
   priceVariation?: {
-  upperLimit?: number
-  lowerLimit?: number
+  upperLimit?: number | null
+  lowerLimit?: number | null
 }
-  minimumMarkups: Record<string, unknown>
+  minimumMarkups: {
+  [key: string]: number
+}
   tradePolicyConfigs?: {
   tradePolicyId?: string
   minimumMarkup?: number
   rulesShouldAffectListPrice?: boolean
 }[]
-  sellersToOverride?: string[]
+  sellersToOverride?: string[] | null
   hasPriceInheritance?: boolean
   priceInheritance?: string
   hasOptionalBasePrice?: boolean
   blockAccount?: boolean
-  blockedRoutes?: string[]
+  blockedRoutes?: string[] | null
   priceTableSelectionStrategy?: string
-  priceTableLimit?: number
+  priceTableLimit?: number | null
 }

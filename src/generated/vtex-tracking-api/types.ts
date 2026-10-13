@@ -84,8 +84,8 @@ export type DeliveryServiceResponseV11 = {
   cnpj?: string
   legalType?: {
   description?: string
-}
-  idExternalShipperCustomer?: string
+} | null
+  idExternalShipperCustomer?: string | null
   phoneAreaCode?: string
   phoneNumber?: string
 }

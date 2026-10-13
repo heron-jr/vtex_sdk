@@ -1,11 +1,15 @@
 export type PolicyActionGetResponse = {
   id?: string
-  metadata?: Record<string, unknown>
+  metadata?: {
+  [key: string]: unknown
+}
 }
 
 export type EvaluatePolicyRequest = {
   resource: string
-  context: Record<string, unknown>
+  context: {
+  [key: string]: unknown
+}
 }
 
 export type PolicySaveRequest = {
@@ -26,7 +30,9 @@ export type StatementGet = {
   effect: string
   actions?: {
   id?: "SendSlackMessage" | "SendEmail" | "DeactivatePromotions"
-  metadata?: Record<string, unknown>
+  metadata?: {
+  [key: string]: unknown
+}
 }[]
   resource?: string
   condition?: {
@@ -44,7 +50,9 @@ export type StatementGetResponse = {
   effect: string
   actions?: {
   id?: "SendSlackMessage" | "SendEmail" | "DeactivatePromotions"
-  metadata?: Record<string, unknown>
+  metadata?: {
+  [key: string]: unknown
+}
 }[]
   resource?: string
   condition?: {

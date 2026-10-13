@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { FileData, ImportResult, ValidationResult } from './types.js'
 
 class BuyerOrganizationsB2bSuiteApi_bulkImport {
@@ -6,29 +8,30 @@ class BuyerOrganizationsB2bSuiteApi_bulkImport {
 
   uploadFile(params: {
   an?: string
-}): Promise<FileData> {
-    return this.http.request<FileData>({ method: 'POST', path: `/api/b2b/import/buyer-orgs`, query: { 'an': params.an } })
+  body: FormData
+}, opts?: CallOptions): Promise<FileData> {
+    return this.http.request<FileData>(withCall({ method: 'POST', path: `/api/b2b/import/buyer-orgs`, query: { 'an': params.an }, body: params.body, contentType: 'multipart/form-data' }, opts))
   }
 
   checkProgress(params: {
   importId: string
   an?: string
-}): Promise<FileData | ImportResult | ValidationResult> {
-    return this.http.request<FileData | ImportResult | ValidationResult>({ method: 'GET', path: `/api/b2b/import/buyer-orgs/${params.importId}`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<FileData | ImportResult | ValidationResult> {
+    return this.http.request<FileData | ImportResult | ValidationResult>(withCall({ method: 'GET', path: `/api/b2b/import/buyer-orgs/${encodePathParam(params.importId)}`, query: { 'an': params.an } }, opts))
   }
 
   postApiB2bImportBuyerOrgsByImportId(params: {
   importId: string
   an?: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/b2b/import/buyer-orgs/${params.importId}`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/b2b/import/buyer-orgs/${encodePathParam(params.importId)}`, query: { 'an': params.an } }, opts))
   }
 
   validateFile(params: {
   importId: string
   an?: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/b2b/import/buyer-orgs/validate/${params.importId}`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/b2b/import/buyer-orgs/validate/${encodePathParam(params.importId)}`, query: { 'an': params.an } }, opts))
   }
 }
 

@@ -55,7 +55,7 @@ export type CapacityConfigurationResponse = {
   capacityUnit?: "ORDERS" | "ORDER_ITEMS"
   fullCapacityAction?: "PAUSE" | "MOVE_TO_NEXT_SHIFT"
   taskId?: number
-  locationTask?: Record<string, unknown>
+  locationTask?: Record<string, unknown> | null
   capacityShifts?: {
   id?: number
   capacityAmount?: number
@@ -135,21 +135,21 @@ export type LocationsList = {
 }[]
   address?: {
   id?: number
-  locationId?: string
-  formattedAddress?: string
-  route?: string
-  streetNumber?: string
-  premise?: string
-  subPremise?: string
-  locality?: string
-  subLocalityLevel1?: string
-  subLocalityLevel2?: string
-  subLocalityLevel3?: string
-  country?: string
-  administrativeAreaLevel1?: string
-  administrativeAreaLevel2?: string
-  administrativeAreaLevel3?: string
-  postalCode?: string
+  locationId?: string | null
+  formattedAddress?: string | null
+  route?: string | null
+  streetNumber?: string | null
+  premise?: string | null
+  subPremise?: string | null
+  locality?: string | null
+  subLocalityLevel1?: string | null
+  subLocalityLevel2?: string | null
+  subLocalityLevel3?: string | null
+  country?: string | null
+  administrativeAreaLevel1?: string | null
+  administrativeAreaLevel2?: string | null
+  administrativeAreaLevel3?: string | null
+  postalCode?: string | null
   geoLocationLatitude?: number
   geoLocationLongitude?: number
   geoLocation?: {

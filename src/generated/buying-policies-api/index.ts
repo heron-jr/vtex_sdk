@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CreateUpdateDimensionRequestBody, CreateUpdateRuleRequestBody, ErrorResponse, Authorizer, DimensionResponse, RuleResponse } from './types.js'
 
 class BuyingPoliciesApi_dimensions {
@@ -9,7 +11,7 @@ class BuyingPoliciesApi_dimensions {
   id?: string[]
   unitId?: string[]
   name?: string[]
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   name?: string
   unitId?: string
@@ -86,29 +88,29 @@ class BuyingPoliciesApi_dimensions {
   creationDate?: string
   creationVersion?: string
   creationEnvironment?: string
-}[]>({ method: 'GET', path: `/${params.accountName}/authorization-dimensions`, query: { 'id': params.id, 'unitId': params.unitId, 'name': params.name } })
+}[]>(withCall({ method: 'GET', path: `/${encodePathParam(params.accountName)}/authorization-dimensions`, query: { 'id': params.id, 'unitId': params.unitId, 'name': params.name } }, opts))
   }
 
   postByAccountNameAuthorizationDimensions(params: {
   accountName: string
   body: CreateUpdateDimensionRequestBody
-}): Promise<DimensionResponse> {
-    return this.http.request<DimensionResponse>({ method: 'POST', path: `/${params.accountName}/authorization-dimensions`, body: params.body })
+}, opts?: CallOptions): Promise<DimensionResponse> {
+    return this.http.request<DimensionResponse>(withCall({ method: 'POST', path: `/${encodePathParam(params.accountName)}/authorization-dimensions`, body: params.body }, opts))
   }
 
   putByAccountNameAuthorizationDimensionsByDimensionId(params: {
   accountName: string
   dimensionId: string
   body: CreateUpdateDimensionRequestBody
-}): Promise<DimensionResponse> {
-    return this.http.request<DimensionResponse>({ method: 'PUT', path: `/${params.accountName}/authorization-dimensions/${params.dimensionId}`, body: params.body })
+}, opts?: CallOptions): Promise<DimensionResponse> {
+    return this.http.request<DimensionResponse>(withCall({ method: 'PUT', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}`, body: params.body }, opts))
   }
 
   deleteByAccountNameAuthorizationDimensionsByDimensionId(params: {
   accountName: string
   dimensionId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/${params.accountName}/authorization-dimensions/${params.dimensionId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}` }, opts))
   }
 }
 class BuyingPoliciesApi_rules {
@@ -118,16 +120,16 @@ class BuyingPoliciesApi_rules {
   accountName: string
   dimensionId: string
   body: CreateUpdateRuleRequestBody
-}): Promise<RuleResponse> {
-    return this.http.request<RuleResponse>({ method: 'POST', path: `/${params.accountName}/authorization-dimensions/${params.dimensionId}/rules`, body: params.body })
+}, opts?: CallOptions): Promise<RuleResponse> {
+    return this.http.request<RuleResponse>(withCall({ method: 'POST', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules`, body: params.body }, opts))
   }
 
   putByAccountNameAuthorizationDimensionsByDimensionIdRules(params: {
   accountName: string
   dimensionId: string
   body: CreateUpdateRuleRequestBody[]
-}): Promise<RuleResponse[]> {
-    return this.http.request<RuleResponse[]>({ method: 'PUT', path: `/${params.accountName}/authorization-dimensions/${params.dimensionId}/rules`, body: params.body })
+}, opts?: CallOptions): Promise<RuleResponse[]> {
+    return this.http.request<RuleResponse[]>(withCall({ method: 'PUT', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules`, body: params.body }, opts))
   }
 
   putByAccountNameAuthorizationDimensionsByDimensionIdRulesByRuleId(params: {
@@ -135,16 +137,16 @@ class BuyingPoliciesApi_rules {
   dimensionId: string
   ruleId: string
   body: CreateUpdateRuleRequestBody
-}): Promise<RuleResponse> {
-    return this.http.request<RuleResponse>({ method: 'PUT', path: `/${params.accountName}/authorization-dimensions/${params.dimensionId}/rules/${params.ruleId}`, body: params.body })
+}, opts?: CallOptions): Promise<RuleResponse> {
+    return this.http.request<RuleResponse>(withCall({ method: 'PUT', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules/${encodePathParam(params.ruleId)}`, body: params.body }, opts))
   }
 
   deleteByAccountNameAuthorizationDimensionsByDimensionIdRulesByRuleId(params: {
   accountName: string
   dimensionId: string
   ruleId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/${params.accountName}/authorization-dimensions/${params.dimensionId}/rules/${params.ruleId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules/${encodePathParam(params.ruleId)}` }, opts))
   }
 }
 class BuyingPoliciesApi_manualAuthorization {
@@ -159,7 +161,7 @@ class BuyingPoliciesApi_manualAuthorization {
   ruleId: string
 }
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   orderId?: string
   workflowInstanceId?: string
@@ -195,7 +197,7 @@ class BuyingPoliciesApi_manualAuthorization {
   id?: string
   name?: string
   status?: null | "accepted" | "denied" | "pending"
-  doId?: string
+  doId?: string | null
   score?: number
   priority?: number
   trigger?: {
@@ -271,7 +273,7 @@ class BuyingPoliciesApi_manualAuthorization {
   id?: string
   name?: string
   status?: null | "accepted" | "denied" | "pending"
-  doId?: string
+  doId?: string | null
   score?: number
   priority?: number
   trigger?: {
@@ -310,7 +312,7 @@ class BuyingPoliciesApi_manualAuthorization {
   creationVersion?: string
   creationEnvironment?: string
   userProfileId?: string
-}>({ method: 'POST', path: `/commercial-authorizations/${params.orderAuthId}/callback`, body: params.body })
+}>(withCall({ method: 'POST', path: `/commercial-authorizations/${encodePathParam(params.orderAuthId)}/callback`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 

@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { FixedPrice, DateRange, Getprice, Getcomputedprice, PricingConfiguration } from './types.js'
 
 class PricingApi_pricesAndFixedPrices {
@@ -6,8 +8,8 @@ class PricingApi_pricesAndFixedPrices {
 
   getPrice(params: {
   itemId: number
-}): Promise<Getprice> {
-    return this.http.request<Getprice>({ method: 'GET', path: `/pricing/prices/${params.itemId}` })
+}, opts?: CallOptions): Promise<Getprice> {
+    return this.http.request<Getprice>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   createUpdatePriceOrFixedPrice(params: {
@@ -28,20 +30,20 @@ class PricingApi_pricesAndFixedPrices {
 }
 }[]
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/pricing/prices/${params.itemId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/pricing/prices/${encodePathParam(params.itemId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   deletePrice(params: {
   itemId: number
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/pricing/prices/${params.itemId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/pricing/prices/${encodePathParam(params.itemId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getFixedPrices(params: {
   itemId: number
-}): Promise<FixedPrice[]> {
-    return this.http.request<FixedPrice[]>({ method: 'GET', path: `/pricing/prices/${params.itemId}/fixed` })
+}, opts?: CallOptions): Promise<FixedPrice[]> {
+    return this.http.request<FixedPrice[]>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   createUpdatePriceOrFixedPriceNoRemove(params: {
@@ -56,15 +58,15 @@ class PricingApi_pricesAndFixedPrices {
   to: string
 }
 }[]
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/pricing/prices/${params.itemId}/fixed`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getFixedPricesonapricetable(params: {
   itemId: number
   priceTableId: string
-}): Promise<FixedPrice[]> {
-    return this.http.request<FixedPrice[]>({ method: 'GET', path: `/pricing/prices/${params.itemId}/fixed/${params.priceTableId}` })
+}, opts?: CallOptions): Promise<FixedPrice[]> {
+    return this.http.request<FixedPrice[]>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   createorupdatefixedpricesonpricetableortradepolicy(params: {
@@ -79,15 +81,15 @@ class PricingApi_pricesAndFixedPrices {
   to: string
 }
 }[]
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/pricing/prices/${params.itemId}/fixed/${params.priceTableId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed/${encodePathParam(params.priceTableId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   deletefixedpricesonapricetableortradepolicy(params: {
   itemId: number
   priceTableId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/pricing/prices/${params.itemId}/fixed/${params.priceTableId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getPricingPricesByItemIdComputed(params: {
@@ -95,8 +97,8 @@ class PricingApi_pricesAndFixedPrices {
   categoryIds?: number
   brandId?: number
   quantity?: number
-}): Promise<Getcomputedprice[]> {
-    return this.http.request<Getcomputedprice[]>({ method: 'GET', path: `/pricing/prices/${params.itemId}/computed`, query: { 'categoryIds': params.categoryIds, 'brandId': params.brandId, 'quantity': params.quantity } })
+}, opts?: CallOptions): Promise<Getcomputedprice[]> {
+    return this.http.request<Getcomputedprice[]>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/computed`, query: { 'categoryIds': params.categoryIds, 'brandId': params.brandId, 'quantity': params.quantity }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getComputedPricebypricetable(params: {
@@ -105,25 +107,25 @@ class PricingApi_pricesAndFixedPrices {
   categoryIds?: number
   brandId?: number
   quantity?: number
-}): Promise<Getcomputedprice> {
-    return this.http.request<Getcomputedprice>({ method: 'GET', path: `/pricing/prices/${params.itemId}/computed/${params.priceTableId}`, query: { 'categoryIds': params.categoryIds, 'brandId': params.brandId, 'quantity': params.quantity } })
+}, opts?: CallOptions): Promise<Getcomputedprice> {
+    return this.http.request<Getcomputedprice>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/computed/${encodePathParam(params.priceTableId)}`, query: { 'categoryIds': params.categoryIds, 'brandId': params.brandId, 'quantity': params.quantity }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class PricingApi_pricingConfiguration {
   constructor(private http: VtexHttpClient) {}
 
-  getPricingConfig(params: Record<string, never>): Promise<PricingConfiguration> {
-    return this.http.request<PricingConfiguration>({ method: 'GET', path: `/pricing/config` })
+  getPricingConfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<PricingConfiguration> {
+    return this.http.request<PricingConfiguration>(withCall({ method: 'GET', path: `/pricing/config`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getPricingv2Status(params: Record<string, never>): Promise<{
+  getPricingv2Status(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   isActive?: boolean
   hasMigrated?: boolean
 }> {
     return this.http.request<{
   isActive?: boolean
   hasMigrated?: boolean
-}>({ method: 'GET', path: `/pricing/migration` })
+}>(withCall({ method: 'GET', path: `/pricing/migration`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class PricingApi_priceTables {
@@ -131,23 +133,27 @@ class PricingApi_priceTables {
 
   getrulesforapricetable(params: {
   priceTableId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   tradePolicyId?: string
   rules?: {
   id?: number
   context?: {
-  categories?: Record<string, unknown>
-  brands?: Record<string, unknown>
-  stockStatuses?: Record<string, unknown>
-  internalCategories?: Record<string, unknown>
+  categories?: {
+  [key: string]: string
+}
+  brands?: {
+  [key: string]: string
+}
+  stockStatuses?: Record<string, unknown> | null
+  internalCategories?: Record<string, unknown> | null
   markupRange?: {
   from?: number
   to?: number
-}
+} | null
   dateRange?: {
   from?: string
   to?: string
-}
+} | null
 }
 }[]
   percentualModifier?: number
@@ -157,22 +163,26 @@ class PricingApi_priceTables {
   rules?: {
   id?: number
   context?: {
-  categories?: Record<string, unknown>
-  brands?: Record<string, unknown>
-  stockStatuses?: Record<string, unknown>
-  internalCategories?: Record<string, unknown>
+  categories?: {
+  [key: string]: string
+}
+  brands?: {
+  [key: string]: string
+}
+  stockStatuses?: Record<string, unknown> | null
+  internalCategories?: Record<string, unknown> | null
   markupRange?: {
   from?: number
   to?: number
-}
+} | null
   dateRange?: {
   from?: string
   to?: string
-}
+} | null
 }
 }[]
   percentualModifier?: number
-}>({ method: 'GET', path: `/pricing/pipeline/catalog/${params.priceTableId}` })
+}>(withCall({ method: 'GET', path: `/pricing/pipeline/catalog/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   putPricingPipelineCatalogByPriceTableId(params: {
@@ -181,14 +191,18 @@ class PricingApi_priceTables {
   rules: {
   id: number
   context: {
-  categories: Record<string, unknown>
-  brands: Record<string, unknown>
-  stockStatuses?: Record<string, unknown>
-  internalCategories?: Record<string, unknown>
+  categories: {
+  [key: string]: string
+}
+  brands: {
+  [key: string]: string
+}
+  stockStatuses?: Record<string, unknown> | null
+  internalCategories?: Record<string, unknown> | null
   markupRange: {
   from: number
   to: number
-}
+} | null
   dateRange: {
   from: string
   to: string
@@ -197,33 +211,37 @@ class PricingApi_priceTables {
   percentualModifier: number
 }[]
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/pricing/pipeline/catalog/${params.priceTableId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/pricing/pipeline/catalog/${encodePathParam(params.priceTableId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   putPricingTablesByPriceTableId(params: {
   priceTableId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/pricing/tables/${params.priceTableId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/pricing/tables/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getallpricetablesandrules(params: Record<string, never>): Promise<{
+  getallpricetablesandrules(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   tradePolicyId?: string
   rules?: {
   id?: number
   context?: {
-  categories?: Record<string, unknown>
-  brands?: Record<string, unknown>
-  stockStatuses?: Record<string, unknown>
-  internalCategories?: Record<string, unknown>
+  categories?: {
+  [key: string]: string
+}
+  brands?: {
+  [key: string]: string
+}
+  stockStatuses?: Record<string, unknown> | null
+  internalCategories?: Record<string, unknown> | null
   markupRange?: {
   from?: number
   to?: number
-}
+} | null
   dateRange?: {
   from?: string
   to?: string
-}
+} | null
 }
 }[]
   percentualModifier?: number
@@ -233,26 +251,30 @@ class PricingApi_priceTables {
   rules?: {
   id?: number
   context?: {
-  categories?: Record<string, unknown>
-  brands?: Record<string, unknown>
-  stockStatuses?: Record<string, unknown>
-  internalCategories?: Record<string, unknown>
+  categories?: {
+  [key: string]: string
+}
+  brands?: {
+  [key: string]: string
+}
+  stockStatuses?: Record<string, unknown> | null
+  internalCategories?: Record<string, unknown> | null
   markupRange?: {
   from?: number
   to?: number
-}
+} | null
   dateRange?: {
   from?: string
   to?: string
-}
+} | null
 }
 }[]
   percentualModifier?: number
-}[]>({ method: 'GET', path: `/pricing/pipeline/catalog` })
+}[]>(withCall({ method: 'GET', path: `/pricing/pipeline/catalog`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  listpricetables(params: Record<string, never>): Promise<string[]> {
-    return this.http.request<string[]>({ method: 'GET', path: `/pricing/tables` })
+  listpricetables(params: Record<string, never> = {}, opts?: CallOptions): Promise<string[]> {
+    return this.http.request<string[]>(withCall({ method: 'GET', path: `/pricing/tables`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 

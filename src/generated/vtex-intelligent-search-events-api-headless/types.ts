@@ -64,7 +64,7 @@ export type Query = {
   vtexMac?: string
   type: string
   text: string
-  misspelled?: boolean
+  misspelled?: boolean | null
   match?: number
   products?: string[] | {
   id: string
@@ -105,7 +105,7 @@ export type AutocompleteQuery = {
   vtexMac?: string
   type: string
   text: string
-  misspelled?: boolean
+  misspelled?: boolean | null
   match?: number
   products?: string[] | {
   id: string

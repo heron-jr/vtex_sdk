@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { SaveautoapproveforaccountRequest, SaveaccountconfigRequest, Score, Matcher, ResponseGetAccountsMatcherSettings, SaveautoapproveforaccountsellerRequest, PutselleraccountconfigRequest, SaveSuggestionRequest, SkuSpecification, ProductSpecification, Image, MatchRequest, Product, Sku, Images, Specifications, MatchMultiple, ResponseMatchMultiple, ResponseGetSellersApprovalSettings, ResponseSaveAccountsApprovalSettings } from './types.js'
 
 class SuggestionsApi_skuApprovalSettings {
@@ -6,25 +8,25 @@ class SuggestionsApi_skuApprovalSettings {
 
   getautoApprovevaluefromconfig(params: {
   sellerId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Enabled?: boolean
 }> {
     return this.http.request<{
   Enabled?: boolean
-}>({ method: 'GET', path: `/suggestions/configuration/autoapproval/toggle`, query: { 'sellerId': params.sellerId } })
+}>(withCall({ method: 'GET', path: `/suggestions/configuration/autoapproval/toggle`, query: { 'sellerId': params.sellerId }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   saveautoapproveforaccount(params: {
   body: SaveautoapproveforaccountRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Enabled?: boolean
 }> {
     return this.http.request<{
   Enabled?: boolean
-}>({ method: 'PUT', path: `/suggestions/configuration/autoapproval/toggle`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/suggestions/configuration/autoapproval/toggle`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getaccountconfig(params: Record<string, never>): Promise<{
+  getaccountconfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   Score?: Record<string, unknown>
   Matchers?: {
   MatcherId?: string
@@ -55,37 +57,37 @@ class SuggestionsApi_skuApprovalSettings {
   marketplaceField?: string
 }[]
   MatchFlux?: string
-}>({ method: 'GET', path: `/suggestions/configuration` })
+}>(withCall({ method: 'GET', path: `/suggestions/configuration`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   saveaccountconfig(params: {
   body: SaveaccountconfigRequest
-}): Promise<ResponseSaveAccountsApprovalSettings> {
-    return this.http.request<ResponseSaveAccountsApprovalSettings>({ method: 'PUT', path: `/suggestions/configuration`, body: params.body })
+}, opts?: CallOptions): Promise<ResponseSaveAccountsApprovalSettings> {
+    return this.http.request<ResponseSaveAccountsApprovalSettings>(withCall({ method: 'PUT', path: `/suggestions/configuration`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getmatchconfig(params: Record<string, never>): Promise<ResponseGetAccountsMatcherSettings> {
-    return this.http.request<ResponseGetAccountsMatcherSettings>({ method: 'GET', path: `/suggestions/configuration/account/config` })
+  getmatchconfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<ResponseGetAccountsMatcherSettings> {
+    return this.http.request<ResponseGetAccountsMatcherSettings>(withCall({ method: 'GET', path: `/suggestions/configuration/account/config`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getselleraccountconfig(params: {
   sellerId: string
-}): Promise<ResponseGetSellersApprovalSettings> {
-    return this.http.request<ResponseGetSellersApprovalSettings>({ method: 'GET', path: `/suggestions/configuration/seller/${params.sellerId}` })
+}, opts?: CallOptions): Promise<ResponseGetSellersApprovalSettings> {
+    return this.http.request<ResponseGetSellersApprovalSettings>(withCall({ method: 'GET', path: `/suggestions/configuration/seller/${encodePathParam(params.sellerId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   putselleraccountconfig(params: {
   sellerId: string
   body: PutselleraccountconfigRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/suggestions/configuration/seller/${params.sellerId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/suggestions/configuration/seller/${encodePathParam(params.sellerId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   saveautoapproveforaccountseller(params: {
   sellerId: string
   body: SaveautoapproveforaccountsellerRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/suggestions/configuration/autoapproval/toggle/seller/${params.sellerId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/suggestions/configuration/autoapproval/toggle/seller/${encodePathParam(params.sellerId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class SuggestionsApi_getSuggestions {
@@ -100,15 +102,15 @@ class SuggestionsApi_getSuggestions {
   matcherid?: string
   _from?: number
   _to?: number
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/suggestions`, query: { 'q': params.q, 'type': params.type, 'seller': params.seller, 'status': params.status, 'hasmapping': params.hasmapping, 'matcherid': params.matcherid, '_from': params._from, '_to': params._to } })
+} = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/suggestions`, query: { 'q': params.q, 'type': params.type, 'seller': params.seller, 'status': params.status, 'hasmapping': params.hasmapping, 'matcherid': params.matcherid, '_from': params._from, '_to': params._to }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getSuggestion(params: {
   sellerId: string
   sellerSkuId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/suggestions/${params.sellerId}/${params.sellerSkuId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class SuggestionsApi_manageSuggestions {
@@ -118,15 +120,15 @@ class SuggestionsApi_manageSuggestions {
   sellerId: string
   sellerSkuId: string
   body: SaveSuggestionRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/suggestions/${params.sellerId}/${params.sellerSkuId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   deleteSuggestion(params: {
   sellerId: string
   sellerSkuId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/suggestions/${params.sellerId}/${params.sellerSkuId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class SuggestionsApi_getVersions {
@@ -135,16 +137,16 @@ class SuggestionsApi_getVersions {
   getVersions(params: {
   sellerId: string
   sellerskuid: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/suggestions/${params.sellerId}/${params.sellerskuid}/versions` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerskuid)}/versions`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   getSuggestionbyversion(params: {
   sellerId: string
   sellerskuid: string
   version: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/suggestions/${params.sellerId}/${params.sellerskuid}/versions/${params.version}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerskuid)}/versions/${encodePathParam(params.version)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class SuggestionsApi_matchReceivedSKUs {
@@ -156,15 +158,15 @@ class SuggestionsApi_matchReceivedSKUs {
   version: string
   matchid: string
   body: MatchRequest
-}): Promise<ResponseMatchMultiple> {
-    return this.http.request<ResponseMatchMultiple>({ method: 'PUT', path: `/suggestions/${params.sellerId}/${params.sellerskuid}/versions/${params.version}/matches/${params.matchid}`, body: params.body })
+}, opts?: CallOptions): Promise<ResponseMatchMultiple> {
+    return this.http.request<ResponseMatchMultiple>(withCall({ method: 'PUT', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerskuid)}/versions/${encodePathParam(params.version)}/matches/${encodePathParam(params.matchid)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
   matchMultiple(params: {
   actionName: "newproduct" | "skuassociation" | "productassociation" | "deny"
   body: MatchMultiple
-}): Promise<ResponseMatchMultiple> {
-    return this.http.request<ResponseMatchMultiple>({ method: 'PUT', path: `/suggestions/matches/action/${params.actionName}`, body: params.body })
+}, opts?: CallOptions): Promise<ResponseMatchMultiple> {
+    return this.http.request<ResponseMatchMultiple>(withCall({ method: 'PUT', path: `/suggestions/matches/action/${encodePathParam(params.actionName)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 class SuggestionsApi_multipleProductSpecificationMapping {
@@ -172,9 +174,11 @@ class SuggestionsApi_multipleProductSpecificationMapping {
 
   putSuggestionsConfigurationBySellerIDSpecifications(params: {
   sellerID: string
-  body: Record<string, unknown>
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/suggestions/configuration/${params.sellerID}/specifications`, body: params.body })
+  body: {
+  [key: string]: string
+}
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/suggestions/configuration/${encodePathParam(params.sellerID)}/specifications`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }
 

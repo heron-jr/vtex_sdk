@@ -7,7 +7,7 @@ export type AutocompleteSearchSuggestions = {
   value?: string
   labelKey?: string
   labelValue?: string
-}[]
+}[] | null
 }[]
 }
 
@@ -52,10 +52,14 @@ export type ProductSearch = {
   fuzzy?: string
   operator?: "and" | "or"
   translated?: boolean
-  redirect?: string
+  redirect?: string | null
   options?: {
-  sorts?: Record<string, unknown>[]
-  counts?: Record<string, unknown>[]
+  sorts?: {
+  [key: string]: unknown
+}[]
+  counts?: {
+  [key: string]: unknown
+}[]
   deliveryPromisesEnabled?: boolean
 }
   searchId?: string
@@ -152,14 +156,16 @@ export type Product = {
   addToCartLink?: string
   sellerDefault?: boolean
   commertialOffer?: {
-  DeliverySlaSamplesPerRegion?: Record<string, unknown>
+  DeliverySlaSamplesPerRegion?: {
+  [key: string]: unknown
+}
   DeliverySlaSamples?: {
   DeliverySlaPerTypes?: {
   Price?: number
   TypeName?: string
   EstimatedTimeSpanToDelivery?: number
 }[]
-  Region?: string
+  Region?: string | null
 }[]
   AvailableQuantity?: number
   discountHighlights?: {
@@ -195,12 +201,14 @@ export type Product = {
   id?: string
   name?: string
   required?: boolean
-  inputValues?: Record<string, unknown>
+  inputValues?: {
+  [key: string]: unknown
+}
 }[]
 }[]
   RewardValue?: number
   PriceValidUntil?: string
-  GetInfoErrorMessage?: string
+  GetInfoErrorMessage?: string | null
   CacheVersionUsedToCallCheckout?: string
   teasers?: {
   name?: string
@@ -255,6 +263,7 @@ export type Product = {
 }[]
 }[]
   isKit?: boolean
+  [key: string]: unknown
 }[]
   releaseDate?: number
   origin?: string

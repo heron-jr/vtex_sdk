@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { ClientProfileData, ShippingData, Address, PickupStoreInfo, ChangesAttachment, Stats, AuthorizationPolicyData } from './types.js'
 
 class OrdersApiPiiDataArchitectureApi_orders {
@@ -7,7 +9,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   getOrder2(params: {
   orderId: string
   reason?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   sellerOrderId?: string
   orderFormId?: string
@@ -20,8 +22,8 @@ class OrdersApiPiiDataArchitectureApi_orders {
   uniqueId?: string
   id?: string
   productId?: string
-  lockId?: string
-  ean?: string
+  lockId?: string | null
+  ean?: string | null
   quantity?: number
   seller?: string
   sellerSku?: string
@@ -40,30 +42,32 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }
   productClusterId?: string
   commercialConditionId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
   categories?: {
   id?: number
   name?: string
 }[]
 }
   attachments?: {
-  name?: string
-  content?: Record<string, unknown>
-}[]
-  attachmentOfferings?: {
-  name?: string
-  required?: boolean
-  schema?: Record<string, unknown>
-}[]
-  assemblies?: string[]
+  name?: string | null
+  content?: {
+  [key: string]: string | null
+} | null
+}[] | null
+  attachmentOfferings?: ({
+  name?: string | null
+  required?: boolean | null
+  schema?: Record<string, unknown> | null
+} | null)[] | null
+  assemblies?: (string | null)[] | null
   refId?: string
-  shippingPrice?: number
+  shippingPrice?: number | null
   price?: number
   sellingPrice?: number
   listPrice?: number
-  manualPrice?: number
+  manualPrice?: number | null
   tax?: number
   rewardValue?: number
   freightCommission?: number
@@ -73,40 +77,40 @@ class OrdersApiPiiDataArchitectureApi_orders {
   rawValue?: number
   isPercentual?: boolean
   identifier?: string
-  rate?: number
-  jurisCode?: string
-  jurisType?: string
-  jurisName?: string
+  rate?: number | null
+  jurisCode?: string | null
+  jurisType?: string | null
+  jurisName?: string | null
 }[]
   imageUrl?: string
   detailUrl?: string
-  components?: string[]
+  components?: (string | null)[] | null
   bundleItems?: {
   type?: string
   id?: number
   name?: string
   price?: number
-}[]
-  offerings?: string[]
-  preSaleDate?: string
+}[] | null
+  offerings?: (string | null)[] | null
+  preSaleDate?: string | null
   isGift?: boolean
-  taxCode?: string
+  taxCode?: string | null
   measurementUnit?: string
   unitMultiplier?: number
   marketingData?: {
-  utmSource?: string
+  utmSource?: string | null
   utmMedium?: string
-  utmCampaign?: string
-  utmPartner?: string
-  utmipage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-  coupon?: string
+  utmCampaign?: string | null
+  utmPartner?: string | null
+  utmipage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+  coupon?: string | null
   marketingTags?: string[]
-}
-  parentAssemblyBinding?: string
-  parentItemIndex?: number
-  callCenterOperator?: string
+} | null
+  parentAssemblyBinding?: string | null
+  parentItemIndex?: number | null
+  callCenterOperator?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -114,17 +118,17 @@ class OrdersApiPiiDataArchitectureApi_orders {
   value?: number
   quantity?: number
 }[]
-  reason?: string
+  reason?: string | null
 }
-  costPrice?: number
+  costPrice?: number | null
 }[]
-  marketplaceItems?: string[]
+  marketplaceItems?: (string | null)[] | null
   authorizedDate?: string
   subscriptionData?: {
-  subscriptionGroupId?: string
+  subscriptionGroupId?: string | null
   subscriptions?: {
   executionCount?: number
-  priceAtSubscriptionDate?: number
+  priceAtSubscriptionDate?: number | null
   itemIndex?: number
   plan?: {
   type?: string
@@ -134,11 +138,11 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }
   validity?: {
   begin?: string
-  end?: string
+  end?: string | null
 }
 }
-}[]
-}
+}[] | null
+} | null
   taxData?: {
   areTaxesDesignatedByMarketplace: boolean
   taxInfoCollection: {
@@ -157,12 +161,12 @@ class OrdersApiPiiDataArchitectureApi_orders {
   rawValue?: number
 }[]
 }[]
-}
+} | null
 }[]
-}
-  invoicedDate?: string
-  marketplaceOrderId?: string
-  marketplaceServicesEndpoint?: string
+} | null
+  invoicedDate?: string | null
+  marketplaceOrderId?: string | null
+  marketplaceServicesEndpoint?: string | null
   clientProfileData?: ClientProfileData
   giftRegistryData?: {
   giftRegistryId?: string
@@ -170,50 +174,50 @@ class OrdersApiPiiDataArchitectureApi_orders {
   giftRegistryTypeName?: string
   addressId?: string
   description?: string
-}
+} | null
   emailTracked?: string
   isCheckedIn?: boolean
-  approvedBy?: string
-  cancelledBy?: string
-  canceledBy?: string
-  cancelReason?: string
+  approvedBy?: string | null
+  cancelledBy?: string | null
+  canceledBy?: string | null
+  cancelReason?: string | null
   callCenterOperatorData?: {
   id?: string
   email?: string
   userName?: string
-}
+} | null
   allowCancellation?: boolean
   allowEdition?: boolean
   roundingError?: number
   salesChannel?: string
   salesChannelData?: {
-  countryCode?: string
-  currencyCode?: string
+  countryCode?: string | null
+  currencyCode?: string | null
   currencyFormatInfo?: {
   CurrencyDecimalDigits?: number
   CurrencyDecimalSeparator?: string
   CurrencyGroupSeparator?: string
   CurrencyGroupSize?: number
   StartsWithCurrencySymbol?: boolean
-}
-  cultureInfo?: string
+} | null
+  cultureInfo?: string | null
   currencyLocale?: number
-  currencySymbol?: string
-  timeZone?: string
+  currencySymbol?: string | null
+  timeZone?: string | null
   id?: string
   name?: string
   isActive?: boolean
 }
   customData?: {
-  customApps?: string[]
-}
+  customApps?: (string | null)[] | null
+} | null
   changesAttachment?: ChangesAttachment
-  commercialConditionData?: string
+  commercialConditionData?: string | null
   shippingData?: ShippingData
   packageAttachment?: {
   packages?: {
   courier?: string
-  description?: string
+  description?: string | null
   invoiceNumber?: string
   invoiceValue?: number
   invoiceUrl?: string
@@ -233,7 +237,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }[]
   courierStatus?: {
   deliveredDate?: string
-  status?: string
+  status?: string | null
   finished?: boolean
   data?: {
   lastChange?: string
@@ -242,41 +246,41 @@ class OrdersApiPiiDataArchitectureApi_orders {
   description?: string
   createDate?: string
 }[]
-}
-  cfop?: string
+} | null
+  cfop?: string | null
   lastChange?: string
   restitutions?: {
   refund?: {
   value?: number
-  giftCardData?: string
+  giftCardData?: string | null
   items?: {
-  useFreight?: boolean
+  useFreight?: boolean | null
   isCompensation?: boolean
   compensationValue?: number
   id?: string
   quantity?: number
   price?: number
   description?: string
-}[]
+}[] | null
 }
-}
-  volumes?: number
-}[]
-}
+} | null
+  volumes?: number | null
+}[] | null
+} | null
   marketplace?: {
   baseURL?: string
-  isCertified?: boolean
+  isCertified?: boolean | null
   name?: string
-}
+} | null
   contextData?: {
   loggedIn?: boolean
   hasAccessToOrderFormEnabledByLicenseManager?: boolean
   userAgent?: string
   userId?: string
 }
-  lastMessage?: string
+  lastMessage?: string | null
   status?: string
-  handlingData?: string
+  handlingData?: string | null
   documentVersion?: string
   appVersion?: string
   workflowData?: {
@@ -284,13 +288,13 @@ class OrdersApiPiiDataArchitectureApi_orders {
   id?: string
   name?: string
   currentStepName?: string
-  currentStepDescription?: string
+  currentStepDescription?: string | null
   lastChange?: string
   isInError?: boolean
   isInAutomaticRetry?: boolean
   creationDate?: string
-  owner?: string
-  version?: string
+  owner?: string | null
+  version?: string | null
   timeLine?: {
   stepName?: string
   date?: string
@@ -304,38 +308,38 @@ class OrdersApiPiiDataArchitectureApi_orders {
   name?: string
   next?: {
   name?: string
-  next?: string
+  next?: string | null
   systemWillMove?: boolean
   actionsAllowed?: {
   type?: string
-}
-  expectFlow?: boolean
-}[]
+} | null
+  expectFlow?: boolean | null
+}[] | null
   systemWillMove?: boolean
   actionsAllowed?: {
   type?: string
-}
+} | null
   start?: boolean
 }[]
   currentLogicalStep?: string
 }[]
   mainFlowIndex?: number
 }
-  checkedInPickupPointId?: string
+  checkedInPickupPointId?: string | null
   fingerPrint?: string
   piiHidden?: boolean
   workflowIsInError?: boolean
-  callCenterOperator?: string
+  callCenterOperator?: string | null
   state?: string
   timeZoneCreationDate?: string
   timeZoneLastChange?: string
-  userType?: string
+  userType?: string | null
   clientPreferencesData?: {
   locale?: string
   optinNewsLetter?: boolean
 }
   orderId?: string
-  workflowInstanceId?: string
+  workflowInstanceId?: string | null
   creationDate?: string
   totals?: {
   id?: "Items" | "Discounts" | "Shipping" | "Tax"
@@ -345,7 +349,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   id?: string
   name?: string
   value?: number
-}[]
+}[] | null
 }[]
   sequence?: string
   receiptData?: {
@@ -355,8 +359,10 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }[]
 }
   isCompleted?: boolean
-  openTextField?: Record<string, unknown>
-  affiliateId?: string
+  openTextField?: {
+  [key: string]: string
+} | null
+  affiliateId?: string | null
   value?: number
   hostname?: string
   followUpEmail?: string
@@ -364,75 +370,79 @@ class OrdersApiPiiDataArchitectureApi_orders {
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
   fulfillmentEndpoint?: string
   subSellerId?: string
 }[]
   marketingData?: {
-  utmSource?: string
+  utmSource?: string | null
   utmMedium?: string
-  utmCampaign?: string
-  utmPartner?: string
-  utmipage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-  coupon?: string
+  utmCampaign?: string | null
+  utmPartner?: string | null
+  utmipage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+  coupon?: string | null
   marketingTags?: string[]
-}
+} | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: {
   id?: string
   name?: string
   featured?: boolean
-  description?: string
-  matchedParameters?: Record<string, unknown>
-  additionalInfo?: Record<string, unknown>
+  description?: string | null
+  matchedParameters?: {
+  [key: string]: string
+} | null
+  additionalInfo?: {
+  [key: string]: string
+} | null
 }[]
   teaser?: {
   name?: string
   description?: string
-}[]
+}[] | null
 }
   paymentData?: {
   giftCards?: {
   id?: string
   redemptionCode?: string
-  name?: string
-  caption?: string
+  name?: string | null
+  caption?: string | null
   value?: number
   balance?: number
   provider?: string
-  groupName?: string
+  groupName?: string | null
   inUse?: boolean
   isSpecialCard?: boolean
-}[]
+}[] | null
   transactions?: {
   isActive?: boolean
   transactionId?: string
   merchantName?: string
   payments?: {
-  bankIssuedInvoiceIdentificationNumberFormatted?: string
-  bankIssuedInvoiceIdentificationNumber?: string
-  parentAccountId?: string
+  bankIssuedInvoiceIdentificationNumberFormatted?: string | null
+  bankIssuedInvoiceIdentificationNumber?: string | null
+  parentAccountId?: string | null
   accountId?: string
-  dueDate?: string
+  dueDate?: string | null
   group?: "creditCard" | "debitCard" | "bankInvoice" | "promissory" | "giftCard" | "instantPayment"
-  isGiftCardDiscount?: boolean
-  giftCardName?: string
-  giftCardCaption?: string
-  giftCardProvider?: string
-  giftCardId?: string
-  redemptionCode?: string
+  isGiftCardDiscount?: boolean | null
+  giftCardName?: string | null
+  giftCardCaption?: string | null
+  giftCardProvider?: string | null
+  giftCardId?: string | null
+  redemptionCode?: string | null
   tid?: string
-  koinUrl?: string
-  url?: string
-  expireYear?: string
-  expireMonth?: string
-  cvv2?: string
-  lastDigits?: string
-  firstDigits?: string
-  cardNumber?: string
-  cardHolder?: string
+  koinUrl?: string | null
+  url?: string | null
+  expireYear?: string | null
+  expireMonth?: string | null
+  cvv2?: string | null
+  lastDigits?: string | null
+  firstDigits?: string | null
+  cardNumber?: string | null
+  cardHolder?: string | null
   referenceValue?: number
   connectorResponses?: {
   Message?: string
@@ -440,7 +450,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   authorizationId?: string
   status?: string
   delayToAutoSettle?: number
-  ReturnCode?: string
+  ReturnCode?: string | null
   nsu?: string
   code?: string
   message?: string
@@ -454,16 +464,16 @@ class OrdersApiPiiDataArchitectureApi_orders {
   value?: number
   paymentSystemName?: string
   paymentSystem?: string
-  paymentOrigin?: string
+  paymentOrigin?: string | null
   id?: string
-  bankIssuedInvoiceBarCodeNumber?: string
-  bankIssuedInvoiceBarCodeType?: string
+  bankIssuedInvoiceBarCodeNumber?: string | null
+  bankIssuedInvoiceBarCodeType?: string | null
   billingAddress?: {
   addressType?: "residential" | "pickup"
   receiverName?: string
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -471,23 +481,23 @@ class OrdersApiPiiDataArchitectureApi_orders {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-  contactId?: string
-}
+  contactId?: string | null
+} | null
 }[]
   sharedTransaction?: boolean
-  status?: string
+  status?: string | null
 }[]
 }
   invoiceData?: {
   address?: {
-  addressType?: "residential" | "pickup"
-  receiverName?: string
-  addressId?: string
-  versionId?: string
-  entityId?: string
+  addressType?: "residential" | "pickup" | null
+  receiverName?: string | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -495,23 +505,23 @@ class OrdersApiPiiDataArchitectureApi_orders {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-  contactId?: string
-}
+  contactId?: string | null
+} | null
   userPaymentInfo?: {
   paymentMethods?: string[]
-}
-  settleInvoices?: string[]
+} | null
+  settleInvoices?: string[] | null
   invoiceSubject?: {
   id?: string
   email?: string
   firstName?: string
   lastName?: string
   phone?: string
-}
-}
+} | null
+} | null
   storePreferencesData?: {
   countryCode?: string
   currencyCode?: string
@@ -526,7 +536,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   currencySymbol?: string
   timeZone?: string
 }
-  merchantName?: string
+  merchantName?: string | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -535,37 +545,41 @@ class OrdersApiPiiDataArchitectureApi_orders {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
   assemblyOptions?: {
   id?: string
   name?: string
   required?: boolean
-  inputValues?: Record<string, unknown>
-  composition?: Record<string, unknown>
-}[]
+  inputValues?: {
+  [key: string]: string | null
+} | null
+  composition?: {
+  [key: string]: string
+} | null
+}[] | null
 }[]
 }
   creationEnvironment?: "BETA" | "STABLE" | null
   cancellationData?: {
   requestedByUser?: boolean
-  requestedBySystem?: boolean
-  requestedBySellerNotification?: boolean
-  requestedByPaymentNotification?: boolean
+  requestedBySystem?: boolean | null
+  requestedBySellerNotification?: boolean | null
+  requestedByPaymentNotification?: boolean | null
   reason?: string
   cancellationDate?: string
   cancellationRequestId?: string
-}
+} | null
   cancellationRequests?: {
   id?: string
   reason?: string
   cancellationRequestDate?: string
   requestedByUser?: boolean
   deniedBySeller?: boolean
-  deniedBySellerReason?: string
-  cancellationRequestDenyDate?: string
-}[]
+  deniedBySellerReason?: string | null
+  cancellationRequestDenyDate?: string | null
+}[] | null
   authorizationPolicyData?: AuthorizationPolicyData
 }> {
     return this.http.request<{
@@ -581,8 +595,8 @@ class OrdersApiPiiDataArchitectureApi_orders {
   uniqueId?: string
   id?: string
   productId?: string
-  lockId?: string
-  ean?: string
+  lockId?: string | null
+  ean?: string | null
   quantity?: number
   seller?: string
   sellerSku?: string
@@ -601,30 +615,32 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }
   productClusterId?: string
   commercialConditionId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
   categories?: {
   id?: number
   name?: string
 }[]
 }
   attachments?: {
-  name?: string
-  content?: Record<string, unknown>
-}[]
-  attachmentOfferings?: {
-  name?: string
-  required?: boolean
-  schema?: Record<string, unknown>
-}[]
-  assemblies?: string[]
+  name?: string | null
+  content?: {
+  [key: string]: string | null
+} | null
+}[] | null
+  attachmentOfferings?: ({
+  name?: string | null
+  required?: boolean | null
+  schema?: Record<string, unknown> | null
+} | null)[] | null
+  assemblies?: (string | null)[] | null
   refId?: string
-  shippingPrice?: number
+  shippingPrice?: number | null
   price?: number
   sellingPrice?: number
   listPrice?: number
-  manualPrice?: number
+  manualPrice?: number | null
   tax?: number
   rewardValue?: number
   freightCommission?: number
@@ -634,40 +650,40 @@ class OrdersApiPiiDataArchitectureApi_orders {
   rawValue?: number
   isPercentual?: boolean
   identifier?: string
-  rate?: number
-  jurisCode?: string
-  jurisType?: string
-  jurisName?: string
+  rate?: number | null
+  jurisCode?: string | null
+  jurisType?: string | null
+  jurisName?: string | null
 }[]
   imageUrl?: string
   detailUrl?: string
-  components?: string[]
+  components?: (string | null)[] | null
   bundleItems?: {
   type?: string
   id?: number
   name?: string
   price?: number
-}[]
-  offerings?: string[]
-  preSaleDate?: string
+}[] | null
+  offerings?: (string | null)[] | null
+  preSaleDate?: string | null
   isGift?: boolean
-  taxCode?: string
+  taxCode?: string | null
   measurementUnit?: string
   unitMultiplier?: number
   marketingData?: {
-  utmSource?: string
+  utmSource?: string | null
   utmMedium?: string
-  utmCampaign?: string
-  utmPartner?: string
-  utmipage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-  coupon?: string
+  utmCampaign?: string | null
+  utmPartner?: string | null
+  utmipage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+  coupon?: string | null
   marketingTags?: string[]
-}
-  parentAssemblyBinding?: string
-  parentItemIndex?: number
-  callCenterOperator?: string
+} | null
+  parentAssemblyBinding?: string | null
+  parentItemIndex?: number | null
+  callCenterOperator?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -675,17 +691,17 @@ class OrdersApiPiiDataArchitectureApi_orders {
   value?: number
   quantity?: number
 }[]
-  reason?: string
+  reason?: string | null
 }
-  costPrice?: number
+  costPrice?: number | null
 }[]
-  marketplaceItems?: string[]
+  marketplaceItems?: (string | null)[] | null
   authorizedDate?: string
   subscriptionData?: {
-  subscriptionGroupId?: string
+  subscriptionGroupId?: string | null
   subscriptions?: {
   executionCount?: number
-  priceAtSubscriptionDate?: number
+  priceAtSubscriptionDate?: number | null
   itemIndex?: number
   plan?: {
   type?: string
@@ -695,11 +711,11 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }
   validity?: {
   begin?: string
-  end?: string
+  end?: string | null
 }
 }
-}[]
-}
+}[] | null
+} | null
   taxData?: {
   areTaxesDesignatedByMarketplace: boolean
   taxInfoCollection: {
@@ -718,12 +734,12 @@ class OrdersApiPiiDataArchitectureApi_orders {
   rawValue?: number
 }[]
 }[]
-}
+} | null
 }[]
-}
-  invoicedDate?: string
-  marketplaceOrderId?: string
-  marketplaceServicesEndpoint?: string
+} | null
+  invoicedDate?: string | null
+  marketplaceOrderId?: string | null
+  marketplaceServicesEndpoint?: string | null
   clientProfileData?: ClientProfileData
   giftRegistryData?: {
   giftRegistryId?: string
@@ -731,50 +747,50 @@ class OrdersApiPiiDataArchitectureApi_orders {
   giftRegistryTypeName?: string
   addressId?: string
   description?: string
-}
+} | null
   emailTracked?: string
   isCheckedIn?: boolean
-  approvedBy?: string
-  cancelledBy?: string
-  canceledBy?: string
-  cancelReason?: string
+  approvedBy?: string | null
+  cancelledBy?: string | null
+  canceledBy?: string | null
+  cancelReason?: string | null
   callCenterOperatorData?: {
   id?: string
   email?: string
   userName?: string
-}
+} | null
   allowCancellation?: boolean
   allowEdition?: boolean
   roundingError?: number
   salesChannel?: string
   salesChannelData?: {
-  countryCode?: string
-  currencyCode?: string
+  countryCode?: string | null
+  currencyCode?: string | null
   currencyFormatInfo?: {
   CurrencyDecimalDigits?: number
   CurrencyDecimalSeparator?: string
   CurrencyGroupSeparator?: string
   CurrencyGroupSize?: number
   StartsWithCurrencySymbol?: boolean
-}
-  cultureInfo?: string
+} | null
+  cultureInfo?: string | null
   currencyLocale?: number
-  currencySymbol?: string
-  timeZone?: string
+  currencySymbol?: string | null
+  timeZone?: string | null
   id?: string
   name?: string
   isActive?: boolean
 }
   customData?: {
-  customApps?: string[]
-}
+  customApps?: (string | null)[] | null
+} | null
   changesAttachment?: ChangesAttachment
-  commercialConditionData?: string
+  commercialConditionData?: string | null
   shippingData?: ShippingData
   packageAttachment?: {
   packages?: {
   courier?: string
-  description?: string
+  description?: string | null
   invoiceNumber?: string
   invoiceValue?: number
   invoiceUrl?: string
@@ -794,7 +810,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }[]
   courierStatus?: {
   deliveredDate?: string
-  status?: string
+  status?: string | null
   finished?: boolean
   data?: {
   lastChange?: string
@@ -803,41 +819,41 @@ class OrdersApiPiiDataArchitectureApi_orders {
   description?: string
   createDate?: string
 }[]
-}
-  cfop?: string
+} | null
+  cfop?: string | null
   lastChange?: string
   restitutions?: {
   refund?: {
   value?: number
-  giftCardData?: string
+  giftCardData?: string | null
   items?: {
-  useFreight?: boolean
+  useFreight?: boolean | null
   isCompensation?: boolean
   compensationValue?: number
   id?: string
   quantity?: number
   price?: number
   description?: string
-}[]
+}[] | null
 }
-}
-  volumes?: number
-}[]
-}
+} | null
+  volumes?: number | null
+}[] | null
+} | null
   marketplace?: {
   baseURL?: string
-  isCertified?: boolean
+  isCertified?: boolean | null
   name?: string
-}
+} | null
   contextData?: {
   loggedIn?: boolean
   hasAccessToOrderFormEnabledByLicenseManager?: boolean
   userAgent?: string
   userId?: string
 }
-  lastMessage?: string
+  lastMessage?: string | null
   status?: string
-  handlingData?: string
+  handlingData?: string | null
   documentVersion?: string
   appVersion?: string
   workflowData?: {
@@ -845,13 +861,13 @@ class OrdersApiPiiDataArchitectureApi_orders {
   id?: string
   name?: string
   currentStepName?: string
-  currentStepDescription?: string
+  currentStepDescription?: string | null
   lastChange?: string
   isInError?: boolean
   isInAutomaticRetry?: boolean
   creationDate?: string
-  owner?: string
-  version?: string
+  owner?: string | null
+  version?: string | null
   timeLine?: {
   stepName?: string
   date?: string
@@ -865,38 +881,38 @@ class OrdersApiPiiDataArchitectureApi_orders {
   name?: string
   next?: {
   name?: string
-  next?: string
+  next?: string | null
   systemWillMove?: boolean
   actionsAllowed?: {
   type?: string
-}
-  expectFlow?: boolean
-}[]
+} | null
+  expectFlow?: boolean | null
+}[] | null
   systemWillMove?: boolean
   actionsAllowed?: {
   type?: string
-}
+} | null
   start?: boolean
 }[]
   currentLogicalStep?: string
 }[]
   mainFlowIndex?: number
 }
-  checkedInPickupPointId?: string
+  checkedInPickupPointId?: string | null
   fingerPrint?: string
   piiHidden?: boolean
   workflowIsInError?: boolean
-  callCenterOperator?: string
+  callCenterOperator?: string | null
   state?: string
   timeZoneCreationDate?: string
   timeZoneLastChange?: string
-  userType?: string
+  userType?: string | null
   clientPreferencesData?: {
   locale?: string
   optinNewsLetter?: boolean
 }
   orderId?: string
-  workflowInstanceId?: string
+  workflowInstanceId?: string | null
   creationDate?: string
   totals?: {
   id?: "Items" | "Discounts" | "Shipping" | "Tax"
@@ -906,7 +922,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   id?: string
   name?: string
   value?: number
-}[]
+}[] | null
 }[]
   sequence?: string
   receiptData?: {
@@ -916,8 +932,10 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }[]
 }
   isCompleted?: boolean
-  openTextField?: Record<string, unknown>
-  affiliateId?: string
+  openTextField?: {
+  [key: string]: string
+} | null
+  affiliateId?: string | null
   value?: number
   hostname?: string
   followUpEmail?: string
@@ -925,75 +943,79 @@ class OrdersApiPiiDataArchitectureApi_orders {
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
   fulfillmentEndpoint?: string
   subSellerId?: string
 }[]
   marketingData?: {
-  utmSource?: string
+  utmSource?: string | null
   utmMedium?: string
-  utmCampaign?: string
-  utmPartner?: string
-  utmipage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-  coupon?: string
+  utmCampaign?: string | null
+  utmPartner?: string | null
+  utmipage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+  coupon?: string | null
   marketingTags?: string[]
-}
+} | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: {
   id?: string
   name?: string
   featured?: boolean
-  description?: string
-  matchedParameters?: Record<string, unknown>
-  additionalInfo?: Record<string, unknown>
+  description?: string | null
+  matchedParameters?: {
+  [key: string]: string
+} | null
+  additionalInfo?: {
+  [key: string]: string
+} | null
 }[]
   teaser?: {
   name?: string
   description?: string
-}[]
+}[] | null
 }
   paymentData?: {
   giftCards?: {
   id?: string
   redemptionCode?: string
-  name?: string
-  caption?: string
+  name?: string | null
+  caption?: string | null
   value?: number
   balance?: number
   provider?: string
-  groupName?: string
+  groupName?: string | null
   inUse?: boolean
   isSpecialCard?: boolean
-}[]
+}[] | null
   transactions?: {
   isActive?: boolean
   transactionId?: string
   merchantName?: string
   payments?: {
-  bankIssuedInvoiceIdentificationNumberFormatted?: string
-  bankIssuedInvoiceIdentificationNumber?: string
-  parentAccountId?: string
+  bankIssuedInvoiceIdentificationNumberFormatted?: string | null
+  bankIssuedInvoiceIdentificationNumber?: string | null
+  parentAccountId?: string | null
   accountId?: string
-  dueDate?: string
+  dueDate?: string | null
   group?: "creditCard" | "debitCard" | "bankInvoice" | "promissory" | "giftCard" | "instantPayment"
-  isGiftCardDiscount?: boolean
-  giftCardName?: string
-  giftCardCaption?: string
-  giftCardProvider?: string
-  giftCardId?: string
-  redemptionCode?: string
+  isGiftCardDiscount?: boolean | null
+  giftCardName?: string | null
+  giftCardCaption?: string | null
+  giftCardProvider?: string | null
+  giftCardId?: string | null
+  redemptionCode?: string | null
   tid?: string
-  koinUrl?: string
-  url?: string
-  expireYear?: string
-  expireMonth?: string
-  cvv2?: string
-  lastDigits?: string
-  firstDigits?: string
-  cardNumber?: string
-  cardHolder?: string
+  koinUrl?: string | null
+  url?: string | null
+  expireYear?: string | null
+  expireMonth?: string | null
+  cvv2?: string | null
+  lastDigits?: string | null
+  firstDigits?: string | null
+  cardNumber?: string | null
+  cardHolder?: string | null
   referenceValue?: number
   connectorResponses?: {
   Message?: string
@@ -1001,7 +1023,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   authorizationId?: string
   status?: string
   delayToAutoSettle?: number
-  ReturnCode?: string
+  ReturnCode?: string | null
   nsu?: string
   code?: string
   message?: string
@@ -1015,16 +1037,16 @@ class OrdersApiPiiDataArchitectureApi_orders {
   value?: number
   paymentSystemName?: string
   paymentSystem?: string
-  paymentOrigin?: string
+  paymentOrigin?: string | null
   id?: string
-  bankIssuedInvoiceBarCodeNumber?: string
-  bankIssuedInvoiceBarCodeType?: string
+  bankIssuedInvoiceBarCodeNumber?: string | null
+  bankIssuedInvoiceBarCodeType?: string | null
   billingAddress?: {
   addressType?: "residential" | "pickup"
   receiverName?: string
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -1032,23 +1054,23 @@ class OrdersApiPiiDataArchitectureApi_orders {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-  contactId?: string
-}
+  contactId?: string | null
+} | null
 }[]
   sharedTransaction?: boolean
-  status?: string
+  status?: string | null
 }[]
 }
   invoiceData?: {
   address?: {
-  addressType?: "residential" | "pickup"
-  receiverName?: string
-  addressId?: string
-  versionId?: string
-  entityId?: string
+  addressType?: "residential" | "pickup" | null
+  receiverName?: string | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -1056,23 +1078,23 @@ class OrdersApiPiiDataArchitectureApi_orders {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-  contactId?: string
-}
+  contactId?: string | null
+} | null
   userPaymentInfo?: {
   paymentMethods?: string[]
-}
-  settleInvoices?: string[]
+} | null
+  settleInvoices?: string[] | null
   invoiceSubject?: {
   id?: string
   email?: string
   firstName?: string
   lastName?: string
   phone?: string
-}
-}
+} | null
+} | null
   storePreferencesData?: {
   countryCode?: string
   currencyCode?: string
@@ -1087,7 +1109,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   currencySymbol?: string
   timeZone?: string
 }
-  merchantName?: string
+  merchantName?: string | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -1096,39 +1118,43 @@ class OrdersApiPiiDataArchitectureApi_orders {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
   assemblyOptions?: {
   id?: string
   name?: string
   required?: boolean
-  inputValues?: Record<string, unknown>
-  composition?: Record<string, unknown>
-}[]
+  inputValues?: {
+  [key: string]: string | null
+} | null
+  composition?: {
+  [key: string]: string
+} | null
+}[] | null
 }[]
 }
   creationEnvironment?: "BETA" | "STABLE" | null
   cancellationData?: {
   requestedByUser?: boolean
-  requestedBySystem?: boolean
-  requestedBySellerNotification?: boolean
-  requestedByPaymentNotification?: boolean
+  requestedBySystem?: boolean | null
+  requestedBySellerNotification?: boolean | null
+  requestedByPaymentNotification?: boolean | null
   reason?: string
   cancellationDate?: string
   cancellationRequestId?: string
-}
+} | null
   cancellationRequests?: {
   id?: string
   reason?: string
   cancellationRequestDate?: string
   requestedByUser?: boolean
   deniedBySeller?: boolean
-  deniedBySellerReason?: string
-  cancellationRequestDenyDate?: string
-}[]
+  deniedBySellerReason?: string | null
+  cancellationRequestDenyDate?: string | null
+}[] | null
   authorizationPolicyData?: AuthorizationPolicyData
-}>({ method: 'GET', path: `/api/orders/pvt/document/${params.orderId}`, query: { 'reason': params.reason } })
+}>(withCall({ method: 'GET', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}`, query: { 'reason': params.reason } }, opts))
   }
 
   listOrders2(params: {
@@ -1160,7 +1186,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
   salesChannelId?: string
   f_salesChannel?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   list?: {
   paymentNames?: string
   orderId?: string
@@ -1168,8 +1194,8 @@ class OrdersApiPiiDataArchitectureApi_orders {
   sequence?: string
   clientEmail?: string
   clientDocument?: string
-  clientCorporateDocument?: string
-  clientCorporateName?: string
+  clientCorporateDocument?: string | null
+  clientCorporateName?: string | null
   clientName?: string
   totalValue?: number
   origin?: "Marketplace" | "Fulfillment" | "Chain"
@@ -1188,35 +1214,35 @@ class OrdersApiPiiDataArchitectureApi_orders {
   transactionIds?: string[]
   paymentIds?: string[]
   isInstore?: boolean
-  deliveryChannel?: "delivery" | "pickup-in-point"[]
+  deliveryChannel?: ("delivery" | "pickup-in-point")[]
   productIds?: string[]
   hostname?: string
   creationDate?: string
-  invoicedDate?: string
+  invoicedDate?: string | null
   authorizedDate?: string
   orderIsComplete?: boolean
   marketingTags?: string[]
-  invoicesOutput?: string[]
-  invoicesInput?: string[]
+  invoicesOutput?: (string | null)[] | null
+  invoicesInput?: (string | null)[] | null
   workflowInErrorState?: boolean
   workflowInRetry?: boolean
   userProfileId?: string
   lastChange?: string
   isAllDelivered?: boolean
   isAnyDelivered?: boolean
-  giftCardProviders?: string[]
+  giftCardProviders?: string[] | null
   orderFormId?: string
   paymentApprovedDate?: string
-  readyForHandlingDate?: string
-  deliveryDates?: string[]
+  readyForHandlingDate?: string | null
+  deliveryDates?: string[] | null
   ingestPipelineMetadata?: string[]
-  marketplaceWorkflowInstanceId?: string
-  fulfillmentWorkflowInstanceId?: string
-  callCenterOperatorEmail?: string
-  callCenterOperatorName?: string
+  marketplaceWorkflowInstanceId?: string | null
+  fulfillmentWorkflowInstanceId?: string | null
+  callCenterOperatorEmail?: string | null
+  callCenterOperatorName?: string | null
   productNames?: string[]
 }[]
-  facets?: string[]
+  facets?: (string | null)[] | null
   paging?: {
   total: number
   pages: number
@@ -1234,8 +1260,8 @@ class OrdersApiPiiDataArchitectureApi_orders {
   sequence?: string
   clientEmail?: string
   clientDocument?: string
-  clientCorporateDocument?: string
-  clientCorporateName?: string
+  clientCorporateDocument?: string | null
+  clientCorporateName?: string | null
   clientName?: string
   totalValue?: number
   origin?: "Marketplace" | "Fulfillment" | "Chain"
@@ -1254,35 +1280,35 @@ class OrdersApiPiiDataArchitectureApi_orders {
   transactionIds?: string[]
   paymentIds?: string[]
   isInstore?: boolean
-  deliveryChannel?: "delivery" | "pickup-in-point"[]
+  deliveryChannel?: ("delivery" | "pickup-in-point")[]
   productIds?: string[]
   hostname?: string
   creationDate?: string
-  invoicedDate?: string
+  invoicedDate?: string | null
   authorizedDate?: string
   orderIsComplete?: boolean
   marketingTags?: string[]
-  invoicesOutput?: string[]
-  invoicesInput?: string[]
+  invoicesOutput?: (string | null)[] | null
+  invoicesInput?: (string | null)[] | null
   workflowInErrorState?: boolean
   workflowInRetry?: boolean
   userProfileId?: string
   lastChange?: string
   isAllDelivered?: boolean
   isAnyDelivered?: boolean
-  giftCardProviders?: string[]
+  giftCardProviders?: string[] | null
   orderFormId?: string
   paymentApprovedDate?: string
-  readyForHandlingDate?: string
-  deliveryDates?: string[]
+  readyForHandlingDate?: string | null
+  deliveryDates?: string[] | null
   ingestPipelineMetadata?: string[]
-  marketplaceWorkflowInstanceId?: string
-  fulfillmentWorkflowInstanceId?: string
-  callCenterOperatorEmail?: string
-  callCenterOperatorName?: string
+  marketplaceWorkflowInstanceId?: string | null
+  fulfillmentWorkflowInstanceId?: string | null
+  callCenterOperatorEmail?: string | null
+  callCenterOperatorName?: string | null
   productNames?: string[]
 }[]
-  facets?: string[]
+  facets?: (string | null)[] | null
   paging?: {
   total: number
   pages: number
@@ -1291,13 +1317,13 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }
   stats?: Stats
   reportRecordsLimit?: number
-}>({ method: 'POST', path: `/api/orders/extendsearch/orders`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/orders/extendsearch/orders`, body: params.body }, opts))
   }
 
   startHandling2(params: {
   orderId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/orders/pvt/document/${params.orderId}/actions/start-handling` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/actions/start-handling` }, opts))
   }
 
   cancelOrder2(params: {
@@ -1305,16 +1331,16 @@ class OrdersApiPiiDataArchitectureApi_orders {
   body: {
   reason?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   date?: string
   orderId?: string
-  receipt?: string
+  receipt?: string | null
 }> {
     return this.http.request<{
   date?: string
   orderId?: string
-  receipt?: string
-}>({ method: 'POST', path: `/api/orders/pvt/document/${params.orderId}/cancel`, body: params.body })
+  receipt?: string | null
+}>(withCall({ method: 'POST', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/cancel`, body: params.body }, opts))
   }
 }
 class OrdersApiPiiDataArchitectureApi_invoice {
@@ -1328,11 +1354,11 @@ class OrdersApiPiiDataArchitectureApi_invoice {
   invoiceNumber: string
   invoiceValue: number
   extraValue?: number
-  invoiceKey?: string
-  invoiceUrl?: string
-  courier?: string
-  trackingNumber?: string
-  trackingUrl?: string
+  invoiceKey?: string | null
+  invoiceUrl?: string | null
+  courier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
   items: {
   itemIndex: number
   price: number
@@ -1341,16 +1367,16 @@ class OrdersApiPiiDataArchitectureApi_invoice {
   cfop?: string
   volumes?: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   date?: string
   orderId?: string
-  receipt?: string
+  receipt?: string | null
 }> {
     return this.http.request<{
   date?: string
   orderId?: string
-  receipt?: string
-}>({ method: 'POST', path: `/api/orders/pvt/document/${params.orderId}/invoices`, body: params.body })
+  receipt?: string | null
+}>(withCall({ method: 'POST', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/invoices`, body: params.body }, opts))
   }
 }
 class OrdersApiPiiDataArchitectureApi_payment {
@@ -1359,8 +1385,8 @@ class OrdersApiPiiDataArchitectureApi_payment {
   sendPaymentNotification2(params: {
   orderId: string
   paymentId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/orders/pvt/document/${params.orderId}/payment/${params.paymentId}/notify-payment` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/payment/${encodePathParam(params.paymentId)}/notify-payment` }, opts))
   }
 }
 

@@ -19,7 +19,9 @@ export type PolicyRule = {
   updatedAt: string
 }
 
-export type JsonLogicExpression = Record<string, unknown>
+export type JsonLogicExpression = {
+  [key: string]: unknown
+}
 
 export type PaymentPolicySearchRequest = {
   salesChannel?: string
@@ -36,7 +38,9 @@ export type PaymentPolicySearchItem = {
 }
 
 export type PaymentPolicySearchResponse = {
-  paymentSystemAssignments: Record<string, unknown>
+  paymentSystemAssignments: {
+  [key: string]: number[]
+}
   paymentSystemDefinitions: PaymentSystemDefinition[]
 }
 
@@ -46,7 +50,7 @@ export type PaymentSystemDefinition = {
   requiresDocument?: boolean
   implementation?: string
   connectorImplementation?: string
-  antifraudConnectorImplementation?: string
+  antifraudConnectorImplementation?: string | null
   groupName: string
   redirect?: boolean
   isCustom?: boolean
@@ -61,40 +65,40 @@ export type PaymentSystemDefinition = {
   allowCommercialCondition?: boolean
   allowPeriod?: boolean
   isAvailable?: boolean
-  description?: string
+  description?: string | null
   supportRecurrence?: boolean
   validator?: {
-  regex: string
-  mask: string
-  cardCodeMask: string
-  cardCodeRegex: string
-  weights: number[]
+  regex: string | null
+  mask: string | null
+  cardCodeMask: string | null
+  cardCodeRegex: string | null
+  weights: number[] | null
   useCvv: boolean
   useExpirationDate: boolean
   useCardHolderName: boolean
   useBillingAddress: boolean
-  validCardLengths: string
+  validCardLengths: string | null
 }
-  appDependencies?: string
+  appDependencies?: string | null
   displayDocument?: boolean
   dueDate?: string
   allowNotification?: boolean
-  affiliationId?: string
-  availablePayments?: string
+  affiliationId?: string | null
+  availablePayments?: string | null
   dueDateMinutes?: number
 }
 
 export type Validator = {
-  regex: string
-  mask: string
-  cardCodeMask: string
-  cardCodeRegex: string
-  weights: number[]
+  regex: string | null
+  mask: string | null
+  cardCodeMask: string | null
+  cardCodeRegex: string | null
+  weights: number[] | null
   useCvv: boolean
   useExpirationDate: boolean
   useCardHolderName: boolean
   useBillingAddress: boolean
-  validCardLengths: string
+  validCardLengths: string | null
 }
 
 export type ProblemDetails = {

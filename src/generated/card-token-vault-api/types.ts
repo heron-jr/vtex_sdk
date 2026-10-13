@@ -71,7 +71,9 @@ export type CardToken = {
   email?: string
   card?: CardTokenCard
   cardTokenData: CardTokenDataResponse
-  extraData?: Record<string, unknown>
+  extraData?: {
+  [key: string]: string
+}
 }
 
 export type CreateCardTokenRequest = {
@@ -82,7 +84,9 @@ export type CreateCardTokenRequest = {
   orderGroup?: string
   card: CardTokenCardInput
   cardTokenData: CardTokenData
-  extraData?: Record<string, unknown>
+  extraData?: {
+  [key: string]: string
+}
 }
 
 export type UpdateCardTokenRequest = {
@@ -92,7 +96,9 @@ export type UpdateCardTokenRequest = {
   email?: string
   orderGroup?: string
   cardTokenData: CardTokenData
-  extraData?: Record<string, unknown>
+  extraData?: {
+  [key: string]: string
+}
 }
 
 export type ImportCardTokensResponse = {

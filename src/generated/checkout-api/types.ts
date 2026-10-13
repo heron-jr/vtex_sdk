@@ -3,16 +3,16 @@ export type OrderForm = {
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
-  userProfileId?: string
+  userProfileId?: string | null
   profileProvider?: string
   availableAccounts?: string[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -20,11 +20,11 @@ export type OrderForm = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-  userType?: string
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -33,35 +33,35 @@ export type OrderForm = {
   id?: string
   productId?: string
   productRefId?: string
-  refId?: string
-  ean?: string
+  refId?: string | null
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   taxCode?: string
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -79,7 +79,7 @@ export type OrderForm = {
   content?: Record<string, unknown>
 }[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -88,7 +88,7 @@ export type OrderForm = {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -103,8 +103,8 @@ export type OrderForm = {
   shippingData?: {
   address?: {
   addressType?: string
-  receiverName?: string
-  addressId?: string
+  receiverName?: string | null
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -113,15 +113,15 @@ export type OrderForm = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -134,20 +134,20 @@ export type OrderForm = {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -157,16 +157,16 @@ export type OrderForm = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -177,8 +177,8 @@ export type OrderForm = {
 }[]
   selectedAddresses?: {
   addressType?: string
-  receiverName?: string
-  addressId?: string
+  receiverName?: string | null
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -187,14 +187,14 @@ export type OrderForm = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
-  receiverName?: string
-  addressId?: string
+  receiverName?: string | null
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -203,28 +203,28 @@ export type OrderForm = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-}
+} | null
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   paymentData?: {
   giftCards?: {
   redemptionCode?: string
@@ -235,44 +235,44 @@ export type OrderForm = {
   inUse?: boolean
   isSpecialCard?: boolean
 }[]
-  transactions?: {
+  transactions?: ({
   isActive?: boolean
   transactionId?: string
   merchantName?: string
   payments?: {
   accountId?: string
-  bin?: string
+  bin?: string | null
   installments?: number
   paymentSystem?: string
   referenceValue?: number
   value?: number
 }[]
   sharedTransaction?: boolean
-}[]
+} | null)[]
 }
   marketingData?: {
   coupon?: string
   utmSource?: string
   utmMedium?: string
   utmCampaign?: string
-  utmiPage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-}
+  utmiPage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+} | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
-  minimumOrderValue?: number
+  logo?: string | null
+  minimumOrderValue?: number | null
 }[]
   clientPreferencesData?: {
   locale?: string
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: Record<string, unknown>
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -286,10 +286,10 @@ export type OrderForm = {
   reference?: string
   geoCoordinates?: number[]
 }
-}
+} | null
   customData?: {
-  customApps?: Record<string, unknown>[]
-  customFields?: {
+  customApps?: (Record<string, unknown> | null)[] | null
+  customFields?: ({
   linkedEntity?: {
   type?: "order" | "item" | "address"
   id?: string
@@ -299,8 +299,8 @@ export type OrderForm = {
   value?: string
   refId?: string
 }[]
-}[]
-}
+} | null)[] | null
+} | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -308,22 +308,22 @@ export type OrderForm = {
   name?: string
   skuName?: string
   productId?: string
-  refId?: string
-  ean?: string
+  refId?: string | null
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
 }[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
-}
+} | null
 }
 
 export type OrderFormSimulationRequest = {
@@ -348,25 +348,25 @@ export type SetsinglecustomfieldvalueRequest = {
 export type UpdateorderFormconfigurationRequest = {
   paymentConfiguration: PaymentConfiguration
   taxConfiguration: {
-  url?: string
-  authorizationHeader?: string
+  url?: string | null
+  authorizationHeader?: string | null
   appId?: string
   isMarketplaceResponsibleForTaxes?: unknown
-}
+} | null
   minimumQuantityAccumulatedForItems: number
   decimalDigitsPrecision: number
-  minimumValueAccumulated: number
+  minimumValueAccumulated: number | null
   apps: {
   id?: string
   fields?: string[]
   major?: number
-}[]
-  allowMultipleDeliveries: boolean
-  allowManualPrice: boolean
+}[] | null
+  allowMultipleDeliveries: boolean | null
+  allowManualPrice: boolean | null
   maxNumberOfWhiteLabelSellers?: number
   maskFirstPurchaseData?: boolean
   maskStateOnAddress?: boolean
-  recaptchaValidation?: string
+  recaptchaValidation?: string | null
   paymentSystemToCheckFirstInstallment?: string
 }
 

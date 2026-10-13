@@ -1,10 +1,14 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CreateUpdateGiftCardProviderbyIDRequest, CreateGiftCardinGiftCardProviderRequest, GetGiftCardfromGiftCardProviderRequest, Client, Cart, Item, CreateGiftCardTransactionRequest, OrderInfo, Cart1, Item1, ClientProfile, Shipping, CreateGiftCardSettlementTransactionRequest, Cart2, CreateGiftCardCancellationTransactionRequest } from './types.js'
 
 class GiftcardHubApi_provider {
   constructor(private http: VtexHttpClient) {}
 
-  listAllGiftCardProviders(params: Record<string, never>): Promise<{
+  listAllGiftCardProviders(params: {
+  'REST-Range'?: string
+} = {}, opts?: CallOptions): Promise<{
   id?: string
   serviceUrl?: string
   oauthProvider?: string
@@ -23,12 +27,12 @@ class GiftcardHubApi_provider {
   _self?: {
   href?: string
 }
-}[]>({ method: 'GET', path: `/api/giftcardproviders` })
+}[]>(withCall({ method: 'GET', path: `/api/giftcardproviders`, headers: { 'REST-Range': params['REST-Range'] } }, opts))
   }
 
   getGiftCardProviderbyID(params: {
   giftCardProviderId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   serviceUrl?: string
   oauthProvider?: string
@@ -45,12 +49,13 @@ class GiftcardHubApi_provider {
   preAuthEnabled?: boolean
   cancelEnabled?: boolean
   _self?: Record<string, unknown>
-}>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}` })
+}>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}` }, opts))
   }
 
   createUpdateGiftCardProviderbyID(params: {
   giftCardProviderId: string
-}): Promise<{
+  body: CreateUpdateGiftCardProviderbyIDRequest
+}, opts?: CallOptions): Promise<{
   id?: string
   serviceUrl?: string
   oauthProvider?: string
@@ -65,13 +70,13 @@ class GiftcardHubApi_provider {
   preAuthEnabled?: boolean
   cancelEnabled?: boolean
   _self?: Record<string, unknown>
-}>({ method: 'PUT', path: `/api/giftcardproviders/${params.giftCardProviderId}` })
+}>(withCall({ method: 'PUT', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
   deleteGiftCardProviderbyID(params: {
   giftCardProviderId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/giftcardproviders/${params.giftCardProviderId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}` }, opts))
   }
 }
 class GiftcardHubApi_transaction {
@@ -79,7 +84,8 @@ class GiftcardHubApi_transaction {
 
   createGiftCardinGiftCardProvider(params: {
   giftCardProviderId: string
-}): Promise<{
+  body: CreateGiftCardinGiftCardProviderRequest
+}, opts?: CallOptions): Promise<{
   id?: string
   emissionDate?: string
   expiringDate?: string
@@ -102,12 +108,14 @@ class GiftcardHubApi_transaction {
   transaction?: {
   href?: string
 }
-}>({ method: 'POST', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards` })
+}>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
   getGiftCardfromGiftCardProvider(params: {
   giftCardProviderId: string
-}): Promise<{
+  'REST-Range'?: string
+  body: GetGiftCardfromGiftCardProviderRequest
+}, opts?: CallOptions): Promise<{
   id?: string
   provider?: string
   balance?: number
@@ -122,13 +130,13 @@ class GiftcardHubApi_transaction {
   _self?: {
   href?: string
 }
-}[]>({ method: 'POST', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/_search` })
+}[]>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/_search`, headers: { 'REST-Range': params['REST-Range'] }, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
   getGiftCardfromGiftCardProviderbyID(params: {
   giftCardProviderId: string
   giftCardId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   redemptionToken?: string
   redemptionCode?: string
@@ -153,13 +161,13 @@ class GiftcardHubApi_transaction {
   transactions?: {
   href?: string
 }
-}>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}` })
+}>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}` }, opts))
   }
 
   listAllGiftCardTransactions(params: {
   giftCardProviderId: string
   giftCardId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   cardId?: string
   id?: string
   _self?: {
@@ -172,13 +180,14 @@ class GiftcardHubApi_transaction {
   _self?: {
   href?: string
 }
-}[]>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions` })
+}[]>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions` }, opts))
   }
 
   createGiftCardTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
-}): Promise<{
+  body: CreateGiftCardTransactionRequest
+}, opts?: CallOptions): Promise<{
   cardId?: string
   id?: string
   _self?: {
@@ -191,14 +200,14 @@ class GiftcardHubApi_transaction {
   _self?: {
   href?: string
 }
-}>({ method: 'POST', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions` })
+}>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
   getGiftCardTransactionbyID(params: {
   giftCardProviderId: string
   giftCardId: string
   transactionId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   value?: number
   description?: string
   date?: string
@@ -229,14 +238,14 @@ class GiftcardHubApi_transaction {
   href?: string
 }
   operation?: string
-}>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions/${params.transactionId}` })
+}>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}` }, opts))
   }
 
   getGiftCardAuthorizationTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   oid: string
   value: number
   date: string
@@ -245,14 +254,14 @@ class GiftcardHubApi_transaction {
   oid: string
   value: number
   date: string
-}>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions/${params.tId}/authorization` })
+}>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/authorization` }, opts))
   }
 
   listAllGiftCardSettlementTransactions(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   oid?: string
   value?: number
   date?: string
@@ -261,7 +270,7 @@ class GiftcardHubApi_transaction {
   oid?: string
   value?: number
   date?: string
-}[]>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions/${params.tId}/settlements` })
+}[]>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/settlements` }, opts))
   }
 
   createGiftCardSettlementTransaction(params: {
@@ -272,7 +281,7 @@ class GiftcardHubApi_transaction {
   value: number
   requestId: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   oid: string
   value: number
   date: string
@@ -281,14 +290,14 @@ class GiftcardHubApi_transaction {
   oid: string
   value: number
   date: string
-}[]>({ method: 'POST', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions/${params.tId}/settlements`, body: params.body })
+}[]>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/settlements`, body: params.body }, opts))
   }
 
   listAllGiftCardCancellationTransactions(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   oid?: string
   value?: number
   date?: string
@@ -297,14 +306,15 @@ class GiftcardHubApi_transaction {
   oid?: string
   value?: number
   date?: string
-}[]>({ method: 'GET', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions/${params.tId}/cancellations` })
+}[]>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/cancellations` }, opts))
   }
 
   createGiftCardCancellationTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
-}): Promise<{
+  body: CreateGiftCardCancellationTransactionRequest
+}, opts?: CallOptions): Promise<{
   oid: string
   value: number
   date: string
@@ -313,7 +323,7 @@ class GiftcardHubApi_transaction {
   oid: string
   value: number
   date: string
-}>({ method: 'POST', path: `/api/giftcardproviders/${params.giftCardProviderId}/giftcards/${params.giftCardId}/transactions/${params.tId}/cancellations` })
+}>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/cancellations`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 }
 

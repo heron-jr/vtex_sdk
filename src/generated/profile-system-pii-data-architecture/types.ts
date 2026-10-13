@@ -5,7 +5,7 @@ export type Profile = {
   birthDate?: string
   document: string
   documentType: string
-  "{customField}"?: string
+  [key: string]: unknown
 }
 
 export type ProfileMeta = {
@@ -91,9 +91,7 @@ export type PurchaseInfoId = string
 
 export type PurchaseInfo = {
   paymentData?: PaymentData
-  clientPreferences?: {
-
-}
+  clientPreferences?: Record<string, unknown>
   isToSavePersonalData?: boolean
   lastUserPurchases?: {
   creationDate?: string
@@ -109,7 +107,7 @@ export type PurchaseInfoMeta = {
   author: string
   creationDate: string
   lastUpdateDate: string
-  expirationDate?: string
+  expirationDate?: string | null
 }
 
 export type PaymentData = {
@@ -122,7 +120,7 @@ export type PaymentData = {
   availableAddresses?: string[]
   expirationDate?: string
   isExpired?: boolean
-  accountStatus?: string
+  accountStatus?: string | null
 }[]
   availableTokens?: string[]
   transactions?: {
@@ -130,12 +128,12 @@ export type PaymentData = {
   transactionId: string
   merchantName: string
   payments: Payment[]
-}[]
+}[] | null
   giftCards?: string[]
   giftCardMessages?: string[]
   numberOfPaymentErrors?: number
   numberOfDeniedTransactions?: number
-  lastDeniedTransaction?: string
+  lastDeniedTransaction?: string | null
 }
 
 export type Payment = {
@@ -145,20 +143,20 @@ export type Payment = {
   value: number
   installments: number
   referenceValue: number
-  cardHolder: string
-  cardNumber: string
-  firstDigits: string
-  lastDigits: string
-  cvv2: string
-  expireMonth: string
-  expireYear: string
+  cardHolder: string | null
+  cardNumber: string | null
+  firstDigits: string | null
+  lastDigits: string | null
+  cvv2: string | null
+  expireMonth: string | null
+  expireYear: string | null
   url: string
-  giftCardId: string
-  giftCardName: string
-  giftCardCaption: string
-  redemptionCode: string
+  giftCardId: string | null
+  giftCardName: string | null
+  giftCardCaption: string | null
+  redemptionCode: string | null
   group: string
-  tid: string
+  tid: string | null
   dueDate: string
   connectorResponses: Record<string, unknown>
 }
@@ -209,7 +207,7 @@ export type ProspectMeta = {
   author: string
   creationDate: string
   lastUpdateDate: string
-  expirationDate?: string
+  expirationDate?: string | null
 }
 
 export type UnmaskedProspectResponse = {

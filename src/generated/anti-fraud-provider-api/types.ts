@@ -132,7 +132,7 @@ export type ApproveAntifraudAnalysisResponse = {
   status: string
   fraudRiskPercentage: number
   analysisType: string
-  responses: string
+  responses: string | null
 }
 
 export type GetAntifraudStatus = {

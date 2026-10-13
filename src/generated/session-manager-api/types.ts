@@ -3,6 +3,7 @@ export type CreateEditSessionRequest = {
   additionalProperties?: {
   value?: string
 }
+  [key: string]: unknown
 }
 }
 
@@ -43,7 +44,11 @@ export type GetSessionResponse = {
   value?: string
 }
 }
-  public?: Record<string, unknown>
+  public?: {
+  [key: string]: {
+  value?: string
+}
+}
   checkout?: {
   regionId?: {
   value?: string
@@ -53,13 +58,13 @@ export type GetSessionResponse = {
 }
 
 export type Segment = {
-  campaigns?: string
+  campaigns?: string | null
   channel?: string
-  priceTables?: string
+  priceTables?: string | null
   regionId?: string
-  utm_campaign?: string
-  utm_source?: string
-  utmi_campaign?: string
+  utm_campaign?: string | null
+  utm_source?: string | null
+  utmi_campaign?: string | null
   currencyCode?: string
   currencySymbol?: string
   countryCode?: string

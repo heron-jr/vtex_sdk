@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class CustomFieldsApi_customFieldSettings {
   constructor(private http: VtexHttpClient) {}
@@ -7,7 +9,7 @@ class CustomFieldsApi_customFieldSettings {
   _schema: string
   _fields: string
   _where: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   dataEntityId?: string
   accountId?: string
@@ -20,19 +22,19 @@ class CustomFieldsApi_customFieldSettings {
   required?: boolean
   level?: string
   type?: string
-  additionalData?: string
+  additionalData?: string | null
   createdBy?: string
   createdBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   createdIn?: string
   lastInteractionBy?: string
   lastInteractionBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   lastInteractionIn?: string
   tags?: string[]
@@ -51,24 +53,24 @@ class CustomFieldsApi_customFieldSettings {
   required?: boolean
   level?: string
   type?: string
-  additionalData?: string
+  additionalData?: string | null
   createdBy?: string
   createdBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   createdIn?: string
   lastInteractionBy?: string
   lastInteractionBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   lastInteractionIn?: string
   tags?: string[]
   dataInstanceId?: string
-}[]>({ method: 'GET', path: `/api/dataentities/customFieldSettings/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where } })
+}[]>(withCall({ method: 'GET', path: `/api/dataentities/customFieldSettings/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiDataentitiesCustomFieldSettingsDocuments(params: {
@@ -82,7 +84,7 @@ class CustomFieldsApi_customFieldSettings {
   type: "text" | "number" | "option"
   additionalData?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: string
   Href?: string
   DocumentId?: string
@@ -91,7 +93,7 @@ class CustomFieldsApi_customFieldSettings {
   Id?: string
   Href?: string
   DocumentId?: string
-}>({ method: 'POST', path: `/api/dataentities/customFieldSettings/documents`, query: { '_schema': params._schema }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/dataentities/customFieldSettings/documents`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   patchApiDataentitiesCustomFieldSettingsDocumentsByDocumentId(params: {
@@ -106,15 +108,15 @@ class CustomFieldsApi_customFieldSettings {
   type: "text" | "number" | "option"
   additionalData?: string
 }
-}): Promise<Record<string, unknown>> {
-    return this.http.request<Record<string, unknown>>({ method: 'PATCH', path: `/api/dataentities/customFieldSettings/documents/${params.documentId}`, query: { '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<Record<string, unknown>> {
+    return this.http.request<Record<string, unknown>>(withCall({ method: 'PATCH', path: `/api/dataentities/customFieldSettings/documents/${encodePathParam(params.documentId)}`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiDataentitiesCustomFieldSettingsDocumentsByDocumentId(params: {
   documentId: string
   _schema: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/customFieldSettings/documents/${params.documentId}`, query: { '_schema': params._schema } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/customFieldSettings/documents/${encodePathParam(params.documentId)}`, query: { '_schema': params._schema }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class CustomFieldsApi_customFieldValues {
@@ -125,11 +127,11 @@ class CustomFieldsApi_customFieldValues {
   body: {
   contractId: string
   customFieldId: string
-  auxId?: string
+  auxId?: string | null
   value: string
   description?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: string
   Href?: string
   DocumentId?: string
@@ -138,14 +140,14 @@ class CustomFieldsApi_customFieldValues {
   Id?: string
   Href?: string
   DocumentId?: string
-}>({ method: 'POST', path: `/api/dataentities/customFieldValues/documents`, query: { '_schema': params._schema }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/dataentities/customFieldValues/documents`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
   customFieldValueId: string
   _fields: string
   _schema: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   dataEntityId?: string
   accountId?: string
@@ -154,21 +156,21 @@ class CustomFieldsApi_customFieldValues {
   schemas?: string[]
   customFieldId?: string
   contractId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
+  description?: string | null
   createdBy?: string
   createdBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   createdIn?: string
   lastInteractionBy?: string
   lastInteractionBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   lastInteractionIn?: string
   tags?: string[]
@@ -183,26 +185,26 @@ class CustomFieldsApi_customFieldValues {
   schemas?: string[]
   customFieldId?: string
   contractId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
+  description?: string | null
   createdBy?: string
   createdBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   createdIn?: string
   lastInteractionBy?: string
   lastInteractionBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   lastInteractionIn?: string
   tags?: string[]
   dataInstanceId?: string
-}>({ method: 'GET', path: `/api/dataentities/customFieldValues/documents/${params.customFieldValueId}`, query: { '_fields': params._fields, '_schema': params._schema } })
+}>(withCall({ method: 'GET', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.customFieldValueId)}`, query: { '_fields': params._fields, '_schema': params._schema }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   patchApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
@@ -211,20 +213,20 @@ class CustomFieldsApi_customFieldValues {
   body: {
   contractId: string
   customFieldId: string
-  auxId?: string
+  auxId?: string | null
   value: string
   description?: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/customFieldValues/documents/${params.customFieldValueId}`, query: { '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.customFieldValueId)}`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
   customFieldValueId: string
   _fields: string
   _schema: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/customFieldValues/documents/${params.customFieldValueId}`, query: { '_fields': params._fields, '_schema': params._schema } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.customFieldValueId)}`, query: { '_fields': params._fields, '_schema': params._schema }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiDataentitiesCustomFieldValuesSearch(params: {
@@ -232,22 +234,22 @@ class CustomFieldsApi_customFieldValues {
   _fields: string
   _where: string
   _sort?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   contractId?: string
   customFieldId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
+  description?: string | null
 }[]> {
     return this.http.request<{
   id?: string
   contractId?: string
   customFieldId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
-}[]>({ method: 'GET', path: `/api/dataentities/customFieldValues/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where, '_sort': params._sort } })
+  description?: string | null
+}[]>(withCall({ method: 'GET', path: `/api/dataentities/customFieldValues/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where, '_sort': params._sort }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 

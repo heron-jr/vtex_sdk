@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CreateUpdateAddressRequests, DocumentResponse, AddressResponse, RecipientRequest, LocationRequest } from './types.js'
 
 class B2bAddressesApi_addresses {
@@ -6,36 +8,37 @@ class B2bAddressesApi_addresses {
 
   postApiDataentitiesADDocuments(params: {
   body: CreateUpdateAddressRequests
-}): Promise<DocumentResponse> {
-    return this.http.request<DocumentResponse>({ method: 'POST', path: `/api/dataentities/AD/documents`, body: params.body })
+}, opts?: CallOptions): Promise<DocumentResponse> {
+    return this.http.request<DocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/AD/documents`, body: params.body }, opts))
   }
 
   getApiDataentitiesADSearch(params: {
   _fields?: string
   _where?: string
   _sort?: string
-}): Promise<AddressResponse[]> {
-    return this.http.request<AddressResponse[]>({ method: 'GET', path: `/api/dataentities/AD/search`, query: { '_fields': params._fields, '_where': params._where, '_sort': params._sort } })
+  'REST-Range': string
+}, opts?: CallOptions): Promise<AddressResponse[]> {
+    return this.http.request<AddressResponse[]>(withCall({ method: 'GET', path: `/api/dataentities/AD/search`, query: { '_fields': params._fields, '_where': params._where, '_sort': params._sort }, headers: { 'REST-Range': params['REST-Range'] } }, opts))
   }
 
   getApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
   _fields?: string
-}): Promise<AddressResponse> {
-    return this.http.request<AddressResponse>({ method: 'GET', path: `/api/dataentities/AD/documents/${params.addressId}`, query: { '_fields': params._fields } })
+}, opts?: CallOptions): Promise<AddressResponse> {
+    return this.http.request<AddressResponse>(withCall({ method: 'GET', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}`, query: { '_fields': params._fields } }, opts))
   }
 
   patchApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
   body: CreateUpdateAddressRequests
-}): Promise<DocumentResponse> {
-    return this.http.request<DocumentResponse>({ method: 'PATCH', path: `/api/dataentities/AD/documents/${params.addressId}`, body: params.body })
+}, opts?: CallOptions): Promise<DocumentResponse> {
+    return this.http.request<DocumentResponse>(withCall({ method: 'PATCH', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}`, body: params.body }, opts))
   }
 
   deleteApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/AD/documents/${params.addressId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}` }, opts))
   }
 }
 class B2bAddressesApi_recipients {
@@ -43,7 +46,7 @@ class B2bAddressesApi_recipients {
 
   postApiDataentitiesContactInformationDocuments(params: {
   body: RecipientRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: string
   Href?: string
   DocumentId?: string
@@ -52,14 +55,14 @@ class B2bAddressesApi_recipients {
   Id?: string
   Href?: string
   DocumentId?: string
-}>({ method: 'POST', path: `/api/dataentities/contact_information/documents`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/dataentities/contact_information/documents`, body: params.body }, opts))
   }
 
   getApiDataentitiesContactInformationSearch(params: {
   _where: string
   _fields?: string
   _schema: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   firstName?: string
   lastName?: string
   email?: string
@@ -68,28 +71,28 @@ class B2bAddressesApi_recipients {
   firstName?: string
   lastName?: string
   email?: string
-}[]>({ method: 'GET', path: `/api/dataentities/contact_information/search`, query: { '_where': params._where, '_fields': params._fields, '_schema': params._schema } })
+}[]>(withCall({ method: 'GET', path: `/api/dataentities/contact_information/search`, query: { '_where': params._where, '_fields': params._fields, '_schema': params._schema } }, opts))
   }
 
   getApiDataentitiesContactInformationDocumentsByRecipientId(params: {
   recipientId: string
   _fields?: string
   _schema: string
-}): Promise<RecipientRequest> {
-    return this.http.request<RecipientRequest>({ method: 'GET', path: `/api/dataentities/contact_information/documents/${params.recipientId}`, query: { '_fields': params._fields, '_schema': params._schema } })
+}, opts?: CallOptions): Promise<RecipientRequest> {
+    return this.http.request<RecipientRequest>(withCall({ method: 'GET', path: `/api/dataentities/contact_information/documents/${encodePathParam(params.recipientId)}`, query: { '_fields': params._fields, '_schema': params._schema } }, opts))
   }
 
   patchApiDataentitiesContactInformationDocumentsByRecipientId(params: {
   recipientId: string
   body: RecipientRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/contact_information/documents/${params.recipientId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/contact_information/documents/${encodePathParam(params.recipientId)}`, body: params.body }, opts))
   }
 
   deleteApiDataentitiesContactInformationDocumentsByRecipientId(params: {
   recipientId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/contact_information/documents/${params.recipientId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/contact_information/documents/${encodePathParam(params.recipientId)}` }, opts))
   }
 }
 class B2bAddressesApi_locations {
@@ -97,7 +100,7 @@ class B2bAddressesApi_locations {
 
   postApiDataentitiesCustomFieldValuesDocuments(params: {
   body: LocationRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: string
   Href?: string
   DocumentId?: string
@@ -106,13 +109,13 @@ class B2bAddressesApi_locations {
   Id?: string
   Href?: string
   DocumentId?: string
-}>({ method: 'POST', path: `/api/dataentities/customFieldValues/documents`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/dataentities/customFieldValues/documents`, body: params.body }, opts))
   }
 
   getApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
   locationId: string
   _fields: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   dataEntityId?: string
   accountId?: string
@@ -121,21 +124,21 @@ class B2bAddressesApi_locations {
   schemas?: string[]
   customFieldId?: string
   contractId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
+  description?: string | null
   createdBy?: string
   createdBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   createdIn?: string
   lastInteractionBy?: string
   lastInteractionBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   lastInteractionIn?: string
   Tags?: string[]
@@ -150,40 +153,40 @@ class B2bAddressesApi_locations {
   schemas?: string[]
   customFieldId?: string
   contractId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
+  description?: string | null
   createdBy?: string
   createdBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   createdIn?: string
   lastInteractionBy?: string
   lastInteractionBy_USER?: {
   Id?: string
   Login?: string
-  Name?: string
+  Name?: string | null
 }
   lastInteractionIn?: string
   Tags?: string[]
   dataInstanceId?: string
-}>({ method: 'GET', path: `/api/dataentities/customFieldValues/documents/${params.locationId}`, query: { '_fields': params._fields } })
+}>(withCall({ method: 'GET', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.locationId)}`, query: { '_fields': params._fields } }, opts))
   }
 
   patchApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
   locationId: string
   body: LocationRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/customFieldValues/documents/${params.locationId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.locationId)}`, body: params.body }, opts))
   }
 
   deleteApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
   locationId: string
   _fields: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/customFieldValues/documents/${params.locationId}`, query: { '_fields': params._fields } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.locationId)}`, query: { '_fields': params._fields } }, opts))
   }
 
   getApiDataentitiesCustomFieldValuesSearch(params: {
@@ -191,22 +194,22 @@ class B2bAddressesApi_locations {
   _fields: string
   _where: string
   _sort?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   contractId?: string
   customFieldId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
+  description?: string | null
 }[]> {
     return this.http.request<{
   id?: string
   contractId?: string
   customFieldId?: string
-  auxId?: string
+  auxId?: string | null
   value?: string
-  description?: string
-}[]>({ method: 'GET', path: `/api/dataentities/customFieldValues/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where, '_sort': params._sort } })
+  description?: string | null
+}[]>(withCall({ method: 'GET', path: `/api/dataentities/customFieldValues/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where, '_sort': params._sort } }, opts))
   }
 }
 

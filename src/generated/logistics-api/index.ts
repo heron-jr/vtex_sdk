@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { PickupPoint, ListDocksById, DeliveryCapacity, ShippingPolicy } from './types.js'
 
 class LogisticsApi_shippingPolicies {
@@ -6,8 +8,8 @@ class LogisticsApi_shippingPolicies {
 
   getApiLogisticsPvtShippingPoliciesById(params: {
   id: string
-}): Promise<ShippingPolicy> {
-    return this.http.request<ShippingPolicy>({ method: 'GET', path: `/api/logistics/pvt/shipping-policies/${params.id}` })
+}, opts?: CallOptions): Promise<ShippingPolicy> {
+    return this.http.request<ShippingPolicy>(withCall({ method: 'GET', path: `/api/logistics/pvt/shipping-policies/${encodePathParam(params.id)}` }, opts))
   }
 
   putApiLogisticsPvtShippingPoliciesById(params: {
@@ -25,7 +27,7 @@ class LogisticsApi_shippingPolicies {
   minimunAcceptableVolumetricWeight?: number
 }
   modalSettings?: {
-  modals?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"[]
+  modals?: ("CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS")[]
   useOnlyItemsWithDefinedModal?: boolean
 }
   isActive: boolean
@@ -46,20 +48,20 @@ class LogisticsApi_shippingPolicies {
 }[]
 }
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/logistics/pvt/shipping-policies/${params.id}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/shipping-policies/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
   deleteApiLogisticsPvtShippingPoliciesById(params: {
   id: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/logistics/pvt/shipping-policies/${params.id}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/shipping-policies/${encodePathParam(params.id)}` }, opts))
   }
 
   getApiLogisticsPvtShippingPolicies(params: {
   page?: number
   perPage?: number
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   items?: ShippingPolicy[]
   paging?: {
   page?: number
@@ -76,7 +78,7 @@ class LogisticsApi_shippingPolicies {
   total?: number
   pages?: number
 }
-}>({ method: 'GET', path: `/api/logistics/pvt/shipping-policies`, query: { 'page': params.page, 'perPage': params.perPage } })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/shipping-policies`, query: { 'page': params.page, 'perPage': params.perPage } }, opts))
   }
 
   postApiLogisticsPvtShippingPolicies(params: {
@@ -121,7 +123,7 @@ class LogisticsApi_shippingPolicies {
   minimunAcceptableVolumetricWeight: number
 }
   modalSettings: {
-  modals: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"[]
+  modals: ("CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS")[]
   useOnlyItemsWithDefinedModal: boolean
 }
   businessHourSettings: {
@@ -136,11 +138,11 @@ class LogisticsApi_shippingPolicies {
   pickupPointIds: string[]
   pickupPointTags: string[]
   sellers: string[]
-}
+} | null
   isActive: boolean
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/shipping-policies`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/shipping-policies`, body: params.body }, opts))
   }
 }
 class LogisticsApi_freightValues {
@@ -162,14 +164,14 @@ class LogisticsApi_freightValues {
   zipCodeStart: string
   polygon: string
 }[]
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/configuration/freights/${params.carrierId}/values/update`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/freights/${encodePathParam(params.carrierId)}/values/update`, body: params.body }, opts))
   }
 
   freightValues(params: {
   carrierId: string
   postalcode: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   zipCodeStart: string
   zipCodeEnd: string
   weightStart: number
@@ -181,7 +183,7 @@ class LogisticsApi_freightValues {
   timeCost: string
   country: string
   operationType: number
-  restrictedFreights: string[]
+  restrictedFreights: string[] | null
   polygon: string
   minimumValueInsurance: number
 }[]> {
@@ -197,10 +199,10 @@ class LogisticsApi_freightValues {
   timeCost: string
   country: string
   operationType: number
-  restrictedFreights: string[]
+  restrictedFreights: string[] | null
   polygon: string
   minimumValueInsurance: number
-}[]>({ method: 'GET', path: `/api/logistics/pvt/configuration/freights/${params.carrierId}/${params.postalcode}/values` })
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/freights/${encodePathParam(params.carrierId)}/${encodePathParam(params.postalcode)}/values` }, opts))
   }
 }
 class LogisticsApi_scheduledDelivery {
@@ -208,22 +210,22 @@ class LogisticsApi_scheduledDelivery {
 
   retrieveBlockedDeliveryWindows(params: {
   carrierId: string
-}): Promise<string[]> {
-    return this.http.request<string[]>({ method: 'GET', path: `/api/logistics/pvt/configuration/carriers/${params.carrierId}/getdayofweekblocked` })
+}, opts?: CallOptions): Promise<string[]> {
+    return this.http.request<string[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/carriers/${encodePathParam(params.carrierId)}/getdayofweekblocked` }, opts))
   }
 
   addBlockedDeliveryWindows(params: {
   carrierId: string
   body: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'POST', path: `/api/logistics/pvt/configuration/carriers/${params.carrierId}/adddayofweekblocked`, body: params.body })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/carriers/${encodePathParam(params.carrierId)}/adddayofweekblocked`, body: params.body }, opts))
   }
 
   removeBlockedDeliveryWindows(params: {
   carrierId: string
   body: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'POST', path: `/api/logistics/pvt/configuration/carriers/${params.carrierId}/removedayofweekblocked`, body: params.body })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/carriers/${encodePathParam(params.carrierId)}/removedayofweekblocked`, body: params.body }, opts))
   }
 
   getApiLogisticsCapacityResourcesCarrierCapacityTypeShippingPolicyIdTimeFrames(params: {
@@ -231,8 +233,8 @@ class LogisticsApi_scheduledDelivery {
   shippingPolicyId: string
   rangeStart: string
   rangeEnd: string
-}): Promise<DeliveryCapacity> {
-    return this.http.request<DeliveryCapacity>({ method: 'GET', path: `/api/logistics-capacity/resources/carrier@${params.capacityType}@${params.shippingPolicyId}/time-frames`, query: { 'rangeStart': params.rangeStart, 'rangeEnd': params.rangeEnd } })
+}, opts?: CallOptions): Promise<DeliveryCapacity> {
+    return this.http.request<DeliveryCapacity>(withCall({ method: 'GET', path: `/api/logistics-capacity/resources/carrier@${encodePathParam(params.capacityType)}@${encodePathParam(params.shippingPolicyId)}/time-frames`, query: { 'rangeStart': params.rangeStart, 'rangeEnd': params.rangeEnd } }, opts))
   }
 
   getApiLogisticsCapacityResourcesCarrierCapacityTypeShippingPolicyIdTimeFramesByWindowDayFWindowStartTimeTWindowEndTime(params: {
@@ -241,15 +243,15 @@ class LogisticsApi_scheduledDelivery {
   windowDay: string
   windowStartTime: string
   windowEndTime: string
-}): Promise<DeliveryCapacity> {
-    return this.http.request<DeliveryCapacity>({ method: 'GET', path: `/api/logistics-capacity/resources/carrier@${params.capacityType}@${params.shippingPolicyId}/time-frames/${params.windowDay}F${params.windowStartTime}T${params.windowEndTime}` })
+}, opts?: CallOptions): Promise<DeliveryCapacity> {
+    return this.http.request<DeliveryCapacity>(withCall({ method: 'GET', path: `/api/logistics-capacity/resources/carrier@${encodePathParam(params.capacityType)}@${encodePathParam(params.shippingPolicyId)}/time-frames/${encodePathParam(params.windowDay)}F${encodePathParam(params.windowStartTime)}T${encodePathParam(params.windowEndTime)}` }, opts))
   }
 }
 class LogisticsApi_docks {
   constructor(private http: VtexHttpClient) {}
 
-  allDocks(params: Record<string, never>): Promise<ListDocksById[]> {
-    return this.http.request<ListDocksById[]>({ method: 'GET', path: `/api/logistics/pvt/configuration/docks` })
+  allDocks(params: Record<string, never> = {}, opts?: CallOptions): Promise<ListDocksById[]> {
+    return this.http.request<ListDocksById[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/docks` }, opts))
   }
 
   createUpdateDock(params: {
@@ -262,7 +264,7 @@ class LogisticsApi_docks {
   salesChannels: string[]
   salesChannel: string
   freightTableIds: string[]
-  wmsEndPoint: string
+  wmsEndPoint: string | null
   address: {
   postalCode: string
   country: {
@@ -278,38 +280,38 @@ class LogisticsApi_docks {
   coordinates: number[][]
 }
 }
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'POST', path: `/api/logistics/pvt/configuration/docks`, body: params.body })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/docks`, body: params.body }, opts))
   }
 
   dockById(params: {
   dockId: string
-}): Promise<ListDocksById> {
-    return this.http.request<ListDocksById>({ method: 'GET', path: `/api/logistics/pvt/configuration/docks/${params.dockId}` })
+}, opts?: CallOptions): Promise<ListDocksById> {
+    return this.http.request<ListDocksById>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}` }, opts))
   }
 
   dock(params: {
   dockId: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'DELETE', path: `/api/logistics/pvt/configuration/docks/${params.dockId}` })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}` }, opts))
   }
 
   activateDock(params: {
   dockId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/configuration/docks/${params.dockId}/activation` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}/activation` }, opts))
   }
 
   deactivateDock(params: {
   dockId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/configuration/docks/${params.dockId}/deactivation` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}/deactivation` }, opts))
   }
 }
 class LogisticsApi_warehouses {
   constructor(private http: VtexHttpClient) {}
 
-  allWarehouses(params: Record<string, never>): Promise<{
+  allWarehouses(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   id?: string
   name?: string
   warehouseDocks?: {
@@ -332,7 +334,7 @@ class LogisticsApi_warehouses {
   pickupPointIds?: string[]
   priority?: number
   isActive?: boolean
-}[]>({ method: 'GET', path: `/api/logistics/pvt/configuration/warehouses` })
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/warehouses` }, opts))
   }
 
   createUpdateWarehouse(params: {
@@ -350,13 +352,13 @@ class LogisticsApi_warehouses {
   priority?: number
   isActive?: boolean
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses`, body: params.body }, opts))
   }
 
   warehouseById(params: {
   warehouseId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   name?: string
   warehouseDocks?: {
@@ -379,25 +381,25 @@ class LogisticsApi_warehouses {
   pickupPointIds?: string[]
   priority?: number
   isActive?: boolean
-}>({ method: 'GET', path: `/api/logistics/pvt/configuration/warehouses/${params.warehouseId}` })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
   removeWarehouse(params: {
   warehouseId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/logistics/pvt/configuration/warehouses/${params.warehouseId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
   activateWarehouse(params: {
   warehouseId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses/${params.warehouseId}/activation` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}/activation` }, opts))
   }
 
   deactivateWarehouse(params: {
   warehouseId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses/${params.warehouseId}/deactivation` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}/deactivation` }, opts))
   }
 }
 class LogisticsApi_inventory {
@@ -405,7 +407,7 @@ class LogisticsApi_inventory {
 
   inventoryBySku(params: {
   skuId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   skuId?: string
   balance?: {
   warehouseId?: string
@@ -413,8 +415,8 @@ class LogisticsApi_inventory {
   totalQuantity?: number
   reservedQuantity?: number
   hasUnlimitedQuantity?: boolean
-  timeToRefill?: string
-  dateOfSupplyUtc?: string
+  timeToRefill?: string | null
+  dateOfSupplyUtc?: string | null
   leadTime?: string
 }[]
 }> {
@@ -426,17 +428,17 @@ class LogisticsApi_inventory {
   totalQuantity?: number
   reservedQuantity?: number
   hasUnlimitedQuantity?: boolean
-  timeToRefill?: string
-  dateOfSupplyUtc?: string
+  timeToRefill?: string | null
+  dateOfSupplyUtc?: string | null
   leadTime?: string
 }[]
-}>({ method: 'GET', path: `/api/logistics/pvt/inventory/skus/${params.skuId}` })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}` }, opts))
   }
 
   inventoryperwarehouse(params: {
   skuId: string
   warehouseId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   skuId?: string
   warehouseId?: string
   dockId?: string
@@ -465,7 +467,7 @@ class LogisticsApi_inventory {
   dateOfSupplyUtc?: string
   keepSellingAfterExpiration?: boolean
   transfer?: string
-}[]>({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${params.skuId}/warehouses/${params.warehouseId}` })
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
   updateInventoryBySkuandWarehouse(params: {
@@ -477,8 +479,8 @@ class LogisticsApi_inventory {
   dateUtcOnBalanceSystem?: string
   leadTime: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/logistics/pvt/inventory/skus/${params.skuId}/warehouses/${params.warehouseId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, body: params.body }, opts))
   }
 
   patchApiLogisticsPvtInventorySkusBySkuIdWarehousesByWarehouseIdQuantity(params: {
@@ -489,8 +491,8 @@ class LogisticsApi_inventory {
   unlimitedQuantity: boolean
   dateUtcOnBalanceSystem?: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/logistics/pvt/inventory/skus/${params.skuId}/warehouses/${params.warehouseId}/quantity`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/quantity`, body: params.body }, opts))
   }
 
   patchApiLogisticsPvtInventorySkusBySkuIdWarehousesByWarehouseIdLeadTime(params: {
@@ -499,14 +501,14 @@ class LogisticsApi_inventory {
   body: {
   leadTime: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/logistics/pvt/inventory/skus/${params.skuId}/warehouses/${params.warehouseId}/lead-time`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/lead-time`, body: params.body }, opts))
   }
 
   inventoryperdock(params: {
   skuId: string
   dockId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   skuId?: string
   warehouseId?: string
   dockId?: string
@@ -535,14 +537,14 @@ class LogisticsApi_inventory {
   dateOfSupplyUtc?: string
   keepSellingAfterExpiration?: boolean
   transfer?: string
-}[]>({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${params.skuId}/docks/${params.dockId}` })
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/docks/${encodePathParam(params.dockId)}` }, opts))
   }
 
   inventoryperdockandwarehouse(params: {
   skuId: string
   dockId: string
   warehouseId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   skuId?: string
   warehouseId?: string
   dockId?: string
@@ -571,13 +573,13 @@ class LogisticsApi_inventory {
   dateOfSupplyUtc?: string
   keepSellingAfterExpiration?: boolean
   transfer?: string
-}[]>({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${params.skuId}/docks/${params.dockId}/warehouses/${params.warehouseId}` })
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/docks/${encodePathParam(params.dockId)}/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
   getinventorywithdispatchedreservations(params: {
   itemId: string
   warehouseId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   skuId?: string
   warehouseId?: string
   quantity?: number
@@ -594,13 +596,13 @@ class LogisticsApi_inventory {
   totalReservedQuantity?: number
   dispatchedReservationsQuantity?: number
   availableQuantity?: number
-}[]>({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${params.itemId}/warehouses/${params.warehouseId}/dispatched` })
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.itemId)}/warehouses/${encodePathParam(params.warehouseId)}/dispatched` }, opts))
   }
 
   getSupplyLots(params: {
   skuId: string
   warehouseId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   skuId?: string
   warehouseId?: string
   dockId?: string
@@ -609,13 +611,13 @@ class LogisticsApi_inventory {
   availableQuantity?: number
   isUnlimited?: boolean
   salesChannel?: string[]
-  deliveryChannels?: "delivery" | "pickup"[]
-  timeToRefill?: string
+  deliveryChannels?: ("delivery" | "pickup")[]
+  timeToRefill?: string | null
   dateOfSupplyUtc?: string
   supplyLotId?: string
   keepSellingAfterExpiration?: boolean
-  transfer?: string
-  leadTime?: string
+  transfer?: string | null
+  leadTime?: string | null
 }[]> {
     return this.http.request<{
   skuId?: string
@@ -626,14 +628,14 @@ class LogisticsApi_inventory {
   availableQuantity?: number
   isUnlimited?: boolean
   salesChannel?: string[]
-  deliveryChannels?: "delivery" | "pickup"[]
-  timeToRefill?: string
+  deliveryChannels?: ("delivery" | "pickup")[]
+  timeToRefill?: string | null
   dateOfSupplyUtc?: string
   supplyLotId?: string
   keepSellingAfterExpiration?: boolean
-  transfer?: string
-  leadTime?: string
-}[]>({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${params.skuId}/warehouses/${params.warehouseId}/supplyLots` })
+  transfer?: string | null
+  leadTime?: string | null
+}[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/supplyLots` }, opts))
   }
 
   saveSupplyLot(params: {
@@ -645,22 +647,22 @@ class LogisticsApi_inventory {
   dateOfSupplyUtc: string
   keepSellingAfterExpiration?: boolean
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/logistics/pvt/inventory/items/${params.skuId}/warehouses/${params.warehouseId}/supplyLots/${params.supplyLotId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/supplyLots/${encodePathParam(params.supplyLotId)}`, body: params.body }, opts))
   }
 
   transferSupplyLot(params: {
   skuId: string
   warehouseId: string
   supplyLotId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/inventory/items/${params.skuId}/warehouses/${params.warehouseId}/supplyLots/${params.supplyLotId}/transfer` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/supplyLots/${encodePathParam(params.supplyLotId)}/transfer` }, opts))
   }
 }
 class LogisticsApi_batchOperations {
   constructor(private http: VtexHttpClient) {}
 
-  postAvailabilityV1InventoryBatch(params: Record<string, never>): Promise<{
+  postAvailabilityV1InventoryBatch(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   batchId: string
   status: "AWAITING_UPLOAD"
   upload: {
@@ -683,18 +685,18 @@ class LogisticsApi_batchOperations {
 }
   expiresAt: string
 }
-}>({ method: 'POST', path: `/availability/v1/inventory/batch` })
+}>(withCall({ method: 'POST', path: `/availability/v1/inventory/batch`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 
   postAvailabilityV1InventoryBatchByBatchIdCommit(params: {
   batchId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/availability/v1/inventory/batch/${params.batchId}/commit` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/availability/v1/inventory/batch/${encodePathParam(params.batchId)}/commit`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 
   getAvailabilityV1InventoryBatchByBatchIdStatus(params: {
   batchId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   batchId: string
   status: "AWAITING_UPLOAD" | "QUEUED" | "PROCESSING" | "COMPLETED" | "COMPLETED_WITH_ERRORS" | "FAILED" | "EXPIRED"
   rowCount: number
@@ -702,14 +704,14 @@ class LogisticsApi_batchOperations {
   errorCount: number
   amountCompleted: number
   createdAt: string
-  startedAt?: string
+  startedAt?: string | null
   stages?: {
   ingestedChunks: number
   classifiedChunks: number
   processedChunks: number
   notifiedChunks: number
   totalChunks: number
-}
+} | null
   summary?: {
   insertCount: number
   updateCount: number
@@ -718,7 +720,7 @@ class LogisticsApi_batchOperations {
   skippedDueApiUpdateCount: number
   perItemRoutedCount: number
   dlqEventsCount: number
-}
+} | null
 }> {
     return this.http.request<{
   batchId: string
@@ -728,14 +730,14 @@ class LogisticsApi_batchOperations {
   errorCount: number
   amountCompleted: number
   createdAt: string
-  startedAt?: string
+  startedAt?: string | null
   stages?: {
   ingestedChunks: number
   classifiedChunks: number
   processedChunks: number
   notifiedChunks: number
   totalChunks: number
-}
+} | null
   summary?: {
   insertCount: number
   updateCount: number
@@ -744,13 +746,13 @@ class LogisticsApi_batchOperations {
   skippedDueApiUpdateCount: number
   perItemRoutedCount: number
   dlqEventsCount: number
-}
-}>({ method: 'GET', path: `/availability/v1/inventory/batch/${params.batchId}/status` })
+} | null
+}>(withCall({ method: 'GET', path: `/availability/v1/inventory/batch/${encodePathParam(params.batchId)}/status`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 
   getAvailabilityV1InventoryBatchByBatchIdErrors(params: {
   batchId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   batchId: string
   downloadUrl: string
   errorCount: number
@@ -759,7 +761,7 @@ class LogisticsApi_batchOperations {
   batchId: string
   downloadUrl: string
   errorCount: number
-}>({ method: 'GET', path: `/availability/v1/inventory/batch/${params.batchId}/errors` })
+}>(withCall({ method: 'GET', path: `/availability/v1/inventory/batch/${encodePathParam(params.batchId)}/errors`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 }
 class LogisticsApi_holidays {
@@ -767,8 +769,8 @@ class LogisticsApi_holidays {
 
   holidayById(params: {
   holidayId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/logistics/pvt/configuration/holidays/${params.holidayId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/holidays/${encodePathParam(params.holidayId)}` }, opts))
   }
 
   createUpdateHoliday(params: {
@@ -777,18 +779,18 @@ class LogisticsApi_holidays {
   name: string
   startDate: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/logistics/pvt/configuration/holidays/${params.holidayId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/configuration/holidays/${encodePathParam(params.holidayId)}`, body: params.body }, opts))
   }
 
   holiday(params: {
   holidayId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/logistics/pvt/configuration/holidays/${params.holidayId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/holidays/${encodePathParam(params.holidayId)}` }, opts))
   }
 
-  allHolidays(params: Record<string, never>): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/logistics/pvt/configuration/holidays` })
+  allHolidays(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/holidays` }, opts))
   }
 }
 class LogisticsApi_reservations {
@@ -797,15 +799,15 @@ class LogisticsApi_reservations {
   createReservation(params: {
   body: {
   salesChannel: string
-  lockId: string
+  lockId: string | null
   autorizationExpirationTTL: string
   deliveryItemOptions: {
   item: {
   id: string
   quantity: number
-  kitItem: string[]
+  kitItem: (string | null)[]
   price: number
-  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"
+  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS" | null
   additionalHandlingTime: string
   dimension: {
   weight: number
@@ -827,20 +829,20 @@ class LogisticsApi_reservations {
   startDateUtc?: string
   endDateUtc?: string
   listPrice?: string
-}[]
-  wareHouseId: string
+}[] | null
+  wareHouseId: string | null
   dockId: string
   location: {
   zipCode: string
   country: string
   inStore: {
   IsCheckedIn: boolean
-  StoreId: string
+  StoreId: string | null
 }
 }
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   LastUpdateDateUtc?: string
   SalesChannel?: string
   LockId?: string
@@ -850,10 +852,10 @@ class LogisticsApi_reservations {
   SlaRequest?: {
   item?: {
   id?: string
-  groupItemId?: string
+  groupItemId?: string | null
   quantity?: number
   price?: number
-  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"
+  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS" | null
   additionalHandlingTime?: string
   dimension?: {
   weight?: number
@@ -862,7 +864,7 @@ class LogisticsApi_reservations {
   length?: number
   maxSumDimension?: number
 }
-  kitItem?: string[]
+  kitItem?: string[] | null
   unlimitedQuantity?: boolean
 }
   slaType?: string
@@ -875,27 +877,27 @@ class LogisticsApi_reservations {
   dockTime?: string
   timeToDockPlusDockTime?: string
   totalTime?: string
-  deliveryWindows?: Record<string, unknown>
+  deliveryWindows?: Record<string, unknown> | null
   wareHouseId?: string
   dockId?: string
-  wmsEndPoint?: string
+  wmsEndPoint?: string | null
   location?: {
   zipCode?: string
   country?: string
-  deliveryPointId?: string
-  point?: number[]
+  deliveryPointId?: string | null
+  point?: number[] | null
   inStore?: {
   IsCheckedIn?: boolean
-  StoreId?: string
+  StoreId?: string | null
 }
 }
-  pickupStoreInfo?: string
+  pickupStoreInfo?: string | null
 }[]
-  PickupPointItemOptions?: string
+  PickupPointItemOptions?: string | null
   CanceledDateUtc?: string
   AuthorizedDateUtc?: string
   ConfirmedDateUtc?: string
-  Errors?: string[]
+  Errors?: (string | null)[] | null
   IsSucess?: boolean
 }> {
     return this.http.request<{
@@ -908,10 +910,10 @@ class LogisticsApi_reservations {
   SlaRequest?: {
   item?: {
   id?: string
-  groupItemId?: string
+  groupItemId?: string | null
   quantity?: number
   price?: number
-  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"
+  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS" | null
   additionalHandlingTime?: string
   dimension?: {
   weight?: number
@@ -920,7 +922,7 @@ class LogisticsApi_reservations {
   length?: number
   maxSumDimension?: number
 }
-  kitItem?: string[]
+  kitItem?: string[] | null
   unlimitedQuantity?: boolean
 }
   slaType?: string
@@ -933,34 +935,34 @@ class LogisticsApi_reservations {
   dockTime?: string
   timeToDockPlusDockTime?: string
   totalTime?: string
-  deliveryWindows?: Record<string, unknown>
+  deliveryWindows?: Record<string, unknown> | null
   wareHouseId?: string
   dockId?: string
-  wmsEndPoint?: string
+  wmsEndPoint?: string | null
   location?: {
   zipCode?: string
   country?: string
-  deliveryPointId?: string
-  point?: number[]
+  deliveryPointId?: string | null
+  point?: number[] | null
   inStore?: {
   IsCheckedIn?: boolean
-  StoreId?: string
+  StoreId?: string | null
 }
 }
-  pickupStoreInfo?: string
+  pickupStoreInfo?: string | null
 }[]
-  PickupPointItemOptions?: string
+  PickupPointItemOptions?: string | null
   CanceledDateUtc?: string
   AuthorizedDateUtc?: string
   ConfirmedDateUtc?: string
-  Errors?: string[]
+  Errors?: (string | null)[] | null
   IsSucess?: boolean
-}>({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations`, body: params.body }, opts))
   }
 
   reservationById(params: {
   reservationId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   LastUpdateDateUtc?: string
   SalesChannel?: string
   LockId?: string
@@ -970,10 +972,10 @@ class LogisticsApi_reservations {
   SlaRequest?: {
   item?: {
   id?: string
-  groupItemId?: string
+  groupItemId?: string | null
   quantity?: number
   price?: number
-  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"
+  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS" | null
   additionalHandlingTime?: string
   dimension?: {
   weight?: number
@@ -982,11 +984,11 @@ class LogisticsApi_reservations {
   length?: number
   maxSumDimension?: number
 }
-  kitItem?: string[]
+  kitItem?: string[] | null
   unlimitedQuantity?: boolean
   dockId?: string
   wareHouseId?: string
-  provider?: string
+  provider?: string | null
 }
   slaType?: string
   slaTypeName?: string
@@ -999,22 +1001,22 @@ class LogisticsApi_reservations {
   dockTime?: string
   timeToDockPlusDockTime?: string
   totalTime?: string
-  deliveryWindows?: Record<string, unknown>
+  deliveryWindows?: Record<string, unknown> | null
   wareHouseId?: string
-  kitReservation?: string
+  kitReservation?: string | null
   dockId?: string
-  wmsEndPoint?: string
+  wmsEndPoint?: string | null
   location?: {
   zipCode?: string
   country?: string
-  point?: number[]
+  point?: number[] | null
   inStore?: {
   IsCheckedIn?: boolean
-  StoreId?: string
+  StoreId?: string | null
 }
 }
-  pickupStoreInfo?: string
-  deliveryOnWeekends?: boolean
+  pickupStoreInfo?: string | null
+  deliveryOnWeekends?: boolean | null
   weekendAndHolidays?: {
   saturday?: boolean
   sunday?: boolean
@@ -1024,16 +1026,16 @@ class LogisticsApi_reservations {
   deliveryChannel?: string
   totalTimePlusCarrierSchedule?: string
   polygonName?: string
-  distanceLevel?: string
+  distanceLevel?: string | null
   accountCarrier?: string
-  dateOfSupplyUtc?: string
-  supplyLotId?: string
+  dateOfSupplyUtc?: string | null
+  supplyLotId?: string | null
   isExternal?: boolean
 }[]
   CanceledDateUtc?: string
   AuthorizedDateUtc?: string
   ConfirmedDateUtc?: string
-  Errors?: string[]
+  Errors?: (string | null)[] | null
   IsSucess?: boolean
 }> {
     return this.http.request<{
@@ -1046,10 +1048,10 @@ class LogisticsApi_reservations {
   SlaRequest?: {
   item?: {
   id?: string
-  groupItemId?: string
+  groupItemId?: string | null
   quantity?: number
   price?: number
-  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"
+  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS" | null
   additionalHandlingTime?: string
   dimension?: {
   weight?: number
@@ -1058,11 +1060,11 @@ class LogisticsApi_reservations {
   length?: number
   maxSumDimension?: number
 }
-  kitItem?: string[]
+  kitItem?: string[] | null
   unlimitedQuantity?: boolean
   dockId?: string
   wareHouseId?: string
-  provider?: string
+  provider?: string | null
 }
   slaType?: string
   slaTypeName?: string
@@ -1075,22 +1077,22 @@ class LogisticsApi_reservations {
   dockTime?: string
   timeToDockPlusDockTime?: string
   totalTime?: string
-  deliveryWindows?: Record<string, unknown>
+  deliveryWindows?: Record<string, unknown> | null
   wareHouseId?: string
-  kitReservation?: string
+  kitReservation?: string | null
   dockId?: string
-  wmsEndPoint?: string
+  wmsEndPoint?: string | null
   location?: {
   zipCode?: string
   country?: string
-  point?: number[]
+  point?: number[] | null
   inStore?: {
   IsCheckedIn?: boolean
-  StoreId?: string
+  StoreId?: string | null
 }
 }
-  pickupStoreInfo?: string
-  deliveryOnWeekends?: boolean
+  pickupStoreInfo?: string | null
+  deliveryOnWeekends?: boolean | null
   weekendAndHolidays?: {
   saturday?: boolean
   sunday?: boolean
@@ -1100,43 +1102,43 @@ class LogisticsApi_reservations {
   deliveryChannel?: string
   totalTimePlusCarrierSchedule?: string
   polygonName?: string
-  distanceLevel?: string
+  distanceLevel?: string | null
   accountCarrier?: string
-  dateOfSupplyUtc?: string
-  supplyLotId?: string
+  dateOfSupplyUtc?: string | null
+  supplyLotId?: string | null
   isExternal?: boolean
 }[]
   CanceledDateUtc?: string
   AuthorizedDateUtc?: string
   ConfirmedDateUtc?: string
-  Errors?: string[]
+  Errors?: (string | null)[] | null
   IsSucess?: boolean
-}>({ method: 'GET', path: `/api/logistics/pvt/inventory/reservations/${params.reservationId}` })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}` }, opts))
   }
 
   confirmReservation(params: {
   reservationId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${params.reservationId}/confirm` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}/confirm` }, opts))
   }
 
   acknowledgmentReservation(params: {
   reservationId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${params.reservationId}/acknowledge` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}/acknowledge` }, opts))
   }
 
   cancelReservation(params: {
   reservationId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${params.reservationId}/cancel` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}/cancel` }, opts))
   }
 
   reservationbyWarehouseandSku(params: {
   warehouseId: string
   skuId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/logistics/pvt/inventory/reservations/${params.warehouseId}/${params.skuId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.warehouseId)}/${encodePathParam(params.skuId)}` }, opts))
   }
 }
 class LogisticsApi_sla {
@@ -1147,8 +1149,8 @@ class LogisticsApi_sla {
   items: {
   id: string
   quantity: number
-  price?: number
-  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS"
+  price?: number | null
+  modal?: "CHEMICALS" | "ELECTRONICS" | "FURNITURE" | "GLASS" | "LIQUID" | "MATTRESSES" | "REFRIGERATED" | "TIRES" | "WHITE_GOODS" | "FIREARMS" | null
   additionalHandlingTime?: string
   dimension: {
   weight?: number
@@ -1159,8 +1161,8 @@ class LogisticsApi_sla {
 }
   kitItem?: {
   id: string
-  groupItemId?: string
-  kitItem?: string[]
+  groupItemId?: string | null
+  kitItem?: string[] | null
   quantity: number
   price?: number
   additionalHandlingTime?: string
@@ -1171,9 +1173,9 @@ class LogisticsApi_sla {
   length?: number
   maxSumDimension?: number
 }
-}[]
-  dockId?: string
-  wareHouseId?: string
+}[] | null
+  dockId?: string | null
+  wareHouseId?: string | null
 }[]
   location: {
   zipCode: string
@@ -1181,20 +1183,20 @@ class LogisticsApi_sla {
   point?: number[]
   inStore?: {
   IsCheckedIn?: boolean
-  StoreId?: string
+  StoreId?: string | null
 }
 }
   salesChannel?: string
-  deliveryChannel?: string
+  deliveryChannel?: string | null
 }[]
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   itemId?: string
   quantity?: number
   kitItem?: {
   id?: string
   quantity?: number
   warehouseId?: string
-  supplyLotId?: string
+  supplyLotId?: string | null
 }[]
   availabilityQuantity?: number
   salesChannel?: string
@@ -1219,10 +1221,10 @@ class LogisticsApi_sla {
   location?: {
   zipCode?: string
   country?: string
-  point?: number[]
+  point?: number[] | null
   inStore?: {
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
 }
 }
   deliveryOnWeekends?: boolean
@@ -1230,18 +1232,18 @@ class LogisticsApi_sla {
   saturday?: boolean
   sunday?: boolean
   holiday?: boolean
-}
+} | null
   carrierSchedule?: {
   dayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6
   timeLimit?: string
 }[]
   totalTimePlusCarrierSchedule?: string
-  restrictedFreight?: string[]
-  coordinates?: number[]
+  restrictedFreight?: (string | null)[] | null
+  coordinates?: (number | null)[] | null
   pickupStoreInfo?: {
-  isPickupStore?: boolean
-  storeId?: string
-  friendlyName?: string
+  isPickupStore?: boolean | null
+  storeId?: string | null
+  friendlyName?: string | null
   address?: {
   postalCode?: string
   country?: {
@@ -1253,19 +1255,19 @@ class LogisticsApi_sla {
   neighborhood?: string
   street?: string
   number?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   location?: {
   latitude?: number
   longitude?: number
 }
-}
-  additionalInfo?: string
-  dockId?: string
-  distance?: number
-  businessHours?: string
-  pickupHolidays?: string
-  sellerId?: string
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
+  distance?: number | null
+  businessHours?: string | null
+  pickupHolidays?: string | null
+  sellerId?: string | null
   isThirdPartyPickup?: boolean
 }
   timeToPresale?: string
@@ -1279,10 +1281,10 @@ class LogisticsApi_sla {
   closingTime?: string
   dayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6
 }[]
-  provider?: string
-  dateOfSupplyUtc?: string
+  provider?: string | null
+  dateOfSupplyUtc?: string | null
   estimateDate?: string
-  supplyLotId?: string
+  supplyLotId?: string | null
   isExternal?: boolean
 }[][]> {
     return this.http.request<{
@@ -1292,7 +1294,7 @@ class LogisticsApi_sla {
   id?: string
   quantity?: number
   warehouseId?: string
-  supplyLotId?: string
+  supplyLotId?: string | null
 }[]
   availabilityQuantity?: number
   salesChannel?: string
@@ -1317,10 +1319,10 @@ class LogisticsApi_sla {
   location?: {
   zipCode?: string
   country?: string
-  point?: number[]
+  point?: number[] | null
   inStore?: {
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
 }
 }
   deliveryOnWeekends?: boolean
@@ -1328,18 +1330,18 @@ class LogisticsApi_sla {
   saturday?: boolean
   sunday?: boolean
   holiday?: boolean
-}
+} | null
   carrierSchedule?: {
   dayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6
   timeLimit?: string
 }[]
   totalTimePlusCarrierSchedule?: string
-  restrictedFreight?: string[]
-  coordinates?: number[]
+  restrictedFreight?: (string | null)[] | null
+  coordinates?: (number | null)[] | null
   pickupStoreInfo?: {
-  isPickupStore?: boolean
-  storeId?: string
-  friendlyName?: string
+  isPickupStore?: boolean | null
+  storeId?: string | null
+  friendlyName?: string | null
   address?: {
   postalCode?: string
   country?: {
@@ -1351,19 +1353,19 @@ class LogisticsApi_sla {
   neighborhood?: string
   street?: string
   number?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   location?: {
   latitude?: number
   longitude?: number
 }
-}
-  additionalInfo?: string
-  dockId?: string
-  distance?: number
-  businessHours?: string
-  pickupHolidays?: string
-  sellerId?: string
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
+  distance?: number | null
+  businessHours?: string | null
+  pickupHolidays?: string | null
+  sellerId?: string | null
   isThirdPartyPickup?: boolean
 }
   timeToPresale?: string
@@ -1377,25 +1379,25 @@ class LogisticsApi_sla {
   closingTime?: string
   dayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6
 }[]
-  provider?: string
-  dateOfSupplyUtc?: string
+  provider?: string | null
+  dateOfSupplyUtc?: string | null
   estimateDate?: string
-  supplyLotId?: string
+  supplyLotId?: string | null
   isExternal?: boolean
-}[][]>({ method: 'POST', path: `/api/logistics/pvt/shipping/calculate`, body: params.body })
+}[][]>(withCall({ method: 'POST', path: `/api/logistics/pvt/shipping/calculate`, body: params.body }, opts))
   }
 }
 class LogisticsApi_pickupPoints {
   constructor(private http: VtexHttpClient) {}
 
-  listAllPickupPpoints(params: Record<string, never>): Promise<PickupPoint[]> {
-    return this.http.request<PickupPoint[]>({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints` })
+  listAllPickupPpoints(params: Record<string, never> = {}, opts?: CallOptions): Promise<PickupPoint[]> {
+    return this.http.request<PickupPoint[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints` }, opts))
   }
 
   getById(params: {
   pickupPointId: string
-}): Promise<PickupPoint> {
-    return this.http.request<PickupPoint>({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints/${params.pickupPointId}` })
+}, opts?: CallOptions): Promise<PickupPoint> {
+    return this.http.request<PickupPoint>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints/${encodePathParam(params.pickupPointId)}` }, opts))
   }
 
   createUpdatePickupPoint(params: {
@@ -1433,21 +1435,21 @@ class LogisticsApi_pickupPoints {
   tagsLabel: string[]
   isThirdPartyPickup?: boolean
 }
-}): Promise<PickupPoint> {
-    return this.http.request<PickupPoint>({ method: 'PUT', path: `/api/logistics/pvt/configuration/pickuppoints/${params.pickupPointId}`, body: params.body })
+}, opts?: CallOptions): Promise<PickupPoint> {
+    return this.http.request<PickupPoint>(withCall({ method: 'PUT', path: `/api/logistics/pvt/configuration/pickuppoints/${encodePathParam(params.pickupPointId)}`, body: params.body }, opts))
   }
 
   delete(params: {
   pickupPointId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/logistics/pvt/configuration/pickuppoints/${params.pickupPointId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/pickuppoints/${encodePathParam(params.pickupPointId)}` }, opts))
   }
 
   getpaged(params: {
   page?: number
   pageSize?: number
   keyword?: string
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   items?: PickupPoint[]
   paging?: {
   page?: number
@@ -1464,7 +1466,7 @@ class LogisticsApi_pickupPoints {
   total?: number
   pages?: number
 }
-}>({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints/_search`, query: { 'page': params.page, 'pageSize': params.pageSize, 'keyword': params.keyword } })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints/_search`, query: { 'page': params.page, 'pageSize': params.pageSize, 'keyword': params.keyword } }, opts))
   }
 }
 class LogisticsApi_polygons {
@@ -1473,7 +1475,7 @@ class LogisticsApi_polygons {
   pagedPolygons(params: {
   page?: number
   perPage?: number
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   items?: string[]
   paging?: {
   page?: number
@@ -1490,7 +1492,7 @@ class LogisticsApi_polygons {
   total?: number
   pages?: number
 }
-}>({ method: 'GET', path: `/api/logistics/pvt/configuration/geoshape`, query: { 'page': params.page, 'perPage': params.perPage } })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/geoshape`, query: { 'page': params.page, 'perPage': params.perPage } }, opts))
   }
 
   createUpdatePolygon(params: {
@@ -1500,13 +1502,13 @@ class LogisticsApi_polygons {
   coordinates: number[][][]
 }
 }
-}): Promise<string> {
-    return this.http.request<string>({ method: 'PUT', path: `/api/logistics/pvt/configuration/geoshape`, body: params.body })
+}, opts?: CallOptions): Promise<string> {
+    return this.http.request<string>(withCall({ method: 'PUT', path: `/api/logistics/pvt/configuration/geoshape`, body: params.body }, opts))
   }
 
   polygonbyId(params: {
   polygonName: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   isActive?: boolean
   name?: string
   geoShape?: {
@@ -1521,13 +1523,13 @@ class LogisticsApi_polygons {
   coordinates?: number[][][]
   type?: string
 }
-}>({ method: 'GET', path: `/api/logistics/pvt/configuration/geoshape/${params.polygonName}` })
+}>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/geoshape/${encodePathParam(params.polygonName)}` }, opts))
   }
 
   deletePolygon(params: {
   polygonName: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'DELETE', path: `/api/logistics/pvt/configuration/geoshape/${params.polygonName}` })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/geoshape/${encodePathParam(params.polygonName)}` }, opts))
   }
 }
 

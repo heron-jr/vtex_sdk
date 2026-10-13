@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class BulkPricingApi_batchImports {
   constructor(private http: VtexHttpClient) {}
@@ -11,7 +13,7 @@ class BulkPricingApi_batchImports {
   contentType: string
   contentLengthBytes: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   batchId?: string
   status?: string
   upload?: {
@@ -30,7 +32,7 @@ class BulkPricingApi_batchImports {
   headers?: Record<string, unknown>
   expiresAt?: string
 }
-}>({ method: 'POST', path: `/api/price-importer/pvt/import/${params.importType}`, query: { 'an': params.an, 'output': params.output }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/price-importer/pvt/import/${encodePathParam(params.importType)}`, query: { 'an': params.an, 'output': params.output }, body: params.body }, opts))
   }
 }
 class BulkPricingApi_batchStatus {
@@ -38,7 +40,7 @@ class BulkPricingApi_batchStatus {
 
   getApiPriceImporterPvtBatchesByBatchId(params: {
   batchId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   batchId?: string
   type?: "base" | "fixed"
   status?: "AWAITING_UPLOAD" | "RECEIVED" | "VALIDATING" | "PROCESSING" | "DOCUMENTING" | "COMPLETED" | "COMPLETED_WITH_ERRORS" | "FAILED"
@@ -67,17 +69,17 @@ class BulkPricingApi_batchStatus {
   errorCount?: number
   createdAt?: string
   startedAt?: string
-}>({ method: 'GET', path: `/api/price-importer/pvt/batches/${params.batchId}` })
+}>(withCall({ method: 'GET', path: `/api/price-importer/pvt/batches/${encodePathParam(params.batchId)}` }, opts))
   }
 
   getApiPriceImporterPvtBatchesByBatchIdErrors(params: {
   batchId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   url?: string
 }> {
     return this.http.request<{
   url?: string
-}>({ method: 'GET', path: `/api/price-importer/pvt/batches/${params.batchId}/errors` })
+}>(withCall({ method: 'GET', path: `/api/price-importer/pvt/batches/${encodePathParam(params.batchId)}/errors` }, opts))
   }
 }
 

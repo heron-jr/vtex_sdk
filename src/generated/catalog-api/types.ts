@@ -16,7 +16,7 @@ export type SkuFileResponse = {
   Name?: string
   IsMain?: boolean
   Text?: string
-  Label?: string
+  Label?: string | null
   Url?: string
   FileLocation?: string
   Position?: number
@@ -26,7 +26,7 @@ export type SKUFileURL = {
   IsMain?: boolean
   Label?: string
   Name: string
-  Text?: string
+  Text?: string | null
   Url: string
   Position?: number
 }
@@ -56,7 +56,7 @@ export type GetCategoryTreeChild = {
 export type Category = {
   Id: number
   Name: string
-  FatherCategoryId: number
+  FatherCategoryId: number | null
   Title: string
   Description: string
   Keywords: string
@@ -68,12 +68,12 @@ export type Category = {
   ActiveStoreFrontLink: boolean
   GlobalCategoryId: number
   StockKeepingUnitSelectionMode: string
-  Score: number
+  Score: number | null
   LinkId: string
   HasChildren: boolean
-  TreePath: string[]
-  TreePathIds: number[]
-  TreePathLinkIds: string[]
+  TreePath: string[] | null
+  TreePathIds: number[] | null
+  TreePathLinkIds: string[] | null
 }
 
 export type CreateCategoryRequest = {
@@ -82,15 +82,15 @@ export type CreateCategoryRequest = {
   Keywords: string
   Title: string
   Description: string
-  AdWordsRemarketingCode: string
-  LomadeeCampaignCode: string
-  FatherCategoryId: number
+  AdWordsRemarketingCode: string | null
+  LomadeeCampaignCode: string | null
+  FatherCategoryId: number | null
   GlobalCategoryId: number
   ShowInStoreFront: boolean
   IsActive: boolean
   ActiveStoreFrontLink: boolean
   ShowBrandFilter: boolean
-  Score: number
+  Score: number | null
   StockKeepingUnitSelectionMode: "SPECIFICATION" | "LIST"
 }
 
@@ -111,12 +111,12 @@ export type GetSKUandContext = {
   TaxCode?: string
   SkuName: string
   IsActive: boolean
-  IsTransported: boolean
-  IsInventoried: boolean
+  IsTransported: boolean | null
+  IsInventoried: boolean | null
   IsGiftCardRecharge: boolean
   ImageUrl: string
   DetailUrl: string
-  CSCIdentification: string
+  CSCIdentification: string | null
   BrandId: string
   BrandName: string
   Dimension: Dimension
@@ -135,19 +135,21 @@ export type GetSKUandContext = {
   ProductSpecifications: ProductSpecification[]
   ProductClustersIds: string
   ProductCategoryIds: string
-  ProductGlobalCategoryId: number
-  ProductCategories: Record<string, unknown>
+  ProductGlobalCategoryId: number | null
+  ProductCategories: {
+  [key: string]: string
+}
   CommercialConditionId: number
   RewardValue: number
   AlternateIds: AlternateIds
   AlternateIdValues: string[]
-  EstimatedDateArrival: string
+  EstimatedDateArrival: string | null
   MeasurementUnit: string
   UnitMultiplier: number
-  InformationSource: string
-  ModalType: string
-  KeyWords?: string
-  ReleaseDate?: string
+  InformationSource: string | null
+  ModalType: string | null
+  KeyWords?: string | null
+  ReleaseDate?: string | null
   ProductIsVisible?: boolean
   ShowIfNotAvailable?: boolean
   IsProductActive?: boolean
@@ -177,7 +179,7 @@ export type Attachment = {
   Fields: {
   FieldName: string
   MaxCaracters: string
-  DomainValues: string
+  DomainValues: string | null
 }[]
   IsActive: boolean
   IsRequired: boolean
@@ -194,7 +196,7 @@ export type SkuSeller = {
 
 export type Image = {
   ImageUrl: string
-  ImageName: string
+  ImageName: string | null
   FileId: number
 }
 
@@ -233,7 +235,7 @@ export type GetSKUAltID = {
   IsGiftCardRecharge: boolean
   ImageUrl: string
   DetailUrl: string
-  CSCIdentification: string
+  CSCIdentification: string | null
   BrandId: string
   BrandName: string
   Dimension: Dimension
@@ -252,24 +254,32 @@ export type GetSKUAltID = {
   SkuSpecifications: SkuSpecification[]
   ProductSpecifications: ProductSpecification[]
   ProductClustersIds: string
-  PositionsInClusters?: Record<string, unknown>
-  ProductClusterNames?: Record<string, unknown>
-  ProductClusterHighlights?: Record<string, unknown>
+  PositionsInClusters?: {
+  [key: string]: number
+}
+  ProductClusterNames?: {
+  [key: string]: string
+}
+  ProductClusterHighlights?: {
+  [key: string]: string
+}
   ProductCategoryIds: string
   IsDirectCategoryActive?: boolean
-  ProductGlobalCategoryId: number
-  ProductCategories: Record<string, unknown>
+  ProductGlobalCategoryId: number | null
+  ProductCategories: {
+  [key: string]: string
+}
   CommercialConditionId: number
   RewardValue: number
   AlternateIds: AlternateIds
   AlternateIdValues: string[]
-  EstimatedDateArrival: string
+  EstimatedDateArrival: string | null
   MeasurementUnit: string
   UnitMultiplier: number
-  InformationSource: string
-  ModalType: string
-  KeyWords?: string
-  ReleaseDate?: string
+  InformationSource: string | null
+  ModalType: string | null
+  KeyWords?: string | null
+  ReleaseDate?: string | null
   ProductIsVisible?: boolean
   ShowIfNotAvailable?: boolean
   IsProductActive?: boolean
@@ -284,34 +294,34 @@ export type SkulistbyProductId = {
   IsActive?: boolean
   Name?: string
   Height?: number
-  RealHeight?: number
+  RealHeight?: number | null
   Width?: number
-  RealWidth?: number
+  RealWidth?: number | null
   Length?: number
-  RealLength?: number
-  WeightKg?: number
-  RealWeightKg?: number
+  RealLength?: number | null
+  WeightKg?: number | null
+  RealWeightKg?: number | null
   ModalId?: number
   RefId?: string
   CubicWeight?: number
   IsKit?: boolean
-  IsDynamicKit?: string
-  InternalNote?: string
+  IsDynamicKit?: string | null
+  InternalNote?: string | null
   DateUpdated?: string
-  RewardValue?: number
+  RewardValue?: number | null
   CommercialConditionId?: number
-  EstimatedDateArrival?: string
+  EstimatedDateArrival?: string | null
   FlagKitItensSellApart?: boolean
   ManufacturerCode?: string
-  ReferenceStockKeepingUnitId?: string
+  ReferenceStockKeepingUnitId?: string | null
   Position?: number
   ActivateIfPossible?: boolean
   MeasurementUnit?: string
   UnitMultiplier?: number
-  IsInventoried?: boolean
-  IsTransported?: boolean
-  IsGiftCardRecharge?: boolean
-  ModalType?: string
+  IsInventoried?: boolean | null
+  IsTransported?: boolean | null
+  IsGiftCardRecharge?: boolean | null
+  ModalType?: string | null
   isKitOptimized?: boolean
 }
 
@@ -380,10 +390,10 @@ export type CategorySpecification = {
 }[]
 
 export type SpecificationsGroup = {
-  CategoryId: number
+  CategoryId: number | null
   Id: number
   Name: string
-  Position: number
+  Position: number | null
 }
 
 export type SkuComplement = {
@@ -463,12 +473,12 @@ export type BrandCreateUpdateRequest = {
   Text?: string
   Keywords?: string
   SiteTitle?: string
-  AdWordsRemarketingCode?: string
-  LomadeeCampaignCode?: string
-  Score?: number
+  AdWordsRemarketingCode?: string | null
+  LomadeeCampaignCode?: string | null
+  Score?: number | null
   MenuHome?: boolean
   Active?: boolean
-  LinkId?: string
+  LinkId?: string | null
 }
 
 export type BrandCreateUpdate = {
@@ -479,10 +489,10 @@ export type BrandCreateUpdate = {
   SiteTitle?: string
   AdWordsRemarketingCode?: string
   LomadeeCampaignCode?: string
-  Score?: number
+  Score?: number | null
   MenuHome?: boolean
   Active?: boolean
-  LinkId?: string
+  LinkId?: string | null
 }
 
 export type BrandGet = {
@@ -491,7 +501,7 @@ export type BrandGet = {
   isActive: boolean
   title: string
   metaTagDescription: string
-  imageUrl: string
+  imageUrl: string | null
 }
 
 export type AttachmentResponse = {

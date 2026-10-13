@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CreateChannel, CreateFeedRequest, UpdateFeedRequest, CreateInteractionRequest, CreateLogRequest, Evidence, Data, Errors } from './types.js'
 
 class SentOffersApi_offerManagement {
@@ -7,7 +9,7 @@ class SentOffersApi_offerManagement {
   createChannel(params: {
   an: string
   body: CreateChannel
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   vendor?: string
   name?: string
@@ -18,12 +20,12 @@ class SentOffersApi_offerManagement {
   vendor?: string
   name?: string
   logo?: string
-}>({ method: 'POST', path: `/api/sent-offers/channels`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/sent-offers/channels`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   listFeeds(params: {
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   account?: string
   id?: string
   affiliateId?: string
@@ -38,13 +40,13 @@ class SentOffersApi_offerManagement {
   salesChannel?: string
   channelName?: string
   channelLogo?: string
-}[]>({ method: 'GET', path: `/api/sent-offers/feeds`, query: { 'an': params.an } })
+}[]>(withCall({ method: 'GET', path: `/api/sent-offers/feeds`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   createFeed(params: {
   an: string
   body: CreateFeedRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   account?: string
   id?: string
   affiliateId?: string
@@ -55,13 +57,13 @@ class SentOffersApi_offerManagement {
   id?: string
   affiliateId?: string
   salesChannel?: string
-}>({ method: 'POST', path: `/api/sent-offers/feeds`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/sent-offers/feeds`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   retrieveFeed(params: {
   feedId: string
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   account?: string
   id?: string
   affiliateId?: string
@@ -76,22 +78,22 @@ class SentOffersApi_offerManagement {
   salesChannel?: string
   channelName?: string
   channelLogo?: string
-}>({ method: 'GET', path: `/api/sent-offers/feeds/${params.feedId}`, query: { 'an': params.an } })
+}>(withCall({ method: 'GET', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   updateFeed(params: {
   feedId: string
   an: string
   body: UpdateFeedRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/sent-offers/feeds/${params.feedId}`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   deleteFeed(params: {
   feedId: string
   an: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/sent-offers/feeds/${params.feedId}`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   createInteraction(params: {
@@ -99,7 +101,7 @@ class SentOffersApi_offerManagement {
   skuId: string
   an: string
   body: CreateInteractionRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   account?: string
   feedId?: string
   skuId?: string
@@ -124,7 +126,7 @@ class SentOffersApi_offerManagement {
   origin?: string
   context?: string
   logs?: string[]
-}>({ method: 'POST', path: `/api/sent-offers/feeds/${params.feedId}/skus/${params.skuId}/interactions`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   retrieveInteraction(params: {
@@ -132,7 +134,7 @@ class SentOffersApi_offerManagement {
   skuId: string
   interactionId: string
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   account?: string
   feedId?: string
   skuId?: string
@@ -157,7 +159,7 @@ class SentOffersApi_offerManagement {
   origin?: string
   context?: string
   logs?: string[]
-}>({ method: 'GET', path: `/api/sent-offers/feeds/${params.feedId}/skus/${params.skuId}/interactions/${params.interactionId}`, query: { 'an': params.an } })
+}>(withCall({ method: 'GET', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   closeInteraction(params: {
@@ -165,8 +167,8 @@ class SentOffersApi_offerManagement {
   skuId: string
   interactionId: string
   an: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/sent-offers/feeds/${params.feedId}/skus/${params.skuId}/interactions/${params.interactionId}/close`, query: { 'an': params.an } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}/close`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   createLog(params: {
@@ -175,7 +177,7 @@ class SentOffersApi_offerManagement {
   interactionId: string
   an: string
   body: CreateLogRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   description?: string
   date?: string
@@ -196,7 +198,7 @@ class SentOffersApi_offerManagement {
   response?: string
 }
   type?: string
-}>({ method: 'POST', path: `/api/sent-offers/feeds/${params.feedId}/skus/${params.skuId}/interactions/${params.interactionId}/logs`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}/logs`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   retrieveLog(params: {
@@ -205,7 +207,7 @@ class SentOffersApi_offerManagement {
   interactionId: string
   logId: string
   an: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   description?: string
   date?: string
@@ -234,7 +236,7 @@ class SentOffersApi_offerManagement {
   closableOrigins?: string[]
 }[]
   type?: string
-}>({ method: 'GET', path: `/api/sent-offers/feeds/${params.feedId}/skus/${params.skuId}/interactions/${params.interactionId}/logs/${params.logId}`, query: { 'an': params.an } })
+}>(withCall({ method: 'GET', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}/logs/${encodePathParam(params.logId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   searchInteractions(params: {
@@ -250,8 +252,8 @@ class SentOffersApi_offerManagement {
   to: string
   fromDate: string
   toDate: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/sent-offers/search/interactions`, query: { 'an': params.an, 'q': params.q, 'channels': params.channels, 'brand': params.brand, 'category': params.category, 'scope': params.scope, 'result': params.result, 'sort': params.sort, 'from': params.from, 'to': params.to, 'fromDate': params.fromDate, 'toDate': params.toDate } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/sent-offers/search/interactions`, query: { 'an': params.an, 'q': params.q, 'channels': params.channels, 'brand': params.brand, 'category': params.category, 'scope': params.scope, 'result': params.result, 'sort': params.sort, 'from': params.from, 'to': params.to, 'fromDate': params.fromDate, 'toDate': params.toDate }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   searchErrors(params: {
@@ -264,13 +266,13 @@ class SentOffersApi_offerManagement {
   sort: string
   from: string
   to: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/sent-offers/search/errors`, query: { 'an': params.an, 'q': params.q, 'channels': params.channels, 'brand': params.brand, 'category': params.category, 'errorCategory': params.errorCategory, 'sort': params.sort, 'from': params.from, 'to': params.to } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/sent-offers/search/errors`, query: { 'an': params.an, 'q': params.q, 'channels': params.channels, 'brand': params.brand, 'category': params.category, 'errorCategory': params.errorCategory, 'sort': params.sort, 'from': params.from, 'to': params.to }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
   retrieveErrorCode(params: {
   errorCodeId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   type?: string
   description?: string
@@ -283,7 +285,7 @@ class SentOffersApi_offerManagement {
   description?: string
   solutionText?: string
   solutionLink?: string
-}[]>({ method: 'GET', path: `/api/sent-offers/error-codes/${params.errorCodeId}` })
+}[]>(withCall({ method: 'GET', path: `/api/sent-offers/error-codes/${encodePathParam(params.errorCodeId)}`, server: 'https://portal.{environment}.com.br' }, opts))
   }
 }
 

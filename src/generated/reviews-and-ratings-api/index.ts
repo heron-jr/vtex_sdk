@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { SaveReviewRequest, SaveMultipleReviewsRequest } from './types.js'
 
 class ReviewsAndRatingsApi_rating {
@@ -6,7 +8,7 @@ class ReviewsAndRatingsApi_rating {
 
   getProductRating(params: {
   productId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   average?: number
   totalCount?: number
   starsFive?: number
@@ -23,7 +25,7 @@ class ReviewsAndRatingsApi_rating {
   starsThree?: number
   starsTwo?: number
   starsOne?: number
-}>({ method: 'GET', path: `/reviews-and-ratings/api/rating/${params.productId}` })
+}>(withCall({ method: 'GET', path: `/reviews-and-ratings/api/rating/${encodePathParam(params.productId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class ReviewsAndRatingsApi_review {
@@ -31,7 +33,7 @@ class ReviewsAndRatingsApi_review {
 
   getReviewbyReviewId(params: {
   reviewId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   productId?: string
   rating?: number
@@ -42,11 +44,11 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
 }> {
     return this.http.request<{
   id?: string
@@ -59,12 +61,12 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
-}>({ method: 'GET', path: `/reviews-and-ratings/api/review/${params.reviewId}` })
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
+}>(withCall({ method: 'GET', path: `/reviews-and-ratings/api/review/${encodePathParam(params.reviewId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   editReview(params: {
@@ -77,9 +79,9 @@ class ReviewsAndRatingsApi_review {
   reviewerName: string
   shopperId?: string
   verifiedPurchaser?: boolean
-  locale?: string
+  locale?: string | null
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   productId?: string
   rating?: number
@@ -90,11 +92,11 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
 }> {
     return this.http.request<{
   id?: string
@@ -107,18 +109,18 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
-}>({ method: 'PATCH', path: `/reviews-and-ratings/api/review/${params.reviewId}`, body: params.body })
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
+}>(withCall({ method: 'PATCH', path: `/reviews-and-ratings/api/review/${encodePathParam(params.reviewId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteReview(params: {
   reviewId: string
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'DELETE', path: `/reviews-and-ratings/api/review/${params.reviewId}` })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/reviews-and-ratings/api/review/${encodePathParam(params.reviewId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getalistofReviews(params: {
@@ -128,7 +130,7 @@ class ReviewsAndRatingsApi_review {
   order_by?: string
   status?: boolean
   product_id?: string
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   data?: {
   id?: string
   productId?: string
@@ -140,11 +142,11 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
 }[]
   range?: {
   total?: number
@@ -164,35 +166,35 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
 }[]
   range?: {
   total?: number
   from?: number
   to?: number
 }
-}>({ method: 'GET', path: `/reviews-and-ratings/api/reviews`, query: { 'search_term': params.search_term, 'from': params.from, 'to': params.to, 'order_by': params.order_by, 'status': params.status, 'product_id': params.product_id } })
+}>(withCall({ method: 'GET', path: `/reviews-and-ratings/api/reviews`, query: { 'search_term': params.search_term, 'from': params.from, 'to': params.to, 'order_by': params.order_by, 'status': params.status, 'product_id': params.product_id }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   saveMultipleReviews(params: {
   body: SaveMultipleReviewsRequest[]
-}): Promise<string[]> {
-    return this.http.request<string[]>({ method: 'POST', path: `/reviews-and-ratings/api/reviews`, body: params.body })
+}, opts?: CallOptions): Promise<string[]> {
+    return this.http.request<string[]>(withCall({ method: 'POST', path: `/reviews-and-ratings/api/reviews`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteMultipleReviews(params: {
   body: string[]
-}): Promise<boolean> {
-    return this.http.request<boolean>({ method: 'DELETE', path: `/reviews-and-ratings/api/reviews`, body: params.body })
+}, opts?: CallOptions): Promise<boolean> {
+    return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/reviews-and-ratings/api/reviews`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   saveReview(params: {
   body: SaveReviewRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   productId?: string
   rating?: number
@@ -203,11 +205,11 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
 }> {
     return this.http.request<{
   id?: string
@@ -220,12 +222,12 @@ class ReviewsAndRatingsApi_review {
   reviewDateTime?: string
   searchDate?: string
   verifiedPurchaser?: boolean
-  sku?: string
+  sku?: string | null
   approved?: boolean
-  location?: string
-  locale?: string
-  pastReviews?: string
-}>({ method: 'POST', path: `/reviews-and-ratings/api/review`, body: params.body })
+  location?: string | null
+  locale?: string | null
+  pastReviews?: string | null
+}>(withCall({ method: 'POST', path: `/reviews-and-ratings/api/review`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 

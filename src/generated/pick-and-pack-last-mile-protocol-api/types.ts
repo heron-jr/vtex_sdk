@@ -89,7 +89,7 @@ export type Data = {
   carrierServiceType: "BROKER" | "PICKUP_IN_STORE" | "NATIONAL" | "INTERNATIONAL" | "EXPRESS" | "SPECIALIZED" | "OTHERS"
   rate: Rate
   shippingEstimatedDate: string
-  shippingFinishedDate: string
+  shippingFinishedDate: string | null
   metaData: MetaData1
 }
 
@@ -143,8 +143,8 @@ export type Timeline = {
 
 export type MetaData = {
   "0"?: GeneratedObject
-  shippingEstimatedDate?: string
-  metaData?: string
+  shippingEstimatedDate?: string | null
+  metaData?: string | null
   serviceId?: string
   shippingPrice?: number
   status?: string
@@ -172,7 +172,7 @@ export type Note = {
 export type Timezone = {
   offset: number
   value: string
-  label: string
+  label: string | null
 }
 
 export type Rate = {
@@ -197,7 +197,7 @@ export type MetaData1 = {
 
 export type Carrier = {
   name: string
-  image: string
+  image: string | null
   metaData: Record<string, unknown>
   id: string
   type: Type
@@ -209,7 +209,7 @@ export type Type = {
   rate: Rate1
   name: string
   transitTime: number
-  shippingEstimatedDate: string
+  shippingEstimatedDate: string | null
   description: string
   id: string
   international: boolean
@@ -247,12 +247,12 @@ export type M4041 = {
 
 export type UpdateserviceRequest = {
   status: string
-  agent: string
+  agent: string | null
   trackingUrl: string
-  totalDistanceTraveled: string
-  rating: string
-  shippingPrice: string
-  shippingEstimatedDate: string
+  totalDistanceTraveled: string | null
+  rating: string | null
+  shippingPrice: string | null
+  shippingEstimatedDate: string | null
 }
 
 export type ServiceBody1 = {
@@ -357,7 +357,7 @@ export type ResponseService = {
   serviceId: string
   shippingPrice: number
   metaData: {
-  "{keyValue}"?: string
+  [key: string]: string
 }
   shippingEstimatedDate: string
   labels: Label[]

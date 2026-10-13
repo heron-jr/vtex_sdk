@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { UpdateContractRequest, CreateContractResponse, ContractResponse } from './types.js'
 
 class B2bContractsApi_contracts {
@@ -6,28 +8,28 @@ class B2bContractsApi_contracts {
 
   createContract(params: {
   body: UpdateContractRequest
-}): Promise<CreateContractResponse> {
-    return this.http.request<CreateContractResponse>({ method: 'POST', path: `/api/dataentities/CL/documents`, body: params.body })
+}, opts?: CallOptions): Promise<CreateContractResponse> {
+    return this.http.request<CreateContractResponse>(withCall({ method: 'POST', path: `/api/dataentities/CL/documents`, body: params.body }, opts))
   }
 
   getApiDataentitiesCLDocumentsByContractId(params: {
   contractId: string
   _fields?: string
-}): Promise<ContractResponse> {
-    return this.http.request<ContractResponse>({ method: 'GET', path: `/api/dataentities/CL/documents/${params.contractId}`, query: { '_fields': params._fields } })
+}, opts?: CallOptions): Promise<ContractResponse> {
+    return this.http.request<ContractResponse>(withCall({ method: 'GET', path: `/api/dataentities/CL/documents/${encodePathParam(params.contractId)}`, query: { '_fields': params._fields } }, opts))
   }
 
   patchApiDataentitiesCLDocumentsByContractId(params: {
   contractId: string
   body: UpdateContractRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/CL/documents/${params.contractId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/CL/documents/${encodePathParam(params.contractId)}`, body: params.body }, opts))
   }
 
   deleteApiDataentitiesCLDocumentsByContractId(params: {
   contractId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/CL/documents/${params.contractId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/CL/documents/${encodePathParam(params.contractId)}` }, opts))
   }
 }
 

@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { ResponseError, Pagination, TransactionResponse, ReservationResponse, AllocationResponse, NotificationSettings, NotificationSettingsObject, BudgetResponse, CycleConfiguration, CycleConfigurationResponse } from './types.js'
 
 class BudgetsApi_statements {
@@ -10,7 +12,7 @@ class BudgetsApi_statements {
   budgetId: string
   page?: number
   pageSize?: number
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   pagination?: Pagination
   transactions?: {
   id?: string
@@ -35,7 +37,7 @@ class BudgetsApi_statements {
   contextType?: string
   contextId?: string
 }[]
-}>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/statements`, query: { 'page': params.page, 'pageSize': params.pageSize } })
+}>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/statements`, query: { 'page': params.page, 'pageSize': params.pageSize }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdStatements(params: {
@@ -45,7 +47,7 @@ class BudgetsApi_statements {
   allocationId: string
   page?: number
   pageSize?: number
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   pagination?: Pagination
   transactions?: {
   id?: string
@@ -70,7 +72,7 @@ class BudgetsApi_statements {
   contextType?: string
   contextId?: string
 }[]
-}>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/statements`, query: { 'page': params.page, 'pageSize': params.pageSize } })
+}>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/statements`, query: { 'page': params.page, 'pageSize': params.pageSize }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class BudgetsApi_transactions {
@@ -88,8 +90,8 @@ class BudgetsApi_transactions {
   type: "DEBIT" | "CREDIT"
   requestedBy: string
 }
-}): Promise<TransactionResponse> {
-    return this.http.request<TransactionResponse>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/transactions`, body: params.body })
+}, opts?: CallOptions): Promise<TransactionResponse> {
+    return this.http.request<TransactionResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/transactions`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactionsByTransactionIdRefund(params: {
@@ -101,7 +103,7 @@ class BudgetsApi_transactions {
   body: {
   requestedBy: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   originalTransactionId?: string
   budgetId?: string
@@ -112,7 +114,7 @@ class BudgetsApi_transactions {
   originalTransactionId?: string
   budgetId?: string
   allocationId?: string
-}>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/transactions/${params.transactionId}/refund`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/transactions/${encodePathParam(params.transactionId)}/refund`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactionsByTransactionId(params: {
@@ -121,8 +123,8 @@ class BudgetsApi_transactions {
   budgetId: string
   allocationId: string
   transactionId: string
-}): Promise<TransactionResponse> {
-    return this.http.request<TransactionResponse>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/transactions/${params.transactionId}` })
+}, opts?: CallOptions): Promise<TransactionResponse> {
+    return this.http.request<TransactionResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/transactions/${encodePathParam(params.transactionId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class BudgetsApi_reservations {
@@ -136,7 +138,7 @@ class BudgetsApi_reservations {
   page?: number
   pageSize?: number
   status?: "RESERVED" | "CONFIRMED" | "CANCELED"
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   pagination?: Pagination
   items?: {
   id?: string
@@ -165,7 +167,7 @@ class BudgetsApi_reservations {
 }[]
   contextType?: string
   contextId?: string
-}>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/reservations`, query: { 'page': params.page, 'pageSize': params.pageSize, 'status': params.status } })
+}>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations`, query: { 'page': params.page, 'pageSize': params.pageSize, 'status': params.status }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservations(params: {
@@ -181,8 +183,8 @@ class BudgetsApi_reservations {
   reservationId: string
   type: "DEBIT" | "CREDIT"
 }
-}): Promise<ReservationResponse> {
-    return this.http.request<ReservationResponse>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/reservations`, body: params.body })
+}, opts?: CallOptions): Promise<ReservationResponse> {
+    return this.http.request<ReservationResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationId(params: {
@@ -191,8 +193,8 @@ class BudgetsApi_reservations {
   budgetId: string
   allocationId: string
   reservationId: string
-}): Promise<ReservationResponse> {
-    return this.http.request<ReservationResponse>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/reservations/${params.reservationId}` })
+}, opts?: CallOptions): Promise<ReservationResponse> {
+    return this.http.request<ReservationResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations/${encodePathParam(params.reservationId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationId(params: {
@@ -204,8 +206,8 @@ class BudgetsApi_reservations {
   body: {
   requestedBy: string
 }
-}): Promise<ReservationResponse> {
-    return this.http.request<ReservationResponse>({ method: 'DELETE', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/reservations/${params.reservationId}`, body: params.body })
+}, opts?: CallOptions): Promise<ReservationResponse> {
+    return this.http.request<ReservationResponse>(withCall({ method: 'DELETE', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations/${encodePathParam(params.reservationId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationIdConfirmation(params: {
@@ -217,8 +219,8 @@ class BudgetsApi_reservations {
   body: {
   requestedBy: string
 }
-}): Promise<ReservationResponse> {
-    return this.http.request<ReservationResponse>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/reservations/${params.reservationId}/confirmation`, body: params.body })
+}, opts?: CallOptions): Promise<ReservationResponse> {
+    return this.http.request<ReservationResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations/${encodePathParam(params.reservationId)}/confirmation`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class BudgetsApi_allocations {
@@ -233,7 +235,7 @@ class BudgetsApi_allocations {
   pageSize?: number
   status?: "ACTIVE" | "INACTIVE" | "DELETED"
   referenceId?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   pagination?: Pagination
   items?: {
   id?: string
@@ -270,7 +272,7 @@ class BudgetsApi_allocations {
   contextType?: string
   contextId?: string
 }[]
-}>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations`, query: { 'type': params.type, 'page': params.page, 'pageSize': params.pageSize, 'status': params.status, 'referenceId': params.referenceId } })
+}>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations`, query: { 'type': params.type, 'page': params.page, 'pageSize': params.pageSize, 'status': params.status, 'referenceId': params.referenceId }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextIdByBudgetIdAllocations(params: {
@@ -286,8 +288,8 @@ class BudgetsApi_allocations {
   amount: number
   notificationSettings?: NotificationSettingsObject
 }
-}): Promise<AllocationResponse> {
-    return this.http.request<AllocationResponse>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations`, body: params.body })
+}, opts?: CallOptions): Promise<AllocationResponse> {
+    return this.http.request<AllocationResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsBatch(params: {
@@ -306,7 +308,7 @@ class BudgetsApi_allocations {
   notificationSettings?: NotificationSettings
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   budgetId?: string
   allocations?: {
   id?: string
@@ -349,7 +351,7 @@ class BudgetsApi_allocations {
   contextType?: string
   contextId?: string
 }[]
-}>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/batch`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/batch`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
@@ -357,8 +359,8 @@ class BudgetsApi_allocations {
   contextId: string
   budgetId: string
   allocationId: string
-}): Promise<AllocationResponse> {
-    return this.http.request<AllocationResponse>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}` })
+}, opts?: CallOptions): Promise<AllocationResponse> {
+    return this.http.request<AllocationResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
@@ -386,8 +388,8 @@ class BudgetsApi_allocations {
 }[]
   notificationSettings?: NotificationSettingsObject
 }
-}): Promise<AllocationResponse> {
-    return this.http.request<AllocationResponse>({ method: 'PUT', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}`, body: params.body })
+}, opts?: CallOptions): Promise<AllocationResponse> {
+    return this.http.request<AllocationResponse>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
@@ -395,8 +397,8 @@ class BudgetsApi_allocations {
   contextId: string
   budgetId: string
   allocationId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdLinkedEntity(params: {
@@ -408,8 +410,8 @@ class BudgetsApi_allocations {
   linkedEntityId: string
   linkedEntityType: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/linked-entity`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/linked-entity`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdStatus(params: {
@@ -420,12 +422,12 @@ class BudgetsApi_allocations {
   body: {
   status: "ACTIVE" | "INACTIVE"
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   status?: "ACTIVE" | "INACTIVE"
 }> {
     return this.http.request<{
   status?: "ACTIVE" | "INACTIVE"
-}>({ method: 'PUT', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/status`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/status`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdUsage(params: {
@@ -440,8 +442,8 @@ class BudgetsApi_allocations {
   requestedBy: string
   type: "DEBIT" | "CREDIT"
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/allocations/${params.allocationId}/usage`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/usage`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextIdAllocationsQuery(params: {
@@ -453,7 +455,7 @@ class BudgetsApi_allocations {
   type: string
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   items?: {
   budgetId?: string
   allocationId?: string
@@ -494,7 +496,7 @@ class BudgetsApi_allocations {
   remaining?: number
 }
 }[]
-}>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}/allocations/query`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/allocations/query`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class BudgetsApi_budgets {
@@ -509,7 +511,7 @@ class BudgetsApi_budgets {
   maxAmount?: number
   status?: "ACTIVE" | "INACTIVE"
   name?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   pagination?: Pagination
   items?: {
   id?: string
@@ -542,7 +544,7 @@ class BudgetsApi_budgets {
   contextType?: string
   contextId?: string
 }[]
-}>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}`, query: { 'page': params.page, 'pageSize': params.pageSize, 'minAmount': params.minAmount, 'maxAmount': params.maxAmount, 'status': params.status, 'name': params.name } })
+}>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}`, query: { 'page': params.page, 'pageSize': params.pageSize, 'minAmount': params.minAmount, 'maxAmount': params.maxAmount, 'status': params.status, 'name': params.name }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiBudgetsByContextTypeByContextId(params: {
@@ -564,16 +566,16 @@ class BudgetsApi_budgets {
   notificationSettings?: NotificationSettingsObject
 }[]
 }
-}): Promise<BudgetResponse> {
-    return this.http.request<BudgetResponse>({ method: 'POST', path: `/api/budgets/${params.contextType}/${params.contextId}`, body: params.body })
+}, opts?: CallOptions): Promise<BudgetResponse> {
+    return this.http.request<BudgetResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiBudgetsByContextTypeByContextIdByBudgetId(params: {
   contextType: string
   contextId: string
   budgetId: string
-}): Promise<BudgetResponse> {
-    return this.http.request<BudgetResponse>({ method: 'GET', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}` })
+}, opts?: CallOptions): Promise<BudgetResponse> {
+    return this.http.request<BudgetResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiBudgetsByContextTypeByContextIdByBudgetId(params: {
@@ -587,16 +589,16 @@ class BudgetsApi_budgets {
   cycleConfiguration?: CycleConfiguration
   notificationSettings?: NotificationSettingsObject
 }
-}): Promise<BudgetResponse> {
-    return this.http.request<BudgetResponse>({ method: 'PUT', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}`, body: params.body })
+}, opts?: CallOptions): Promise<BudgetResponse> {
+    return this.http.request<BudgetResponse>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiBudgetsByContextTypeByContextIdByBudgetId(params: {
   contextType: string
   contextId: string
   budgetId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiBudgetsByContextTypeByContextIdByBudgetIdStatus(params: {
@@ -606,12 +608,12 @@ class BudgetsApi_budgets {
   body: {
   status: "ACTIVE" | "INACTIVE"
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   status?: "ACTIVE" | "INACTIVE"
 }> {
     return this.http.request<{
   status?: "ACTIVE" | "INACTIVE"
-}>({ method: 'PUT', path: `/api/budgets/${params.contextType}/${params.contextId}/${params.budgetId}/status`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/status`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 

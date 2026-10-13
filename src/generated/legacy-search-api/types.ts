@@ -6,7 +6,7 @@ export type Example = {
   productReference: string
   categories: string[]
   link: string
-  description: string
+  description: string | null
   items: Item[]
 }
 
@@ -36,7 +36,7 @@ export type Image = {
   imageLabel: string
   imageTag: string
   imageUrl: string
-  imageText: string
+  imageText: string | null
 }
 
 export type Seller = {
@@ -48,14 +48,16 @@ export type Seller = {
 }
 
 export type CommertialOffer = {
-  DeliverySlaSamplesPerRegion: Record<string, unknown>
+  DeliverySlaSamplesPerRegion: {
+  [key: string]: GeneratedObject
+}
   Installments: Installment[]
   DiscountHighLight: string[]
   GiftSkuIds: string[]
   Teasers: {
   "<Name>k__BackingField"?: string
   "<GeneralValues>k__BackingField"?: {
-  "{field}"?: string
+  [key: string]: string
 }
   "<Conditions>k__BackingField"?: {
   "<MinimumQuantity>k__BackingField"?: number
@@ -74,7 +76,7 @@ export type CommertialOffer = {
   PromotionTeasers?: {
   Name?: string
   GeneralValues?: {
-  "{field}"?: string
+  [key: string]: string
 }
   Conditions?: {
   MinimumQuantity?: number
@@ -97,7 +99,7 @@ export type CommertialOffer = {
   AvailableQuantity: number
   Tax: number
   DeliverySlaSamples: DeliverySlaSample[]
-  GetInfoErrorMessage: string
+  GetInfoErrorMessage: string | null
   CacheVersionUsedToCallCheckout: string
 }
 
@@ -120,7 +122,7 @@ export type Region = {
   CountryCode: string
   ZipCode: string
   CultureInfoName: string
-}
+} | null
 
 export type Installment = {
   Value: number
@@ -151,7 +153,7 @@ export type Region2 = {
   CountryCode?: string
   ZipCode?: string
   CultureInfoName?: string
-}
+} | null
 
 export type Example2 = {
   Departments: Department[]
@@ -225,5 +227,5 @@ export type ItemsReturned = {
   thumb: string
   name: string
   href: string
-  criteria: string
+  criteria: string | null
 }

@@ -1,44 +1,46 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { BuyerSchemaResponse, BuyerDocumentRequest, BuyerDocument, CreateBuyerDocumentResponse, BuyerDocumentResponse } from './types.js'
 
 class B2bBuyerDataApi_buyerData {
   constructor(private http: VtexHttpClient) {}
 
-  getApiDataentitiesShopperSchemasV1(params: Record<string, never>): Promise<BuyerSchemaResponse[]> {
-    return this.http.request<BuyerSchemaResponse[]>({ method: 'GET', path: `/api/dataentities/shopper/schemas/v1` })
+  getApiDataentitiesShopperSchemasV1(params: Record<string, never> = {}, opts?: CallOptions): Promise<BuyerSchemaResponse[]> {
+    return this.http.request<BuyerSchemaResponse[]>(withCall({ method: 'GET', path: `/api/dataentities/shopper/schemas/v1` }, opts))
   }
 
   postApiDataentitiesShopperDocuments(params: {
   _schema: string
   body: BuyerDocumentRequest
-}): Promise<CreateBuyerDocumentResponse> {
-    return this.http.request<CreateBuyerDocumentResponse>({ method: 'POST', path: `/api/dataentities/shopper/documents`, query: { '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<CreateBuyerDocumentResponse> {
+    return this.http.request<CreateBuyerDocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/shopper/documents`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
   getApiDataentitiesShopperDocumentsByBuyerId(params: {
   buyerId: string
-}): Promise<BuyerDocument> {
-    return this.http.request<BuyerDocument>({ method: 'GET', path: `/api/dataentities/shopper/documents/${params.buyerId}` })
+}, opts?: CallOptions): Promise<BuyerDocument> {
+    return this.http.request<BuyerDocument>(withCall({ method: 'GET', path: `/api/dataentities/shopper/documents/${encodePathParam(params.buyerId)}` }, opts))
   }
 
   patchApiDataentitiesShopperDocumentsByBuyerId(params: {
   buyerId: string
   body: BuyerDocumentRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/shopper/documents/${params.buyerId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/shopper/documents/${encodePathParam(params.buyerId)}`, body: params.body }, opts))
   }
 
   deleteApiDataentitiesShopperDocumentsByBuyerId(params: {
   buyerId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/shopper/documents/${params.buyerId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/shopper/documents/${encodePathParam(params.buyerId)}` }, opts))
   }
 
   getApiDataentitiesShopperSearch(params: {
   _where?: string
   _schema: "v1"
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/dataentities/shopper/search`, query: { '_where': params._where, '_schema': params._schema } })
+}, opts?: CallOptions): Promise<BuyerDocument[]> {
+    return this.http.request<BuyerDocument[]>(withCall({ method: 'GET', path: `/api/dataentities/shopper/search`, query: { '_where': params._where, '_schema': params._schema } }, opts))
   }
 }
 

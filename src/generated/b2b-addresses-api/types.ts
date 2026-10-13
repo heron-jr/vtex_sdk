@@ -1,6 +1,6 @@
 export type CreateUpdateAddressRequests = {
-  addressName?: string
-  addressLabel?: string
+  addressName?: string | null
+  addressLabel?: string | null
   addressType: "commercial" | "invoice"
   receiverName: string
   city: string
@@ -9,10 +9,10 @@ export type CreateUpdateAddressRequests = {
   postalCode: string
   street: string
   number: string
-  neighborhood?: string
-  complement?: string
-  reference?: string
-  geoCoordinates?: number[]
+  neighborhood?: string | null
+  complement?: string | null
+  reference?: string | null
+  geoCoordinates?: number[] | null
   userId: string
 }
 
@@ -22,32 +22,32 @@ export type DocumentResponse = {
 }
 
 export type AddressResponse = {
-  addressLabel?: string
-  addressType?: "commercial" | "invoice"
-  city?: string
-  complement?: string
-  country?: string
-  geoCoordinates?: number[]
-  neighborhood?: string
-  number?: string
-  postalCode?: string
-  receiverName?: string
-  reference?: string
-  state?: string
-  street?: string
-  userId?: string
-  id?: string
-  accountId?: string
-  accountName?: string
-  dataEntityId?: string
-  createdBy?: string
-  createdIn?: string
-  updatedBy?: string
-  updatedIn?: string
-  lastInteractionBy?: string
-  lastInteractionIn?: string
-  followers?: string[]
-  tags?: string[]
+  addressLabel?: string | null
+  addressType?: "commercial" | "invoice" | null
+  city?: string | null
+  complement?: string | null
+  country?: string | null
+  geoCoordinates?: number[] | null
+  neighborhood?: string | null
+  number?: string | null
+  postalCode?: string | null
+  receiverName?: string | null
+  reference?: string | null
+  state?: string | null
+  street?: string | null
+  userId?: string | null
+  id?: string | null
+  accountId?: string | null
+  accountName?: string | null
+  dataEntityId?: string | null
+  createdBy?: string | null
+  createdIn?: string | null
+  updatedBy?: string | null
+  updatedIn?: string | null
+  lastInteractionBy?: string | null
+  lastInteractionIn?: string | null
+  followers?: string[] | null
+  tags?: string[] | null
 }
 
 export type RecipientRequest = {

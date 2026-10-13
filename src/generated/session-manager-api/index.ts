@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { withCall } from '../../core/call.js'
 import type { CreateEditSessionRequest, CreateEditSessionResponse, GetSessionResponse, Segment } from './types.js'
 
 class SessionManagerApi_session {
@@ -6,27 +8,27 @@ class SessionManagerApi_session {
 
   getSession(params: {
   items: string
-}): Promise<GetSessionResponse> {
-    return this.http.request<GetSessionResponse>({ method: 'GET', path: `/api/sessions`, query: { 'items': params.items } })
+}, opts?: CallOptions): Promise<GetSessionResponse> {
+    return this.http.request<GetSessionResponse>(withCall({ method: 'GET', path: `/api/sessions`, query: { 'items': params.items } }, opts))
   }
 
   createnewsession(params: {
   body: CreateEditSessionRequest
-}): Promise<CreateEditSessionResponse> {
-    return this.http.request<CreateEditSessionResponse>({ method: 'POST', path: `/api/sessions`, body: params.body })
+}, opts?: CallOptions): Promise<CreateEditSessionResponse> {
+    return this.http.request<CreateEditSessionResponse>(withCall({ method: 'POST', path: `/api/sessions`, body: params.body }, opts))
   }
 
   editsession(params: {
   body: CreateEditSessionRequest
-}): Promise<CreateEditSessionResponse> {
-    return this.http.request<CreateEditSessionResponse>({ method: 'PATCH', path: `/api/sessions`, body: params.body })
+}, opts?: CallOptions): Promise<CreateEditSessionResponse> {
+    return this.http.request<CreateEditSessionResponse>(withCall({ method: 'PATCH', path: `/api/sessions`, body: params.body }, opts))
   }
 }
 class SessionManagerApi_segment {
   constructor(private http: VtexHttpClient) {}
 
-  getSegment(params: Record<string, never>): Promise<Segment> {
-    return this.http.request<Segment>({ method: 'GET', path: `/api/segments` })
+  getSegment(params: Record<string, never> = {}, opts?: CallOptions): Promise<Segment> {
+    return this.http.request<Segment>(withCall({ method: 'GET', path: `/api/segments` }, opts))
   }
 }
 

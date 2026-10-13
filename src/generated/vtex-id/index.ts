@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { Credentials, ValidateSessionResponse } from './types.js'
 
 class VtexIdApi_storefrontUsers {
@@ -12,19 +14,19 @@ class VtexIdApi_storefrontUsers {
   value: string
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   userId?: string
   identifier?: string
 }> {
     return this.http.request<{
   userId?: string
   identifier?: string
-}>({ method: 'POST', path: `/api/authenticator/v1/storefront/users`, query: { 'isLegacyPassword': params.isLegacyPassword }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/authenticator/v1/storefront/users`, query: { 'isLegacyPassword': params.isLegacyPassword }, body: params.body }, opts))
   }
 
   getApiVtexidPvtUserInfo(params: {
   user: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   userId?: string
   user?: string
   name?: string
@@ -37,7 +39,7 @@ class VtexIdApi_storefrontUsers {
   name?: string
   accountId?: string
   accountName?: string
-}>({ method: 'GET', path: `/api/vtexid/pvt/user/info`, query: { 'user': params.user } })
+}>(withCall({ method: 'GET', path: `/api/vtexid/pvt/user/info`, query: { 'user': params.user } }, opts))
   }
 }
 class VtexIdApi_passwordMigration {
@@ -50,8 +52,8 @@ class VtexIdApi_passwordMigration {
   idpEndpoint: string
   secret: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/authenticator/v1/tenants/features/${params.name}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/authenticator/v1/tenants/features/${encodePathParam(params.name)}`, body: params.body }, opts))
   }
 
   patchApiAuthenticatorV1TenantsFeaturesByName(params: {
@@ -59,14 +61,14 @@ class VtexIdApi_passwordMigration {
   body: {
   enabled: boolean
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/authenticator/v1/tenants/features/${params.name}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/authenticator/v1/tenants/features/${encodePathParam(params.name)}`, body: params.body }, opts))
   }
 
   deleteApiAuthenticatorV1TenantsFeaturesByName(params: {
   name: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/authenticator/v1/tenants/features/${params.name}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/authenticator/v1/tenants/features/${encodePathParam(params.name)}` }, opts))
   }
 }
 class VtexIdApi_authentication {
@@ -75,7 +77,7 @@ class VtexIdApi_authentication {
   postApiVtexidApptokenLogin(params: {
   an?: string
   body: Credentials
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   authStatus?: string
   token?: string
   expires?: number
@@ -84,7 +86,7 @@ class VtexIdApi_authentication {
   authStatus?: string
   token?: string
   expires?: number
-}>({ method: 'POST', path: `/api/vtexid/apptoken/login`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/vtexid/apptoken/login`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   postApiVtexidAudienceWebstoreProviderOauthExchange(params: {
@@ -93,12 +95,12 @@ class VtexIdApi_authentication {
   accessToken: string
   duration?: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   authToken?: string
 }> {
     return this.http.request<{
   authToken?: string
-}>({ method: 'POST', path: `/api/vtexid/audience/webstore/provider/oauth/exchange`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/vtexid/audience/webstore/provider/oauth/exchange`, body: params.body }, opts))
   }
 
   postApiVtexidCredentialValidate(params: {
@@ -106,7 +108,7 @@ class VtexIdApi_authentication {
   body: {
   token: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   authStatus?: string
   id?: string
   user?: string
@@ -121,7 +123,7 @@ class VtexIdApi_authentication {
   account?: string
   audience?: string
   tokenType?: string
-}>({ method: 'POST', path: `/api/vtexid/credential/validate`, query: { 'an': params.an }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/vtexid/credential/validate`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
   postApiVtexidPubProvidersSetupPasswordWebstorePassword(params: {
@@ -129,20 +131,20 @@ class VtexIdApi_authentication {
   isActive?: boolean
   allowRepeated?: boolean
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/vtexid/pub/providers/setup/password/webstore/password`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/vtexid/pub/providers/setup/password/webstore/password`, body: params.body }, opts))
   }
 
   postApiVtexidPasswordExpire(params: {
   email: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/vtexid/password/expire`, query: { 'email': params.email } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/vtexid/password/expire`, query: { 'email': params.email } }, opts))
   }
 
   getApiVtexidPvtUserId(params: {
   usuario: string
-}): Promise<string> {
-    return this.http.request<string>({ method: 'GET', path: `/api/vtexid/pvt/user/id`, query: { 'usuario': params.usuario } })
+}, opts?: CallOptions): Promise<string | null> {
+    return this.http.request<string | null>(withCall({ method: 'GET', path: `/api/vtexid/pvt/user/id`, query: { 'usuario': params.usuario } }, opts))
   }
 }
 class VtexIdApi_tokenRenewal {
@@ -150,7 +152,7 @@ class VtexIdApi_tokenRenewal {
 
   patchApiVtexidApikeyByApiKeyApitokenRenew(params: {
   apiKey: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   keyName?: string
   creationDateToken?: string
@@ -165,21 +167,21 @@ class VtexIdApi_tokenRenewal {
   creationDateNewToken?: string
   expirationPeriod?: number
   newToken?: string
-}>({ method: 'PATCH', path: `/api/vtexid/apikey/${params.apiKey}/apitoken/renew` })
+}>(withCall({ method: 'PATCH', path: `/api/vtexid/apikey/${encodePathParam(params.apiKey)}/apitoken/renew` }, opts))
   }
 
   patchApiVtexidApikeyByApiKeyApitokenFinishRenewal(params: {
   apiKey: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   creationDateToken?: string
-  creationDateNewToken?: string
+  creationDateNewToken?: string | null
 }> {
     return this.http.request<{
   id?: string
   creationDateToken?: string
-  creationDateNewToken?: string
-}>({ method: 'PATCH', path: `/api/vtexid/apikey/${params.apiKey}/apitoken/finish-renewal` })
+  creationDateNewToken?: string | null
+}>(withCall({ method: 'PATCH', path: `/api/vtexid/apikey/${encodePathParam(params.apiKey)}/apitoken/finish-renewal` }, opts))
   }
 }
 class VtexIdApi_refreshTokenHeadless {
@@ -188,7 +190,7 @@ class VtexIdApi_refreshTokenHeadless {
   getApiVtexidPubAuthenticationStart(params: {
   scope: string
   fingerprint?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   authenticationToken?: string
   oauthProviders?: {
   providerName?: string
@@ -198,9 +200,9 @@ class VtexIdApi_refreshTokenHeadless {
   showClassicAuthentication?: boolean
   showAccessKeyAuthentication?: boolean
   showPasskeyAuthentication?: boolean
-  authCookie?: string
+  authCookie?: string | null
   isAuthenticated?: boolean
-  selectedProvider?: string
+  selectedProvider?: string | null
   samlProviders?: string[]
 }> {
     return this.http.request<{
@@ -213,28 +215,30 @@ class VtexIdApi_refreshTokenHeadless {
   showClassicAuthentication?: boolean
   showAccessKeyAuthentication?: boolean
   showPasskeyAuthentication?: boolean
-  authCookie?: string
+  authCookie?: string | null
   isAuthenticated?: boolean
-  selectedProvider?: string
+  selectedProvider?: string | null
   samlProviders?: string[]
-}>({ method: 'GET', path: `/api/vtexid/pub/authentication/start`, query: { 'scope': params.scope, 'fingerprint': params.fingerprint } })
+}>(withCall({ method: 'GET', path: `/api/vtexid/pub/authentication/start`, query: { 'scope': params.scope, 'fingerprint': params.fingerprint }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiVtexidPubAuthenticationAccesskeySend(params: {
   email: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/vtexid/pub/authentication/accesskey/send`, query: { 'email': params.email } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/vtexid/pub/authentication/accesskey/send`, query: { 'email': params.email }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiVtexidPubAuthenticationAccesskeyValidate(params: Record<string, never>): Promise<ValidateSessionResponse> {
-    return this.http.request<ValidateSessionResponse>({ method: 'POST', path: `/api/vtexid/pub/authentication/accesskey/validate` })
+  postApiVtexidPubAuthenticationAccesskeyValidate(params: {
+  body: FormData
+}, opts?: CallOptions): Promise<ValidateSessionResponse> {
+    return this.http.request<ValidateSessionResponse>(withCall({ method: 'POST', path: `/api/vtexid/pub/authentication/accesskey/validate`, body: params.body, contentType: 'multipart/form-data', server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiVtexidRefreshtokenWebstore(params: {
   body: {
-  fingerprint?: string
+  fingerprint?: string | null
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   status?: "Success" | "InvalidSession" | "InvalidToken" | "InvalidEmail" | "InvalidScope"
   userId?: string
   refreshAfter?: string
@@ -243,7 +247,7 @@ class VtexIdApi_refreshTokenHeadless {
   status?: "Success" | "InvalidSession" | "InvalidToken" | "InvalidEmail" | "InvalidScope"
   userId?: string
   refreshAfter?: string
-}>({ method: 'POST', path: `/api/vtexid/refreshtoken/webstore`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/vtexid/refreshtoken/webstore`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class VtexIdApi_organizationAccountAuthentication {
@@ -251,7 +255,7 @@ class VtexIdApi_organizationAccountAuthentication {
 
   getApiVtexidOrganizationUnitsByUnitIdSettings(params: {
   unitId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   authenticationMethods: {
   type: "Password" | "OAuth"
   name: string
@@ -264,7 +268,7 @@ class VtexIdApi_organizationAccountAuthentication {
   name: string
   status: "Enabled" | "Disabled"
 }[]
-}>({ method: 'GET', path: `/api/vtexid/organization-units/${params.unitId}/settings` })
+}>(withCall({ method: 'GET', path: `/api/vtexid/organization-units/${encodePathParam(params.unitId)}/settings` }, opts))
   }
 
   postApiVtexidOrganizationUnitsByUnitIdSettings(params: {
@@ -276,12 +280,12 @@ class VtexIdApi_organizationAccountAuthentication {
   status: "Enabled" | "Disabled"
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   success?: boolean
 }> {
     return this.http.request<{
   success?: boolean
-}>({ method: 'POST', path: `/api/vtexid/organization-units/${params.unitId}/settings`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/vtexid/organization-units/${encodePathParam(params.unitId)}/settings`, body: params.body }, opts))
   }
 
   patchApiVtexidOrganizationUnitsByUnitIdSettings(params: {
@@ -292,7 +296,7 @@ class VtexIdApi_organizationAccountAuthentication {
   status: "Enabled" | "Disabled"
 }[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   authenticationMethods: {
   type: "Password" | "OAuth"
   name: string
@@ -305,7 +309,7 @@ class VtexIdApi_organizationAccountAuthentication {
   name: string
   status: "Enabled" | "Disabled"
 }[]
-}>({ method: 'PATCH', path: `/api/vtexid/organization-units/${params.unitId}/settings`, body: params.body })
+}>(withCall({ method: 'PATCH', path: `/api/vtexid/organization-units/${encodePathParam(params.unitId)}/settings`, body: params.body }, opts))
   }
 
   deleteApiVtexidOrganizationUnitsByUnitIdSettings(params: {
@@ -315,8 +319,8 @@ class VtexIdApi_organizationAccountAuthentication {
   type: "OAuth" | "Password"
 }[]
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/vtexid/organization-units/${params.unitId}/settings`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/vtexid/organization-units/${encodePathParam(params.unitId)}/settings`, body: params.body }, opts))
   }
 }
 

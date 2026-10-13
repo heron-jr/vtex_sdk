@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { DocumentRequest, UsingFieldsAll, SaveschemabynameRequest, GetSchemasResponse, Properties, Name, PutindicesRequest, Index, Listversion, Getversion, Document, CreateDocumentResponse, DocumentResponse } from './types.js'
 
 class MasterDataApiV2Api_documents {
@@ -8,16 +10,16 @@ class MasterDataApiV2Api_documents {
   dataEntityName: string
   _schema?: string
   body: DocumentRequest
-}): Promise<CreateDocumentResponse> {
-    return this.http.request<CreateDocumentResponse>({ method: 'POST', path: `/api/dataentities/${params.dataEntityName}/documents`, query: { '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<CreateDocumentResponse> {
+    return this.http.request<CreateDocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
   createorupdatepartialdocument(params: {
   dataEntityName: string
   _schema?: string
   body: DocumentRequest
-}): Promise<CreateDocumentResponse> {
-    return this.http.request<CreateDocumentResponse>({ method: 'PATCH', path: `/api/dataentities/${params.dataEntityName}/documents`, query: { '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<CreateDocumentResponse> {
+    return this.http.request<CreateDocumentResponse>(withCall({ method: 'PATCH', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
   getdocument(params: {
@@ -25,8 +27,8 @@ class MasterDataApiV2Api_documents {
   id: string
   _fields?: string
   _schema?: string
-}): Promise<UsingFieldsAll> {
-    return this.http.request<UsingFieldsAll>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}`, query: { '_fields': params._fields, '_schema': params._schema } })
+}, opts?: CallOptions): Promise<UsingFieldsAll> {
+    return this.http.request<UsingFieldsAll>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}`, query: { '_fields': params._fields, '_schema': params._schema } }, opts))
   }
 
   updateentiredocument(params: {
@@ -35,8 +37,8 @@ class MasterDataApiV2Api_documents {
   _where?: string
   _schema?: string
   body: DocumentRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}`, query: { '_where': params._where, '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}`, query: { '_where': params._where, '_schema': params._schema }, body: params.body }, opts))
   }
 
   updatepartialdocument(params: {
@@ -45,15 +47,15 @@ class MasterDataApiV2Api_documents {
   _where?: string
   _schema?: string
   body: DocumentRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}`, query: { '_where': params._where, '_schema': params._schema }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}`, query: { '_where': params._where, '_schema': params._schema }, body: params.body }, opts))
   }
 
   deletedocument(params: {
   dataEntityName: string
   id: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}` }, opts))
   }
 }
 class MasterDataApiV2Api_search {
@@ -65,8 +67,9 @@ class MasterDataApiV2Api_search {
   _where?: string
   _schema?: string
   _sort?: string
-}): Promise<UsingFieldsAll[]> {
-    return this.http.request<UsingFieldsAll[]>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/search`, query: { '_fields': params._fields, '_where': params._where, '_schema': params._schema, '_sort': params._sort } })
+  'REST-Range': string
+}, opts?: CallOptions): Promise<UsingFieldsAll[]> {
+    return this.http.request<UsingFieldsAll[]>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/search`, query: { '_fields': params._fields, '_where': params._where, '_schema': params._schema, '_sort': params._sort }, headers: { 'REST-Range': params['REST-Range'] } }, opts))
   }
 }
 class MasterDataApiV2Api_scroll {
@@ -80,8 +83,8 @@ class MasterDataApiV2Api_scroll {
   _where?: string
   _schema?: string
   _sort?: string
-}): Promise<UsingFieldsAll[]> {
-    return this.http.request<UsingFieldsAll[]>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/scroll`, query: { '_token': params._token, '_size': params._size, '_fields': params._fields, '_where': params._where, '_schema': params._schema, '_sort': params._sort } })
+}, opts?: CallOptions): Promise<UsingFieldsAll[]> {
+    return this.http.request<UsingFieldsAll[]>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/scroll`, query: { '_token': params._token, '_size': params._size, '_fields': params._fields, '_where': params._where, '_schema': params._schema, '_sort': params._sort } }, opts))
   }
 }
 class MasterDataApiV2Api_schemas {
@@ -89,34 +92,34 @@ class MasterDataApiV2Api_schemas {
 
   getschemas(params: {
   dataEntityName: string
-}): Promise<GetSchemasResponse[]> {
-    return this.http.request<GetSchemasResponse[]>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/schemas` })
+}, opts?: CallOptions): Promise<GetSchemasResponse[]> {
+    return this.http.request<GetSchemasResponse[]>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/schemas` }, opts))
   }
 
   getschemabyname(params: {
   dataEntityName: string
   schemaName: string
-}): Promise<SaveschemabynameRequest> {
-    return this.http.request<SaveschemabynameRequest>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/schemas/${params.schemaName}` })
+}, opts?: CallOptions): Promise<SaveschemabynameRequest> {
+    return this.http.request<SaveschemabynameRequest>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/schemas/${encodePathParam(params.schemaName)}` }, opts))
   }
 
   saveschemabyname(params: {
   dataEntityName: string
   schemaName: string
   body: SaveschemabynameRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Message?: string
 }> {
     return this.http.request<{
   Message?: string
-}>({ method: 'PUT', path: `/api/dataentities/${params.dataEntityName}/schemas/${params.schemaName}`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/schemas/${encodePathParam(params.schemaName)}`, body: params.body }, opts))
   }
 
   deleteschemabyname(params: {
   dataEntityName: string
   schemaName: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/${params.dataEntityName}/schemas/${params.schemaName}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/schemas/${encodePathParam(params.schemaName)}` }, opts))
   }
 }
 class MasterDataApiV2Api_indices {
@@ -124,29 +127,29 @@ class MasterDataApiV2Api_indices {
 
   getindices(params: {
   dataEntityName: string
-}): Promise<Index[]> {
-    return this.http.request<Index[]>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/indices` })
+}, opts?: CallOptions): Promise<Index[]> {
+    return this.http.request<Index[]>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/indices` }, opts))
   }
 
   putindices(params: {
   dataEntityName: string
   body: PutindicesRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/dataentities/${params.dataEntityName}/indices`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/indices`, body: params.body }, opts))
   }
 
   getindexbyname(params: {
   dataEntityName: string
   index_name: string
-}): Promise<Index> {
-    return this.http.request<Index>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/indices/${params.index_name}` })
+}, opts?: CallOptions): Promise<Index> {
+    return this.http.request<Index>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/indices/${encodePathParam(params.index_name)}` }, opts))
   }
 
   deleteindexbyname(params: {
   dataEntityName: string
   index_name: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/${params.dataEntityName}/indices/${params.index_name}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/indices/${encodePathParam(params.index_name)}` }, opts))
   }
 }
 class MasterDataApiV2Api_clusters {
@@ -159,14 +162,14 @@ class MasterDataApiV2Api_clusters {
   name?: string
   rule?: string
 }[]
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   name?: string
   isValid?: boolean
 }[]> {
     return this.http.request<{
   name?: string
   isValid?: boolean
-}[]>({ method: 'POST', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}/clusters`, body: params.body })
+}[]>(withCall({ method: 'POST', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}/clusters`, body: params.body }, opts))
   }
 }
 class MasterDataApiV2Api_versions {
@@ -177,24 +180,24 @@ class MasterDataApiV2Api_versions {
   id: string
   load?: boolean
   fields?: string
-}): Promise<Listversion[]> {
-    return this.http.request<Listversion[]>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}/versions`, query: { 'load': params.load, 'fields': params.fields } })
+}, opts?: CallOptions): Promise<Listversion[]> {
+    return this.http.request<Listversion[]>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}/versions`, query: { 'load': params.load, 'fields': params.fields } }, opts))
   }
 
   getversion(params: {
   dataEntityName: string
   id: string
   versionId: string
-}): Promise<Getversion> {
-    return this.http.request<Getversion>({ method: 'GET', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}/versions/${params.versionId}` })
+}, opts?: CallOptions): Promise<Getversion> {
+    return this.http.request<Getversion>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}/versions/${encodePathParam(params.versionId)}` }, opts))
   }
 
   putversion(params: {
   dataEntityName: string
   id: string
   versionId: string
-}): Promise<DocumentResponse> {
-    return this.http.request<DocumentResponse>({ method: 'PUT', path: `/api/dataentities/${params.dataEntityName}/documents/${params.id}/versions/${params.versionId}` })
+}, opts?: CallOptions): Promise<DocumentResponse> {
+    return this.http.request<DocumentResponse>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.dataEntityName)}/documents/${encodePathParam(params.id)}/versions/${encodePathParam(params.versionId)}` }, opts))
   }
 }
 

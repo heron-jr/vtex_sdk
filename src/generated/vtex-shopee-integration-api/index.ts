@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { CancelSuccessResponse, ShopeeOrderHookRequest, ShippingLabelDownloadResponse } from './types.js'
 
 class VtexShopeeIntegrationApi_shopeeOrders {
@@ -7,8 +9,8 @@ class VtexShopeeIntegrationApi_shopeeOrders {
   getApiShopeeintegrationOrderShippingLabel(params: {
   an: string
   shopeeOrderId: string
-}): Promise<ShippingLabelDownloadResponse> {
-    return this.http.request<ShippingLabelDownloadResponse>({ method: 'GET', path: `/api/shopeeintegration/order/shipping/label`, query: { 'an': params.an, 'shopeeOrderId': params.shopeeOrderId } })
+}, opts?: CallOptions): Promise<ShippingLabelDownloadResponse> {
+    return this.http.request<ShippingLabelDownloadResponse>(withCall({ method: 'GET', path: `/api/shopeeintegration/order/shipping/label`, query: { 'an': params.an, 'shopeeOrderId': params.shopeeOrderId } }, opts))
   }
 }
 class VtexShopeeIntegrationApi_vtexOrderCallbacks {
@@ -17,8 +19,8 @@ class VtexShopeeIntegrationApi_vtexOrderCallbacks {
   postApiShopeeintegrationByAccountNamePubOrdersByMktplaceOrderIdCancelDelivery(params: {
   accountName: string
   mktplaceOrderId: string
-}): Promise<CancelSuccessResponse> {
-    return this.http.request<CancelSuccessResponse>({ method: 'POST', path: `/api/shopeeintegration/${params.accountName}/pub/orders/${params.mktplaceOrderId}/cancelDelivery` })
+}, opts?: CallOptions): Promise<CancelSuccessResponse> {
+    return this.http.request<CancelSuccessResponse>(withCall({ method: 'POST', path: `/api/shopeeintegration/${encodePathParam(params.accountName)}/pub/orders/${encodePathParam(params.mktplaceOrderId)}/cancelDelivery` }, opts))
   }
 }
 

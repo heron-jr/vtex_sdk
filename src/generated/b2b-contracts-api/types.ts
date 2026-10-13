@@ -33,30 +33,30 @@ export type CreateContractResponse = {
 }
 
 export type ContractResponse = {
-  cluster?: string
-  priceTables?: string
-  isCorporate?: boolean
-  tradeName?: string
-  homePhone?: string
-  phone?: string
-  businessPhone?: string
-  email?: string
-  firstName?: string
-  lastName?: string
-  document?: string
-  documentType?: string
-  corporateDocument?: string
-  corporateName?: string
-  stateRegistration?: string
-  isNewsletterOptIn?: boolean
-  createdIn?: string
-  lastInteractionIn?: string
-  id?: string
-  dataEntityId?: string
-  accountId?: string
-  accountName?: string
-  followers?: string[]
-  tags?: string[]
+  cluster?: string | null
+  priceTables?: string | null
+  isCorporate?: boolean | null
+  tradeName?: string | null
+  homePhone?: string | null
+  phone?: string | null
+  businessPhone?: string | null
+  email?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  document?: string | null
+  documentType?: string | null
+  corporateDocument?: string | null
+  corporateName?: string | null
+  stateRegistration?: string | null
+  isNewsletterOptIn?: boolean | null
+  createdIn?: string | null
+  lastInteractionIn?: string | null
+  id?: string | null
+  dataEntityId?: string | null
+  accountId?: string | null
+  accountName?: string | null
+  followers?: string[] | null
+  tags?: string[] | null
   restrictions?: {
   "vtex.catalog"?: {
   assortmentIds?: string[]
@@ -67,5 +67,5 @@ export type ContractResponse = {
   "vtex.payments"?: {
   paymentSystemIds?: string[]
 }
-}
+} | null
 }

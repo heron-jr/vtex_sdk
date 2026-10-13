@@ -1,18 +1,20 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class MessageCenterApi_dkimConfiguration {
   constructor(private http: VtexHttpClient) {}
 
   createDKIM(params: {
   EmailProvider: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   status?: "emailNotFound" | "emailNotVerified" | "created"
-  dkimKeys?: string[]
+  dkimKeys?: string[] | null
 }> {
     return this.http.request<{
   status?: "emailNotFound" | "emailNotVerified" | "created"
-  dkimKeys?: string[]
-}>({ method: 'POST', path: `/api/mail-service/pvt/providers/${params.EmailProvider}/dkim` })
+  dkimKeys?: string[] | null
+}>(withCall({ method: 'POST', path: `/api/mail-service/pvt/providers/${encodePathParam(params.EmailProvider)}/dkim` }, opts))
   }
 }
 

@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { UpdateDeadlineRequest, UpdateDeadlineResponse } from './types.js'
 
 class PickAndPackOrderChangesApi_orderChanges {
@@ -7,8 +9,8 @@ class PickAndPackOrderChangesApi_orderChanges {
   putOrdersByOrderIdDeadline(params: {
   orderId: string
   body: UpdateDeadlineRequest
-}): Promise<UpdateDeadlineResponse> {
-    return this.http.request<UpdateDeadlineResponse>({ method: 'PUT', path: `/orders/${params.orderId}/deadline`, body: params.body })
+}, opts?: CallOptions): Promise<UpdateDeadlineResponse> {
+    return this.http.request<UpdateDeadlineResponse>(withCall({ method: 'PUT', path: `/orders/${encodePathParam(params.orderId)}/deadline`, body: params.body, server: 'https://{accountName}.{environment}.com.br/vtex_pickandpack' }, opts))
   }
 }
 class PickAndPackOrderChangesApi_binLocations {
@@ -17,7 +19,7 @@ class PickAndPackOrderChangesApi_binLocations {
   getBySkuIdWarehousesByWarehouseId(params: {
   skuId: string
   warehouseId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   location?: string
   hostname?: string
   warehouseId?: string
@@ -28,7 +30,7 @@ class PickAndPackOrderChangesApi_binLocations {
   hostname?: string
   warehouseId?: string
   skuId?: string
-}>({ method: 'GET', path: `/${params.skuId}/warehouses/${params.warehouseId}` })
+}>(withCall({ method: 'GET', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
   postBySkuIdWarehousesByWarehouseId(params: {
@@ -37,7 +39,7 @@ class PickAndPackOrderChangesApi_binLocations {
   body: {
   location: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   location?: string
   hostname?: string
   warehouseId?: string
@@ -48,7 +50,7 @@ class PickAndPackOrderChangesApi_binLocations {
   hostname?: string
   warehouseId?: string
   skuId?: string
-}>({ method: 'POST', path: `/${params.skuId}/warehouses/${params.warehouseId}`, body: params.body })
+}>(withCall({ method: 'POST', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, body: params.body, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
   putBySkuIdWarehousesByWarehouseId(params: {
@@ -57,7 +59,7 @@ class PickAndPackOrderChangesApi_binLocations {
   body: {
   location: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   location?: string
   hostname?: string
   warehouseId?: string
@@ -68,19 +70,19 @@ class PickAndPackOrderChangesApi_binLocations {
   hostname?: string
   warehouseId?: string
   skuId?: string
-}>({ method: 'PUT', path: `/${params.skuId}/warehouses/${params.warehouseId}`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, body: params.body, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
   deleteBySkuIdWarehousesByWarehouseId(params: {
   skuId: string
   warehouseId: string
-}): Promise<Record<string, unknown>[]> {
-    return this.http.request<Record<string, unknown>[]>({ method: 'DELETE', path: `/${params.skuId}/warehouses/${params.warehouseId}` })
+}, opts?: CallOptions): Promise<Record<string, unknown>[]> {
+    return this.http.request<Record<string, unknown>[]>(withCall({ method: 'DELETE', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
   getBySkuIdWarehouses(params: {
   skuId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   location?: string
   hostname?: string
   warehouseId?: string
@@ -91,13 +93,13 @@ class PickAndPackOrderChangesApi_binLocations {
   hostname?: string
   warehouseId?: string
   skuId?: string
-}[]>({ method: 'GET', path: `/${params.skuId}/warehouses` })
+}[]>(withCall({ method: 'GET', path: `/${encodePathParam(params.skuId)}/warehouses`, server: 'https://{accountName}.myvtex.com/pickpack/warehouses' }, opts))
   }
 
   deleteBySkuIdWarehouses(params: {
   skuId: string
-}): Promise<Record<string, unknown>[]> {
-    return this.http.request<Record<string, unknown>[]>({ method: 'DELETE', path: `/${params.skuId}/warehouses` })
+}, opts?: CallOptions): Promise<Record<string, unknown>[]> {
+    return this.http.request<Record<string, unknown>[]>(withCall({ method: 'DELETE', path: `/${encodePathParam(params.skuId)}/warehouses`, server: 'https://{accountName}.{environment}.com.br/vtex_pickandpack' }, opts))
   }
 }
 

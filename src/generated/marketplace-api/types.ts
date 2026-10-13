@@ -13,14 +13,14 @@ export type ResponseSellerCommissionsID = {
 
 export type BulkUpsertSellerCommissionsRequest = {
   categoryId: string
-  categoryFullPath: string
+  categoryFullPath: string | null
   productCommissionPercentage: number
   freightCommissionPercentage: number
 }
 
 export type UpsertSellerCommissionsRequest = {
   categoryId: string
-  categoryFullPath: string
+  categoryFullPath: string | null
   productCommissionPercentage: number
   freightCommissionPercentage: number
 }
@@ -99,11 +99,11 @@ export type UpsertSellerRequest = {
   isVtex: boolean
   exchangeReturnPolicy: string
   deliveryPolicy: string
-  securityPrivacyPolicy: string
-  fulfillmentSellerId: string
+  securityPrivacyPolicy: string | null
+  fulfillmentSellerId: string | null
   groups?: Groups[]
-  user: string
-  password: string
+  user: string | null
+  password: string | null
   catalogSystemEndpoint: string
   trustPolicy: string
   score: number
@@ -131,8 +131,8 @@ export type Groups = {
 
 export type Sku2 = {
   SkuId: string
-  EanId: string
-  RefId: string
+  EanId: string | null
+  RefId: string | null
   NameComplete: string
   Name: string
   IsActive: boolean
@@ -142,7 +142,7 @@ export type Sku2 = {
 
 export type MainImage = {
   ImageId: string
-  ImageLabel: string
+  ImageLabel: string | null
   ImageTag: string
   ImagePath: string
   IsMain: boolean
@@ -155,7 +155,7 @@ export type Offer = {
   SellerId: string
   SellerSkuId: string
   OffersPerSalesChannel: OffersPerSalesChannel[]
-  AvailableSalesChannels: string
+  AvailableSalesChannels: string | null
 }
 
 export type OffersPerSalesChannel = {
@@ -223,10 +223,10 @@ export type ResponseListAffiliates = {
   useSellerPaymentMethod?: boolean
   name?: string
   salesChannel?: string
-  searchURIEndpoint?: string
+  searchURIEndpoint?: string | null
   searchURIEndpointVersion?: string
   searchURIEndpointAvailableVersions?: string[]
-  minimumValueAccumulated?: number
+  minimumValueAccumulated?: number | null
 }[]
 
 export type ResponseGetAffiliates = {
@@ -235,10 +235,10 @@ export type ResponseGetAffiliates = {
   useSellerPaymentMethod?: boolean
   name?: string
   salesChannel?: string
-  searchURIEndpoint?: string
+  searchURIEndpoint?: string | null
   searchURIEndpointVersion?: string
   searchURIEndpointAvailableVersions?: string[]
-  minimumValueAccumulated?: number
+  minimumValueAccumulated?: number | null
 }
 
 export type RequestUpdateAffiliate = {
@@ -246,8 +246,8 @@ export type RequestUpdateAffiliate = {
   useSellerPaymentMethod?: boolean
   name?: string
   salesChannel?: string
-  searchURIEndpoint?: string
+  searchURIEndpoint?: string | null
   searchURIEndpointVersion?: string
   searchURIEndpointAvailableVersions?: string[]
-  minimumValueAccumulated?: number
+  minimumValueAccumulated?: number | null
 }

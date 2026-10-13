@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { ErrorResponse, OrganizationUnit, ScopeResponse, ScopeValuesRequest, ScopeOperationResponse, UnitDto } from './types.js'
 
 class OrganizationUnitsApi_users {
@@ -6,14 +8,14 @@ class OrganizationUnitsApi_users {
 
   getApiOrganizationUnitsV1UsersByUserIdScopes(params: {
   userId: string
-}): Promise<ScopeResponse[]> {
-    return this.http.request<ScopeResponse[]>({ method: 'GET', path: `/api/organization-units/v1/users/${params.userId}/scopes` })
+}, opts?: CallOptions): Promise<ScopeResponse[]> {
+    return this.http.request<ScopeResponse[]>(withCall({ method: 'GET', path: `/api/organization-units/v1/users/${encodePathParam(params.userId)}/scopes`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiOrganizationUnitsV1ByUserIdUnit(params: {
   userId: string
-}): Promise<OrganizationUnit> {
-    return this.http.request<OrganizationUnit>({ method: 'GET', path: `/api/organization-units/v1/${params.userId}/unit` })
+}, opts?: CallOptions): Promise<OrganizationUnit> {
+    return this.http.request<OrganizationUnit>(withCall({ method: 'GET', path: `/api/organization-units/v1/${encodePathParam(params.userId)}/unit`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class OrganizationUnitsApi_units {
@@ -23,15 +25,15 @@ class OrganizationUnitsApi_units {
   name?: string
   page?: number
   pageSize?: number
-}): Promise<OrganizationUnit[]> {
-    return this.http.request<OrganizationUnit[]>({ method: 'GET', path: `/api/organization-units/v1`, query: { 'name': params.name, 'page': params.page, 'pageSize': params.pageSize } })
+} = {}, opts?: CallOptions): Promise<OrganizationUnit[]> {
+    return this.http.request<OrganizationUnit[]>(withCall({ method: 'GET', path: `/api/organization-units/v1`, query: { 'name': params.name, 'page': params.page, 'pageSize': params.pageSize }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiOrganizationUnitsV1(params: {
   body: {
   name: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   createdAt?: string
   updatedAt?: string
   name?: string
@@ -54,13 +56,13 @@ class OrganizationUnitsApi_units {
   customerGroup?: {
   customerIds?: string[]
 }
-}>({ method: 'POST', path: `/api/organization-units/v1`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/organization-units/v1`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiOrganizationUnitsV1ByOrganizationUnitId(params: {
   organizationUnitId: string
-}): Promise<OrganizationUnit> {
-    return this.http.request<OrganizationUnit>({ method: 'GET', path: `/api/organization-units/v1/${params.organizationUnitId}` })
+}, opts?: CallOptions): Promise<OrganizationUnit> {
+    return this.http.request<OrganizationUnit>(withCall({ method: 'GET', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   patchApiOrganizationUnitsV1ByOrganizationUnitId(params: {
@@ -68,40 +70,40 @@ class OrganizationUnitsApi_units {
   body: {
   name: string
 }
-}): Promise<OrganizationUnit> {
-    return this.http.request<OrganizationUnit>({ method: 'PATCH', path: `/api/organization-units/v1/${params.organizationUnitId}`, body: params.body })
+}, opts?: CallOptions): Promise<OrganizationUnit> {
+    return this.http.request<OrganizationUnit>(withCall({ method: 'PATCH', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiOrganizationUnitsV1ByOrganizationUnitId(params: {
   organizationUnitId: string
   cascade?: boolean
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/organization-units/v1/${params.organizationUnitId}`, query: { 'cascade': params.cascade } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}`, query: { 'cascade': params.cascade }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiOrganizationUnitsV1ByOrganizationUnitIdChildren(params: {
   organizationUnitId: string
   shallowSearch?: boolean
-}): Promise<OrganizationUnit[]> {
-    return this.http.request<OrganizationUnit[]>({ method: 'GET', path: `/api/organization-units/v1/${params.organizationUnitId}/children`, query: { 'shallowSearch': params.shallowSearch } })
+}, opts?: CallOptions): Promise<OrganizationUnit[]> {
+    return this.http.request<OrganizationUnit[]>(withCall({ method: 'GET', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/children`, query: { 'shallowSearch': params.shallowSearch }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiOrganizationUnitsV1Roots(params: Record<string, never>): Promise<OrganizationUnit[]> {
-    return this.http.request<OrganizationUnit[]>({ method: 'GET', path: `/api/organization-units/v1/roots` })
+  getApiOrganizationUnitsV1Roots(params: Record<string, never> = {}, opts?: CallOptions): Promise<OrganizationUnit[]> {
+    return this.http.request<OrganizationUnit[]>(withCall({ method: 'GET', path: `/api/organization-units/v1/roots`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiOrganizationUnitsV1ByOrganizationUnitIdPath(params: {
   organizationUnitId: string
   body: {
-  parentId: string
+  parentId: string | null
 }
-}): Promise<OrganizationUnit> {
-    return this.http.request<OrganizationUnit>({ method: 'PUT', path: `/api/organization-units/v1/${params.organizationUnitId}/path`, body: params.body })
+}, opts?: CallOptions): Promise<OrganizationUnit> {
+    return this.http.request<OrganizationUnit>(withCall({ method: 'PUT', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/path`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiVtexidOrganizationUnitsByOrganizationUnitIdUsers(params: {
   organizationUnitId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   users?: {
   userId?: string
   login?: string
@@ -112,7 +114,7 @@ class OrganizationUnitsApi_units {
   userId?: string
   login?: string
 }[]
-}>({ method: 'GET', path: `/api/vtexid/organization-units/${params.organizationUnitId}/users` })
+}>(withCall({ method: 'GET', path: `/api/vtexid/organization-units/${encodePathParam(params.organizationUnitId)}/users`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiVtexidOrganizationUnitsByOrganizationUnitIdUsers(params: {
@@ -121,7 +123,7 @@ class OrganizationUnitsApi_units {
   body: {
   userIds: string[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   organizationUnitId?: string
   addedUserIds?: string[]
   failedUserIds?: string[]
@@ -130,7 +132,7 @@ class OrganizationUnitsApi_units {
   organizationUnitId?: string
   addedUserIds?: string[]
   failedUserIds?: string[]
-}>({ method: 'POST', path: `/api/vtexid/organization-units/${params.organizationUnitId}/users`, query: { 'force': params.force }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/vtexid/organization-units/${encodePathParam(params.organizationUnitId)}/users`, query: { 'force': params.force }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiVtexidOrganizationUnitsByOrganizationUnitIdUsers(params: {
@@ -138,15 +140,15 @@ class OrganizationUnitsApi_units {
   body: {
   userIds: string[]
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/vtexid/organization-units/${params.organizationUnitId}/users`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/vtexid/organization-units/${encodePathParam(params.organizationUnitId)}/users`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getApiOrganizationUnitsV1ScopeByScopeValueByScopeValue(params: {
   scope: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
   scopeValue: string
-}): Promise<UnitDto[]> {
-    return this.http.request<UnitDto[]>({ method: 'GET', path: `/api/organization-units/v1/scope/${params.scope}/value/${params.scopeValue}` })
+}, opts?: CallOptions): Promise<UnitDto[]> {
+    return this.http.request<UnitDto[]>(withCall({ method: 'GET', path: `/api/organization-units/v1/scope/${encodePathParam(params.scope)}/value/${encodePathParam(params.scopeValue)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 class OrganizationUnitsApi_scopes {
@@ -154,7 +156,7 @@ class OrganizationUnitsApi_scopes {
 
   getApiOrganizationUnitsV1ByOrganizationUnitIdScopes(params: {
   organizationUnitId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   organizationUnitId?: string
   scopes?: {
   scope?: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
@@ -167,44 +169,44 @@ class OrganizationUnitsApi_scopes {
   scope?: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
   ids?: string[]
 }[]
-}>({ method: 'GET', path: `/api/organization-units/v1/${params.organizationUnitId}/scopes` })
+}>(withCall({ method: 'GET', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/scopes`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiOrganizationUnitsV1ByOrganizationUnitIdScopes(params: {
   organizationUnitId: string
-}): Promise<OrganizationUnit> {
-    return this.http.request<OrganizationUnit>({ method: 'DELETE', path: `/api/organization-units/v1/${params.organizationUnitId}/scopes` })
+}, opts?: CallOptions): Promise<OrganizationUnit> {
+    return this.http.request<OrganizationUnit>(withCall({ method: 'DELETE', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/scopes`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   postApiOrganizationUnitsV1ByOrganizationUnitIdScopesByScope(params: {
   organizationUnitId: string
   scope: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
   body: ScopeValuesRequest
-}): Promise<ScopeOperationResponse> {
-    return this.http.request<ScopeOperationResponse>({ method: 'POST', path: `/api/organization-units/v1/${params.organizationUnitId}/scopes/${params.scope}`, body: params.body })
+}, opts?: CallOptions): Promise<ScopeOperationResponse> {
+    return this.http.request<ScopeOperationResponse>(withCall({ method: 'POST', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/scopes/${encodePathParam(params.scope)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   putApiOrganizationUnitsV1ByOrganizationUnitIdScopesByScope(params: {
   organizationUnitId: string
   scope: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
   body: ScopeValuesRequest
-}): Promise<ScopeOperationResponse> {
-    return this.http.request<ScopeOperationResponse>({ method: 'PUT', path: `/api/organization-units/v1/${params.organizationUnitId}/scopes/${params.scope}`, body: params.body })
+}, opts?: CallOptions): Promise<ScopeOperationResponse> {
+    return this.http.request<ScopeOperationResponse>(withCall({ method: 'PUT', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/scopes/${encodePathParam(params.scope)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiOrganizationUnitsV1ByOrganizationUnitIdScopesByScope(params: {
   organizationUnitId: string
   scope: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
-}): Promise<OrganizationUnit> {
-    return this.http.request<OrganizationUnit>({ method: 'DELETE', path: `/api/organization-units/v1/${params.organizationUnitId}/scopes/${params.scope}` })
+}, opts?: CallOptions): Promise<OrganizationUnit> {
+    return this.http.request<OrganizationUnit>(withCall({ method: 'DELETE', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/scopes/${encodePathParam(params.scope)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   deleteApiOrganizationUnitsV1ByOrganizationUnitIdScopesByScopeRemove(params: {
   organizationUnitId: string
   scope: "contractIds" | "creditCards" | "installmentOptions" | "collectionIds" | "priceTables" | "paymentSystemIds" | "addresses" | "customFields"
   body: ScopeValuesRequest
-}): Promise<ScopeOperationResponse> {
-    return this.http.request<ScopeOperationResponse>({ method: 'DELETE', path: `/api/organization-units/v1/${params.organizationUnitId}/scopes/${params.scope}/remove`, body: params.body })
+}, opts?: CallOptions): Promise<ScopeOperationResponse> {
+    return this.http.request<ScopeOperationResponse>(withCall({ method: 'DELETE', path: `/api/organization-units/v1/${encodePathParam(params.organizationUnitId)}/scopes/${encodePathParam(params.scope)}/remove`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 

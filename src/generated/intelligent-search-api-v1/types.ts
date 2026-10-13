@@ -7,7 +7,7 @@ export type AutocompleteSearchSuggestions = {
   value?: string
   labelKey?: string
   labelValue?: string
-}[]
+}[] | null
 }[]
 }
 
@@ -51,7 +51,7 @@ export type ProductSearch = {
 }
   fuzzy?: string
   operator?: "and" | "or"
-  redirect?: string
+  redirect?: string | null
   translated?: boolean
   pagination?: {
   count?: number
@@ -79,8 +79,12 @@ export type ProductSearch = {
 }
 }
   options?: {
-  sorts?: Record<string, unknown>[]
-  counts?: Record<string, unknown>[]
+  sorts?: {
+  [key: string]: unknown
+}[]
+  counts?: {
+  [key: string]: unknown
+}[]
   deliveryPromisesEnabled?: boolean
 }
   searchId?: string
@@ -148,8 +152,12 @@ export type Product = {
   addToCartLink?: string
   sellerDefault?: boolean
   commertialOffer?: {
-  DeliverySlaSamplesPerRegion?: Record<string, unknown>
-  DeliverySlaSamples?: Record<string, unknown>[]
+  DeliverySlaSamplesPerRegion?: {
+  [key: string]: unknown
+}
+  DeliverySlaSamples?: {
+  [key: string]: unknown
+}[]
   AvailableQuantity?: number
   discountHighlights?: {
   name?: string
@@ -173,7 +181,7 @@ export type Product = {
   BuyTogether?: string[]
   RewardValue?: number
   PriceValidUntil?: string
-  GetInfoErrorMessage?: string
+  GetInfoErrorMessage?: string | null
   CacheVersionUsedToCallCheckout?: string
   teasers?: {
   name?: string
@@ -221,7 +229,9 @@ export type Product = {
   attachments?: {
   id?: number
   name?: string
-  schema?: Record<string, unknown>
+  schema?: {
+  [key: string]: unknown
+}
   fields?: {
   field_name?: string
   max_characters?: string
@@ -234,8 +244,9 @@ export type Product = {
   kitItems?: {
   itemId?: string
   amount?: number
-}[]
-  estimatedDateArrival?: string
+}[] | null
+  estimatedDateArrival?: string | null
+  [key: string]: unknown
 }[]
   releaseDate?: number
   origin?: string

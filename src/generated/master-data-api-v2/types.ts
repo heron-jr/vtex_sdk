@@ -1,4 +1,6 @@
-export type DocumentRequest = Record<string, unknown>
+export type DocumentRequest = {
+  [key: string]: unknown
+}
 
 export type UsingFieldsAll = {
   id: string
@@ -55,7 +57,7 @@ export type Listversion = {
   document?: {
   id?: string
   dataEntityId?: string
-  isNewsletterOptIn?: boolean
+  isNewsletterOptIn?: boolean | null
   createdBy?: string
 }
 }

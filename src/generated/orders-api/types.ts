@@ -6,59 +6,63 @@ export type TotalsUpdated = {
   id?: string
   name?: string
   value?: number
-}[]
+}[] | null
 }[]
 
 export type ItemsUpdated = {
   uniqueId?: string
   id?: string
   productId?: string
-  ean?: string
-  lockId?: string
+  ean?: string | null
+  lockId?: string | null
   attachments?: {
-  name?: string
-  content?: Record<string, unknown>
-}[]
+  name?: string | null
+  content?: {
+  [key: string]: string | null
+} | null
+}[] | null
   quantity?: number
   seller?: string
   name?: string
   refId?: string
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   priceTags?: {
   name?: string
-  value?: number
+  value?: number | null
   isPercentual?: boolean
   identifier?: string
   rawValue?: number
-  rate?: number
-  jurisCode?: string
-  jurisType?: string
-  jurisName?: string
+  rate?: number | null
+  jurisCode?: string | null
+  jurisType?: string | null
+  jurisName?: string | null
 }[]
   imageUrl?: string
   detailUrl?: string
-  components?: string[]
+  components?: (string | null)[] | null
   bundleItems?: {
   type?: string
   id?: number
   name?: string
   price?: number
-}[]
+}[] | null
   params?: string[]
-  offerings?: string[]
-  attachmentOfferings?: {
-  name?: string
-  required?: boolean
-  schema?: Record<string, unknown>
-}[]
+  offerings?: (string | null)[] | null
+  attachmentOfferings?: ({
+  name?: string | null
+  required?: boolean | null
+  schema?: {
+  [key: string]: string | null
+} | null
+} | null)[] | null
   sellerSku?: string
-  priceValidUntil?: string
+  priceValidUntil?: string | null
   commission?: number
   tax?: number
-  preSaleDate?: string
+  preSaleDate?: string | null
   additionalInfo?: {
   brandName?: string
   brandId?: string
@@ -70,15 +74,15 @@ export type ItemsUpdated = {
   productClusterId?: string
   commercialConditionId?: string
   dimension?: Dimension
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
   measurementUnit?: string
   unitMultiplier?: number
   sellingPrice?: number
   isGift?: boolean
-  shippingPrice?: number
+  shippingPrice?: number | null
   rewardValue?: number
   freightCommission?: number
   priceDefinition?: {
@@ -88,15 +92,15 @@ export type ItemsUpdated = {
 }[]
   calculatedSellingPrice?: number
   total?: number
-  reason?: string
+  reason?: string | null
 }
-  taxCode?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
-  callCenterOperator?: string
-  serialNumbers?: string
-  assemblies?: string[]
-  costPrice?: number
+  taxCode?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
+  callCenterOperator?: string | null
+  serialNumbers?: string | null
+  assemblies?: (string | null)[] | null
+  costPrice?: number | null
 }[]
 
 export type ClientProfileDataUpdated = {
@@ -107,16 +111,16 @@ export type ClientProfileDataUpdated = {
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   userProfileId?: string
-  userProfileVersion?: string
-  customerClass?: string
-  customerCode?: string
+  userProfileVersion?: string | null
+  customerClass?: string | null
+  customerCode?: string | null
 }
 
 export type GiftRegistryDataUpdated = {
@@ -125,30 +129,34 @@ export type GiftRegistryDataUpdated = {
   giftRegistryTypeName?: string
   addressId?: string
   description?: string
-}
+} | null
 
 export type MarketingDataUpdated = {
   id?: string
-  utmSource?: string
-  utmPartner?: string
+  utmSource?: string | null
+  utmPartner?: string | null
   utmMedium?: string
-  utmCampaign?: string
-  coupon?: string
-  utmiCampaign?: string
-  utmipage?: string
-  utmiPart?: string
+  utmCampaign?: string | null
+  coupon?: string | null
+  utmiCampaign?: string | null
+  utmipage?: string | null
+  utmiPart?: string | null
   marketingTags?: string[]
-}
+} | null
 
 export type RatesAndBenefitsDataUpdated = {
   id?: string
   rateAndBenefitsIdentifiers?: {
-  description?: string
+  description?: string | null
   featured?: boolean
   id?: string
   name?: string
-  matchedParameters?: Record<string, unknown>
-  additionalInfo?: Record<string, unknown>
+  matchedParameters?: {
+  [key: string]: string
+}
+  additionalInfo?: {
+  [key: string]: string
+} | null
 }[]
 }
 
@@ -158,8 +166,8 @@ export type ShippingDataUpdated = {
   addressType: "residential" | "pickup"
   receiverName: string
   addressId: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   postalCode: string
   city: string
   state: string
@@ -167,8 +175,8 @@ export type ShippingDataUpdated = {
   street: string
   number: string
   neighborhood: string
-  complement: string
-  reference: string
+  complement: string | null
+  reference: string | null
   geoCoordinates: number[]
 }
   logisticsInfo?: {
@@ -179,7 +187,7 @@ export type ShippingDataUpdated = {
   price?: number
   listPrice?: number
   sellingPrice?: number
-  deliveryWindow?: string
+  deliveryWindow?: string | null
   deliveryCompany?: string
   shippingEstimate?: string
   shippingEstimateDate?: string
@@ -187,9 +195,9 @@ export type ShippingDataUpdated = {
   id?: string
   name?: string
   shippingEstimate?: string
-  shippingEstimateDate?: string
-  deliveryWindow?: string
-  availableDeliveryWindows?: string[]
+  shippingEstimateDate?: string | null
+  deliveryWindow?: string | null
+  availableDeliveryWindows?: string[] | null
   deliveryIds?: {
   courierId?: string
   courierName?: string
@@ -197,17 +205,17 @@ export type ShippingDataUpdated = {
   quantity?: number
   warehouseId?: string
   accountCarrierName?: string
-  kitItemDetails?: string[]
+  kitItemDetails?: string[] | null
 }[]
   listPrice?: number
   price?: number
   selectedDeliveryChannel?: "delivery" | "pickup-in-point"
   pickupStoreInfo?: PickupStoreInfoUpdated
-  polygonName?: string
+  polygonName?: string | null
   lockTTL?: string
-  pickupPointId?: string
+  pickupPointId?: string | null
   transitTime?: string
-  pickupDistance?: number
+  pickupDistance?: number | null
 }[]
   shipsTo?: string[]
   deliveryIds?: {
@@ -217,7 +225,7 @@ export type ShippingDataUpdated = {
   quantity?: number
   warehouseId?: string
   accountCarrierName?: string
-  kitItemDetails?: string[]
+  kitItemDetails?: string[] | null
 }[]
   deliveryChannels?: {
   id?: "delivery" | "pickup-in-point"
@@ -225,11 +233,11 @@ export type ShippingDataUpdated = {
 }[]
   deliveryChannel?: "delivery" | "pickup-in-point"
   pickupStoreInfo?: PickupStoreInfoUpdated
-  addressId?: string
-  versionId?: string
-  entityId?: string
-  polygonName?: string
-  pickupPointId?: string
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
+  polygonName?: string | null
+  pickupPointId?: string | null
   transitTime?: string
 }[]
   trackingHints?: {
@@ -237,39 +245,39 @@ export type ShippingDataUpdated = {
   courierName?: string
   trackingUrl?: string
   trackingLabel?: string
-}[]
+}[] | null
   selectedAddresses?: {
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   addressType?: "residential" | "pickup"
   receiverName?: string
   street?: string
   number?: string
-  complement?: string
+  complement?: string | null
   neighborhood?: string
   postalCode?: string
   city?: string
   state?: string
   country?: string
-  reference?: string
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressId?: string
-  versionId?: string
-  entityId?: string
+  versionId?: string | null
+  entityId?: string | null
   addressType?: "residential" | "pickup"
   receiverName?: string
   street?: string
   number?: string
-  complement?: string
+  complement?: string | null
   neighborhood?: string
   postalCode?: string
   city?: string
   state?: string
   country?: string
-  reference?: string
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   contactInformation?: {
@@ -280,12 +288,12 @@ export type ShippingDataUpdated = {
   document?: string
   phone?: string
   documentType?: string
-}[]
+}[] | null
 }
 
 export type PickupStoreInfoUpdated = {
   isPickupStore: boolean
-  friendlyName: string
+  friendlyName: string | null
   address: {
   postalCode?: string
   country?: string
@@ -295,29 +303,29 @@ export type PickupStoreInfoUpdated = {
   street?: string
   number?: string
   complement?: string
-  reference?: string
+  reference?: string | null
   location?: {
   latitude?: number
   longitude?: number
 }
-}
-  additionalInfo: string
-  dockId: string
+} | null
+  additionalInfo: string | null
+  dockId: string | null
 }
 
 export type PaymentDataUpdated = {
   giftCards?: {
   id?: string
   redemptionCode?: string
-  name?: string
-  caption?: string
+  name?: string | null
+  caption?: string | null
   value?: number
   balance?: number
   provider?: string
-  groupName?: string
+  groupName?: string | null
   inUse?: boolean
   isSpecialCard?: boolean
-}[]
+}[] | null
   transactions?: {
   isActive?: boolean
   transactionId?: string
@@ -329,28 +337,28 @@ export type PaymentDataUpdated = {
   value?: number
   installments?: number
   referenceValue?: number
-  cardHolder?: string
-  cardNumber?: string
-  firstDigits?: string
-  lastDigits?: string
-  cvv2?: string
-  expireMonth?: string
-  expireYear?: string
-  url?: string
-  giftCardId?: string
-  giftCardName?: string
-  giftCardCaption?: string
-  redemptionCode?: string
+  cardHolder?: string | null
+  cardNumber?: string | null
+  firstDigits?: string | null
+  lastDigits?: string | null
+  cvv2?: string | null
+  expireMonth?: string | null
+  expireYear?: string | null
+  url?: string | null
+  giftCardId?: string | null
+  giftCardName?: string | null
+  giftCardCaption?: string | null
+  redemptionCode?: string | null
   group?: "creditCard" | "debitCard" | "bankInvoice" | "promissory" | "giftCard" | "instantPayment"
   tid?: string
-  dueDate?: string
+  dueDate?: string | null
   connectorResponses?: {
-  Message?: string
+  Message?: string | null
   tid?: string
   authorizationId?: string
   status?: string
   delayToAutoSettle?: number
-  ReturnCode?: string
+  ReturnCode?: string | null
   nsu?: string
   code?: string
   message?: string
@@ -360,15 +368,15 @@ export type PaymentDataUpdated = {
   paymentId?: string
   delayToAutoSettleAfterAntifraud?: string
 }
-  giftCardProvider?: string
-  giftCardAsDiscount?: boolean
-  koinUrl?: string
-  accountId?: string
-  parentAccountId?: string
-  bankIssuedInvoiceIdentificationNumber?: string
-  bankIssuedInvoiceIdentificationNumberFormatted?: string
-  bankIssuedInvoiceBarCodeNumber?: string
-  bankIssuedInvoiceBarCodeType?: string
+  giftCardProvider?: string | null
+  giftCardAsDiscount?: boolean | null
+  koinUrl?: string | null
+  accountId?: string | null
+  parentAccountId?: string | null
+  bankIssuedInvoiceIdentificationNumber?: string | null
+  bankIssuedInvoiceIdentificationNumberFormatted?: string | null
+  bankIssuedInvoiceBarCodeNumber?: string | null
+  bankIssuedInvoiceBarCodeType?: string | null
   billingAddress?: {
   postalCode?: string
   city?: string
@@ -377,11 +385,11 @@ export type PaymentDataUpdated = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
-  paymentOrigin?: string
+} | null
+  paymentOrigin?: string | null
 }[]
 }[]
 }
@@ -389,7 +397,7 @@ export type PaymentDataUpdated = {
 export type PackageAttachmentUpdated = {
   packages?: {
   courier?: string
-  description?: string
+  description?: string | null
   invoiceNumber?: string
   invoiceValue?: number
   invoiceUrl?: string
@@ -409,7 +417,7 @@ export type PackageAttachmentUpdated = {
 }[]
   courierStatus?: {
   deliveredDate?: string
-  status?: string
+  status?: string | null
   finished?: boolean
   data?: {
   lastChange?: string
@@ -418,42 +426,42 @@ export type PackageAttachmentUpdated = {
   description?: string
   createDate?: string
 }[]
-}
-  cfop?: string
+} | null
+  cfop?: string | null
   lastChange?: string
   restitutions?: {
   refund?: {
   value?: number
-  giftCardData?: string
+  giftCardData?: string | null
   items?: {
-  useFreight?: boolean
+  useFreight?: boolean | null
   isCompensation?: boolean
   compensationValue?: number
   id?: string
   quantity?: number
   price?: number
   description?: string
-}[]
+}[] | null
 }
-}
-  volumes?: number
-}[]
-}
+} | null
+  volumes?: number | null
+}[] | null
+} | null
 
 export type SellersUpdated = {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
   fulfillmentEndpoint?: string
 }[]
 
 export type InvoiceDataUpdated = {
   address?: {
-  addressType?: "residential" | "pickup"
-  receiverName?: string
-  addressId?: string
-  versionId?: string
-  entityId?: string
+  addressType?: "residential" | "pickup" | null
+  receiverName?: string | null
+  addressId?: string | null
+  versionId?: string | null
+  entityId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -461,56 +469,56 @@ export type InvoiceDataUpdated = {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-  contactId?: string
-}
+  contactId?: string | null
+} | null
   userPaymentInfo?: {
   paymentMethods?: string[]
-}
+} | null
   invoiceSubject?: {
   id?: string
   email?: string
   firstName?: string
   lastName?: string
   phone?: string
-}
-}
+} | null
+} | null
 
 export type ChangesAttachmentUpdated = {
   id: string
   changesData: {
   reason: string
-  discountValue: number
-  incrementValue: number
+  discountValue: number | null
+  incrementValue: number | null
   itemsAdded: {
   id?: string
   name?: string
   quantity?: number
   price?: number
-  unitMultiplier?: string
-}[]
+  unitMultiplier?: string | null
+}[] | null
   itemsRemoved: {
   id: string
   name: string
   quantity: number
   price: number
-  unitMultiplier: string
-}[]
+  unitMultiplier: string | null
+}[] | null
   receipt: {
   date: string
   orderId: string
   receipt: string
 }
 }[]
-}
+} | null
 
 export type CallCenterOperatorDataUpdated = {
   id?: string
   email?: string
   userName?: string
-}
+} | null
 
 export type StorePreferencesDataUpdated = {
   countryCode?: string
@@ -529,9 +537,9 @@ export type StorePreferencesDataUpdated = {
 
 export type MarketplaceUpdated = {
   baseURL?: string
-  isCertified?: boolean
+  isCertified?: boolean | null
   name?: string
-}
+} | null
 
 export type ItemMetadataUpdated = {
   Items?: {
@@ -541,24 +549,28 @@ export type ItemMetadataUpdated = {
   SkuName?: string
   ProductId?: string
   RefId?: string
-  Ean?: string
+  Ean?: string | null
   ImageUrl?: string
   DetailUrl?: string
   AssemblyOptions?: {
   Id?: string
   Name?: string
   Required?: boolean
-  InputValues?: Record<string, unknown>
-  Composition?: Record<string, unknown>
-}[]
+  InputValues?: {
+  [key: string]: string | null
+} | null
+  Composition?: {
+  [key: string]: string
+} | null
+}[] | null
 }[]
 }
 
 export type SubscriptionDataUpdated = {
-  subscriptionGroupId?: string
+  subscriptionGroupId?: string | null
   subscriptions?: {
   executionCount?: number
-  priceAtSubscriptionDate?: number
+  priceAtSubscriptionDate?: number | null
   itemIndex?: number
   plan?: {
   type?: string
@@ -568,11 +580,11 @@ export type SubscriptionDataUpdated = {
 }
   validity?: {
   begin?: string
-  end?: string
+  end?: string | null
 }
 }
-}[]
-}
+}[] | null
+} | null
 
 export type TaxDataUpdated = {
   areTaxesDesignatedByMarketplace: boolean
@@ -585,19 +597,19 @@ export type TaxDataUpdated = {
   name?: string
   value?: number
   rawValue?: number
+}[] | null
 }[]
-}[]
-}
+} | null
 
 export type CancellationDataUpdated = {
   requestedByUser?: boolean
-  requestedBySystem?: boolean
-  requestedBySellerNotification?: boolean
-  requestedByPaymentNotification?: boolean
+  requestedBySystem?: boolean | null
+  requestedBySellerNotification?: boolean | null
+  requestedByPaymentNotification?: boolean | null
   reason?: string
   cancellationDate?: string
   cancellationRequestId?: string
-}
+} | null
 
 export type CancellationRequestsUpdated = {
   id?: string
@@ -605,9 +617,9 @@ export type CancellationRequestsUpdated = {
   cancellationRequestDate?: string
   requestedByUser?: boolean
   deniedBySeller?: boolean
-  deniedBySellerReason?: string
-  cancellationRequestDenyDate?: string
-}[]
+  deniedBySellerReason?: string | null
+  cancellationRequestDenyDate?: string | null
+}[] | null
 
 export type ClientPreferencesDataUpdated = {
   locale?: string
@@ -624,7 +636,7 @@ export type Item = {
   uniqueId: string
   id: string
   productId: string
-  ean: string
+  ean: string | null
   lockId: string
   itemAttachment: ItemAttachment
   attachments: string[]
@@ -634,7 +646,7 @@ export type Item = {
   refId: string
   price: number
   listPrice: number
-  manualPrice: string
+  manualPrice: string | null
   priceTags: string[]
   imageUrl: string
   detailUrl: string
@@ -643,21 +655,21 @@ export type Item = {
   params: string[]
   offerings: string[]
   attachmentOfferings: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   sellerSku: string
-  priceValidUntil: string
+  priceValidUntil: string | null
   commission: number
   tax: number
-  preSaleDate: string
+  preSaleDate: string | null
   additionalInfo: AdditionalInfo
   measurementUnit: string
   unitMultiplier: number
   sellingPrice: number
   isGift: boolean
-  shippingPrice: string
+  shippingPrice: string | null
   rewardValue: number
   freightCommission: number
   priceDefinitions: {
@@ -668,18 +680,18 @@ export type Item = {
   calculatedSellingPrice: number
   total: number
 }
-  taxCode: string
-  parentItemIndex: string
-  parentAssemblyBinding: string
-  callCenterOperator: string
-  serialNumbers: string
-  assemblies: string[]
+  taxCode: string | null
+  parentItemIndex: string | null
+  parentAssemblyBinding: string | null
+  callCenterOperator: string | null
+  serialNumbers: string | null
+  assemblies: string[] | null
   costPrice: number
 }
 
 export type ItemAttachment = {
   content: Record<string, unknown>
-  name: string
+  name: string | null
 }
 
 export type AdditionalInfo = {
@@ -689,9 +701,9 @@ export type AdditionalInfo = {
   productClusterId: string
   commercialConditionId: string
   dimension: Dimension
-  offeringInfo: string
-  offeringType: string
-  offeringTypeId: string
+  offeringInfo: string | null
+  offeringType: string | null
+  offeringTypeId: string | null
 }
 
 export type Dimension = {
@@ -710,14 +722,14 @@ export type ClientProfileData = {
   documentType: string
   document: string
   phone: string
-  corporateName: string
-  tradeName: string
-  corporateDocument: string
-  stateInscription: string
-  corporatePhone: string
+  corporateName: string | null
+  tradeName: string | null
+  corporateDocument: string | null
+  stateInscription: string | null
+  corporatePhone: string | null
   isCorporate: boolean
   userProfileId: string
-  customerClass: string
+  customerClass: string | null
 }
 
 export type RatesAndBenefitsData = {
@@ -729,7 +741,7 @@ export type ShippingData = {
   id: string
   address: Address
   logisticsInfo: LogisticsInfo[]
-  trackingHints: string
+  trackingHints: string | null
   selectedAddresses: SelectedAddress[]
 }
 
@@ -737,8 +749,8 @@ export type Address = {
   addressType: string
   receiverName: string
   addressId: string
-  versionId: string
-  entityId: string
+  versionId: string | null
+  entityId: string | null
   postalCode: string
   city: string
   state: string
@@ -747,7 +759,7 @@ export type Address = {
   number: string
   neighborhood: string
   complement: string
-  reference: string
+  reference: string | null
   geoCoordinates: number[]
 }
 
@@ -758,7 +770,7 @@ export type LogisticsInfo = {
   price: number
   listPrice: number
   sellingPrice: number
-  deliveryWindow: string
+  deliveryWindow: string | null
   deliveryCompany: string
   shippingEstimate: string
   shippingEstimateDate: string
@@ -772,9 +784,9 @@ export type LogisticsInfo = {
   deliveryChannel: string
   pickupStoreInfo: PickupStoreInfo
   addressId: string
-  versionId: string
+  versionId: string | null
   entityId: string
-  polygonName: string
+  polygonName: string | null
   pickupPointId: string
   transitTime: string
 }
@@ -783,11 +795,11 @@ export type Sla = {
   id: string
   name: string
   shippingEstimate: string
-  deliveryWindow: string
+  deliveryWindow: string | null
   price: number
   deliveryChannel: string
   pickupStoreInfo: PickupStoreInfo
-  polygonName: string
+  polygonName: string | null
   lockTTL: string
   pickupPointId: string
   transitTime: string
@@ -795,10 +807,10 @@ export type Sla = {
 }
 
 export type PickupStoreInfo = {
-  additionalInfo: string
-  address: string
-  dockId: string
-  friendlyName: string
+  additionalInfo: string | null
+  address: string | null
+  dockId: string | null
+  friendlyName: string | null
   isPickupStore: boolean
 }
 
@@ -809,13 +821,13 @@ export type DeliveryId = {
   quantity: number
   warehouseId: string
   accountCarrierName: string
-  kitItemDetails: string[]
+  kitItemDetails: string[] | null
 }
 
 export type SelectedAddress = {
   addressId: string
-  versionId: string
-  entityId: string
+  versionId: string | null
+  entityId: string | null
   addressType: string
   receiverName: string
   street: string
@@ -826,7 +838,7 @@ export type SelectedAddress = {
   city: string
   state: string
   country: string
-  reference: string
+  reference: string | null
   geoCoordinates: number[]
 }
 
@@ -849,20 +861,20 @@ export type Payment = {
   value: number
   installments: number
   referenceValue: number
-  cardHolder: string
-  cardNumber: string
-  firstDigits: string
-  lastDigits: string
-  cvv2: string
-  expireMonth: string
-  expireYear: string
+  cardHolder: string | null
+  cardNumber: string | null
+  firstDigits: string | null
+  lastDigits: string | null
+  cvv2: string | null
+  expireMonth: string | null
+  expireYear: string | null
   url: string
-  giftCardId: string
-  giftCardName: string
-  giftCardCaption: string
-  redemptionCode: string
+  giftCardId: string | null
+  giftCardName: string | null
+  giftCardCaption: string | null
+  redemptionCode: string | null
   group: string
-  tid: string
+  tid: string | null
   dueDate: string
   connectorResponses: {
   Tid: string
@@ -912,7 +924,7 @@ export type ItemsRemoved = {
   name: string
   quantity: number
   price: number
-  unitMultiplier: string
+  unitMultiplier: string | null
 }
 
 export type Receipt = {
@@ -940,7 +952,7 @@ export type CurrencyFormatInfo = {
 
 export type Marketplace = {
   baseURL: string
-  isCertified: string
+  isCertified: string | null
   name: string
 }
 
@@ -955,27 +967,27 @@ export type List = {
   orderId: string
   creationDate: string
   clientName: string
-  items: string
+  items: string | null
   totalValue: number
   paymentNames: string
   status: string
   statusDescription: string
-  marketPlaceOrderId: string
+  marketPlaceOrderId: string | null
   sequence: string
   salesChannel: string
   affiliateId: string
   origin: string
   workflowInErrorState: boolean
   workflowInRetry: boolean
-  lastMessageUnread: string
-  ShippingEstimatedDate: string
-  ShippingEstimatedDateMax: string
-  ShippingEstimatedDateMin: string
+  lastMessageUnread: string | null
+  ShippingEstimatedDate: string | null
+  ShippingEstimatedDateMax: string | null
+  ShippingEstimatedDateMin: string | null
   orderIsComplete: boolean
-  listId: string
-  listType: string
-  authorizedDate: string
-  callCenterOperatorName: string
+  listId: string | null
+  listType: string | null
+  authorizedDate: string | null
+  callCenterOperatorName: string | null
   totalItems: number
   currencyCode: string
 }
@@ -1027,7 +1039,7 @@ export type Fulfillment = {
   StdDev: number
   Sum: number
   SumOfSquares: number
-  Facets: string
+  Facets: string | null
 }
 
 export type Marketplace1 = {
@@ -1039,7 +1051,7 @@ export type Marketplace1 = {
   StdDev: number
   Sum: number
   SumOfSquares: number
-  Facets: string
+  Facets: string | null
 }
 
 export type CurrencyCode = {
@@ -1055,7 +1067,7 @@ export type BRL = {
   StdDev: number
   Sum: number
   SumOfSquares: number
-  Facets: string
+  Facets: string | null
 }
 
 export type TotalItems = {
@@ -1089,7 +1101,7 @@ export type Fulfillment1 = {
   StdDev: number
   Sum: number
   SumOfSquares: number
-  Facets: string
+  Facets: string | null
 }
 
 export type Marketplace2 = {
@@ -1101,7 +1113,7 @@ export type Marketplace2 = {
   StdDev: number
   Sum: number
   SumOfSquares: number
-  Facets: string
+  Facets: string | null
 }
 
 export type CurrencyCode1 = {
@@ -1117,14 +1129,14 @@ export type BRL1 = {
   StdDev: number
   Sum: number
   SumOfSquares: number
-  Facets: string
+  Facets: string | null
 }
 
 export type UpdatepartialinvoiceSendTrackingNumberRequest = {
   trackingNumber: string
-  trackingUrl: string
-  dispatchedDate: string
-  courier: string
+  trackingUrl: string | null
+  dispatchedDate: string | null
+  courier: string | null
 }
 
 export type UpdatepartialinvoiceSendTrackingNumber = {
@@ -1135,7 +1147,7 @@ export type UpdatepartialinvoiceSendTrackingNumber = {
 
 export type UpdateTrackingStatusRequest = {
   isDelivered: boolean
-  deliveredDate: string
+  deliveredDate: string | null
   events: Event[]
 }
 
@@ -1171,7 +1183,7 @@ export type From = {
   aliasMaskType: number
   email: string
   name: string
-  role: string
+  role: string | null
 }
 
 export type To = {
@@ -1199,28 +1211,28 @@ export type Payment1 = {
   value: number
   installments: number
   referenceValue: number
-  cardHolder: string
-  cardNumber: string
+  cardHolder: string | null
+  cardNumber: string | null
   firstDigits: string
   lastDigits: string
-  cvv2: string
-  expireMonth: string
-  expireYear: string
-  url: string
-  giftCardId: string
-  giftCardName: string
-  giftCardCaption: string
-  redemptionCode: string
+  cvv2: string | null
+  expireMonth: string | null
+  expireYear: string | null
+  url: string | null
+  giftCardId: string | null
+  giftCardName: string | null
+  giftCardCaption: string | null
+  redemptionCode: string | null
   group: string
   tid: string
-  dueDate: string
+  dueDate: string | null
   connectorResponses: ConnectorResponses
 }
 
 export type ConnectorResponses = {
   Tid: string
-  ReturnCode: string
-  Message: string
+  ReturnCode: string | null
+  Message: string | null
   authId: string
 }
 
@@ -1257,7 +1269,7 @@ export type Hook = {
 }
 
 export type Headers = {
-  key: string
+  [key: string]: string
 }
 
 export type HookConfiguration = {
@@ -1286,37 +1298,37 @@ export type List1 = {
   orderId: string
   creationDate: string
   clientName: string
-  items: Item2[]
+  items: Item2[] | null
   totalValue: number
-  paymentNames: string
+  paymentNames: string | null
   status: string
   statusDescription: string
-  marketPlaceOrderId: string
+  marketPlaceOrderId: string | null
   sequence: string
   salesChannel: string
   affiliateId: string
   origin: string
   workflowInErrorState: boolean
   workflowInRetry: boolean
-  lastMessageUnread: string
-  ShippingEstimatedDate: string
-  ShippingEstimatedDateMax: string
-  ShippingEstimatedDateMin: string
+  lastMessageUnread: string | null
+  ShippingEstimatedDate: string | null
+  ShippingEstimatedDateMax: string | null
+  ShippingEstimatedDateMin: string | null
   orderIsComplete: boolean
-  listId: string
-  listType: string
-  authorizedDate: string
-  callCenterOperatorName: string
+  listId: string | null
+  listType: string | null
+  authorizedDate: string | null
+  callCenterOperatorName: string | null
   totalItems: number
-  currencyCode: string
+  currencyCode: string | null
 }
 
 export type Item2 = {
   seller: string
   quantity: number
   description: string
-  ean: string
-  refId: string
+  ean: string | null
+  refId: string | null
   id: string
   productId: string
   sellingPrice: number
@@ -1376,7 +1388,7 @@ export type Userorderdetails = {
   items: Item[]
   marketplaceItems: string[]
   clientProfileData: ClientProfileData
-  giftRegistryData: string
+  giftRegistryData: string | null
   marketingData: {
   id: string
   utmSource: string
@@ -1394,26 +1406,26 @@ export type Userorderdetails = {
   paymentData: PaymentData
   packageAttachment: PackageAttachment
   sellers: Seller[]
-  callCenterOperatorData: string
+  callCenterOperatorData: string | null
   followUpEmail: string
-  lastMessage: string
+  lastMessage: string | null
   hostname: string
-  invoiceData: Record<string, unknown>
+  invoiceData: Record<string, unknown> | null
   changesAttachment: ChangesAttachment
-  openTextField: string
+  openTextField: string | null
   roundingError: number
   orderFormId: string
-  commercialConditionData: string
+  commercialConditionData: string | null
   isCompleted: boolean
-  customData: string
+  customData: string | null
   storePreferencesData: StorePreferencesData
   allowCancellation: boolean
   allowEdition: boolean
   isCheckedIn: boolean
   marketplace: Marketplace
   authorizedDate: string
-  invoicedDate: string
-  cancelReason: string
+  invoicedDate: string | null
+  cancelReason: string | null
   itemMetadata: {
   Items: {
   Id: string
@@ -1429,8 +1441,8 @@ export type Userorderdetails = {
   Id: string
   Name: string
   Required: boolean
-  InputValues: Record<string, unknown>
-  Composition: Record<string, unknown>
+  InputValues: Record<string, unknown> | null
+  Composition: Record<string, unknown> | null
 }[]
 }[]
 }
@@ -1451,8 +1463,8 @@ export type Userorderdetails = {
   end: string
 }
 }
-}[]
-}
+}[] | null
+} | null
   taxData: {
   areTaxesDesignatedByMarketplace: boolean
   taxInfoCollection: {
@@ -1561,9 +1573,9 @@ export type Response202 = {
   manualIncrementValue: number
   totalChangeValue: number
   totals: string[]
-  add: string[]
-  remove: string[]
-  replace: Replace1[]
+  add: string[] | null
+  remove: string[] | null
+  replace: Replace1[] | null
   date: string
   origin: OriginV2
   settings: Settings
@@ -1575,20 +1587,20 @@ export type Replace1 = {
   items: {
   id: string
   quantity: number
-  price: number
-  measurementUnit: string
+  price: number | null
+  measurementUnit: string | null
   unitMultiplier: number
-  sellingPrice: number
-  name: string
-  detailUrl: string
-  imageUrl: string
+  sellingPrice: number | null
+  name: string | null
+  detailUrl: string | null
+  imageUrl: string | null
 }[]
   shippingData: ShippingData1
 }
   to: {
   items: Item3[]
   paymentData: PaymentDataV2
-  receiptData: Record<string, unknown>
+  receiptData: Record<string, unknown> | null
   shippingData: {
   logisticsInfo: LogisticsInfo1[]
 }
@@ -1619,57 +1631,57 @@ export type ShippingData1 = {
 export type Item3 = {
   uniqueId: string
   id: string
-  productId: string
-  productRefId: string
-  refId: string
-  ean: string
-  name: string
-  skuName: string
-  modalType: string
-  parentItemIndex: number
-  parentAssemblyBinding: string
-  assemblies: string[]
-  priceValidUntil: string
+  productId: string | null
+  productRefId: string | null
+  refId: string | null
+  ean: string | null
+  name: string | null
+  skuName: string | null
+  modalType: string | null
+  parentItemIndex: number | null
+  parentAssemblyBinding: string | null
+  assemblies: string[] | null
+  priceValidUntil: string | null
   tax: number
-  price: number
-  listPrice: number
-  manualPrice: number
-  manualPriceAppliedBy: string
-  sellingPrice: number
+  price: number | null
+  listPrice: number | null
+  manualPrice: number | null
+  manualPriceAppliedBy: string | null
+  sellingPrice: number | null
   rewardValue: number
   isGift: boolean
   additionalInfo: AdditionalInfoV2
-  preSaleDate: string
-  productCategoryIds: string
+  preSaleDate: string | null
+  productCategoryIds: string | null
   productCategories: Record<string, unknown>
   quantity: number
-  seller: string
-  sellerChain: string[]
-  imageUrl: string
-  detailUrl: string
+  seller: string | null
+  sellerChain: (string | null)[] | null
+  imageUrl: string | null
+  detailUrl: string | null
   components: string[]
   bundleItems: string[]
   attachments: string[]
   attachmentOfferings: string[]
   offerings: string[]
   priceTags: string[]
-  availability: string
+  availability: string | null
   measurementUnit: string
   unitMultiplier: number
-  manufacturerCode: string
-  priceDefinition: string
+  manufacturerCode: string | null
+  priceDefinition: string | null
 }
 
 export type AdditionalInfoV2 = {
-  dimension: string
-  brandName: string
-  brandId: string
-  offeringInfo: string
-  offeringType: string
-  offeringTypeId: string
-  categoriesIds: string
-  productClusterId: string
-  commercialConditionId: string
+  dimension: string | null
+  brandName: string | null
+  brandId: string | null
+  offeringInfo: string | null
+  offeringType: string | null
+  offeringTypeId: string | null
+  categoriesIds: string | null
+  productClusterId: string | null
+  commercialConditionId: string | null
 }
 
 export type LogisticsInfo1 = {
@@ -1682,19 +1694,19 @@ export type LogisticsInfo1 = {
   deliveryChannels: DeliveryChannel[]
   price: number
   listPrice: number
-  shippingEstimate: string
-  dockEstimate: string
-  shippingEstimateDate: string
-  lockTTL: string
-  deliveryCompany: string
-  polygonName: string
-  transitTime: string
+  shippingEstimate: string | null
+  dockEstimate: string | null
+  shippingEstimateDate: string | null
+  lockTTL: string | null
+  deliveryCompany: string | null
+  polygonName: string | null
+  transitTime: string | null
   sellingPrice: number
   deliveryIds: DeliveryIdV2[]
-  deliveryWindow: string
-  pickupPointId: string
+  deliveryWindow: string | null
+  pickupPointId: string | null
   pickupStoreInfo: PickupStoreInfoV2
-  pickupDistance: number
+  pickupDistance: number | null
 }
 
 export type SlaV2 = {
@@ -1702,30 +1714,30 @@ export type SlaV2 = {
   deliveryChannel: string
   name: string
   deliveryIds: DeliveryIdV2[]
-  shippingEstimate: string
-  shippingEstimateDate: string
-  lockTTL: string
+  shippingEstimate: string | null
+  shippingEstimateDate: string | null
+  lockTTL: string | null
   availableDeliveryWindows: string[]
   deliveryWindow: {
   startDateUtc?: string
   endDateUtc?: string
-}
+} | null
   price: number
   listPrice: number
   tax: number
   pickupStoreInfo: PickupStoreInfoV2
-  pickupPointId: string
-  pickupDistance: number
-  polygonName: string
-  transitTime: string
+  pickupPointId: string | null
+  pickupDistance: number | null
+  polygonName: string | null
+  transitTime: string | null
 }
 
 export type PickupStoreInfoV2 = {
-  isPickupStore: boolean
-  friendlyName: string
-  address: string
-  additionalInfo: string
-  dockId: string
+  isPickupStore: boolean | null
+  friendlyName: string | null
+  address: string | null
+  additionalInfo: string | null
+  dockId: string | null
 }
 
 export type OriginV2 = {
@@ -1747,13 +1759,13 @@ export type From2 = {
 export type Item4 = {
   id: string
   quantity: number
-  price: string
-  measurementUnit: string
+  price: string | null
+  measurementUnit: string | null
   unitMultiplier: number
   sellingPrice: number
-  name: string
-  detailUrl: string
-  imageUrl: string
+  name: string | null
+  detailUrl: string | null
+  imageUrl: string | null
 }
 
 export type ShippingData3 = {
@@ -1770,19 +1782,19 @@ export type LogisticsInfo2 = {
   deliveryChannels: DeliveryChannel[]
   price: number
   listPrice: number
-  shippingEstimate: string
-  dockEstimate: string
-  shippingEstimateDate: string
-  lockTTL: string
-  deliveryCompany: string
-  polygonName: string
-  transitTime: string
+  shippingEstimate: string | null
+  dockEstimate: string | null
+  shippingEstimateDate: string | null
+  lockTTL: string | null
+  deliveryCompany: string | null
+  polygonName: string | null
+  transitTime: string | null
   sellingPrice: number
   deliveryIds: DeliveryIdV2[]
-  deliveryWindow: string
-  pickupPointId: string
+  deliveryWindow: string | null
+  pickupPointId: string | null
   pickupStoreInfo: PickupStoreInfoV2
-  pickupDistance: number
+  pickupDistance: number | null
 }
 
 export type DeliveryIdV2 = {
@@ -1791,8 +1803,8 @@ export type DeliveryIdV2 = {
   dockId: string
   courierName: string
   quantity: number
-  kitItemDetails: string[]
-  accountCarrierName: string
+  kitItemDetails: (string | null)[]
+  accountCarrierName: string | null
 }
 
 export type DeliveryChannel = {
@@ -1802,7 +1814,7 @@ export type DeliveryChannel = {
 export type To2 = {
   items: Item3[]
   paymentData: PaymentDataV2
-  receiptData: Record<string, unknown>
+  receiptData: Record<string, unknown> | null
   shippingData: ShippingData3
 }
 
@@ -1849,9 +1861,9 @@ export type AuthorizationPolicyData = {
   authorizers?: {
   id?: string
   type?: "User" | "Unit"
-  authorizationDate?: string
-}[]
-}[]
+  authorizationDate?: string | null
+}[] | null
+}[] | null
 }[]
   pendingPolicies?: {
   policyId?: string
@@ -1865,9 +1877,9 @@ export type AuthorizationPolicyData = {
   authorizers?: {
   id?: string
   type?: "User" | "Unit"
-  authorizationDate?: string
-}[]
-}[]
+  authorizationDate?: string | null
+}[] | null
+}[] | null
 }[]
 }[]
 
@@ -1875,16 +1887,16 @@ export type ChangeSummary = {
   original?: {
   totalQuantity?: number
   quantity?: number
-  deliveryIds?: DeliveryIdResponse[]
+  deliveryIds?: DeliveryIdResponse[] | null
   itemIndex?: number
   uniqueId?: string
   id?: string
   productId?: string
   lockId?: string
-  ean?: string
+  ean?: string | null
   seller?: string
   sellerSku?: string
-  priceValidUntil?: string
+  priceValidUntil?: string | null
   name?: string
   additionalInfo?: {
   brandName?: string
@@ -1899,8 +1911,8 @@ export type ChangeSummary = {
 }
   productClusterId?: string
   commercialConditionId?: string
-  offeringInfo?: Record<string, unknown>
-  offeringType?: string
+  offeringInfo?: Record<string, unknown> | null
+  offeringType?: string | null
   offeringTypeId?: string
   categories?: {
   id?: number
@@ -1909,18 +1921,18 @@ export type ChangeSummary = {
 }
   attachments?: string[]
   attachmentOfferings?: {
-  name?: string
-  required?: boolean
-}[]
-  assemblies?: string[]
+  name?: string | null
+  required?: boolean | null
+}[] | null
+  assemblies?: string[] | null
   refId?: string
-  shippingPrice?: number
+  shippingPrice?: number | null
   price?: number
   sellingPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   tax?: number
-  customTax?: number
+  customTax?: number | null
   rewardValue?: number
   freightCommission?: number
   commission?: number
@@ -1933,9 +1945,9 @@ export type ChangeSummary = {
   quantity?: number
 }[]
   offerings?: string[]
-  preSaleDate?: string
+  preSaleDate?: string | null
   isGift?: boolean
-  taxCode?: string
+  taxCode?: string | null
   measurementUnit?: string
   unitMultiplier?: number
   marketingData?: {
@@ -1949,10 +1961,10 @@ export type ChangeSummary = {
   utmipage?: string
   utmiPart?: string
   marketingTags?: string
-}
-  parentAssemblyBinding?: string
-  parentItemIndex?: number
-  callCenterOperator?: string
+} | null
+  parentAssemblyBinding?: string | null
+  parentItemIndex?: number | null
+  callCenterOperator?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -1978,7 +1990,7 @@ export type ChangeSummary = {
   detailUrl?: string
   name?: string
   refId?: string
-  deliveryIds?: DeliveryIdResponse[]
+  deliveryIds?: DeliveryIdResponse[] | null
 }[]
   removed?: {
   id?: string
@@ -1993,7 +2005,7 @@ export type ChangeSummary = {
   detailUrl?: string
   name?: string
   refId?: string
-  deliveryIds?: DeliveryIdResponse[]
+  deliveryIds?: DeliveryIdResponse[] | null
 }[]
   replaced?: {
   replaceType?: "ItemReplacement" | "WeightChange" | "PriceChange" | "QuantityChange"
@@ -2012,11 +2024,11 @@ export type ChangeSummary = {
   detailUrl?: string
   name?: string
   refId?: string
-  deliveryIds?: DeliveryIdResponse[]
+  deliveryIds?: DeliveryIdResponse[] | null
 }[]
   shippingData?: {
   logisticsInfo?: LogisticsInfo1[]
-}
+} | null
 }
   to?: {
   items?: {
@@ -2032,11 +2044,11 @@ export type ChangeSummary = {
   detailUrl?: string
   name?: string
   refId?: string
-  deliveryIds?: DeliveryIdResponse[]
+  deliveryIds?: DeliveryIdResponse[] | null
 }[]
   shippingData?: {
   logisticsInfo?: LogisticsInfo1[]
-}
+} | null
 }
   type?: "UserInput" | "System"
 }[]
@@ -2053,7 +2065,7 @@ export type DeliveryIdResponse = {
   dockId?: string
   courierName?: string
   quantity?: number
-  totalListPrice?: number
+  totalListPrice?: number | null
   accountCarrierName?: string
-  kitItemDetails?: string[]
+  kitItemDetails?: string[] | null
 }

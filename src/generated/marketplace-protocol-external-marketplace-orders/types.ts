@@ -29,11 +29,11 @@ export type ClientProfileData = {
   lastName: string
   phone: string
   document: string
-  corporateDocument: string
-  corporatePhone: string
-  corporateName: string
-  tradeName: string
-  stateInscription: string
+  corporateDocument: string | null
+  corporatePhone: string | null
+  corporateName: string | null
+  tradeName: string | null
+  stateInscription: string | null
 }
 
 export type ShippingData = {
@@ -100,41 +100,41 @@ export type Fields = {
 }
 
 export type Deliverybyseller = {
-  marketplaceOrderId: string
+  marketplaceOrderId: string | null
   accountName: string
   code: string
   flow: string
   success: boolean
-  operationId: string
+  operationId: string | null
   errors: {
   source: string
   code: "FMT001" | "FMT002" | "FMT003" | "FMT004" | "FMT005"
   description: string
-}[]
+}[] | null
   fields: {
   mainOrderId: string
   franchiseOrderId?: string
-}
+} | null
   message: string
 }
 
 export type Deliverybyfranchiseseller = {
-  marketplaceOrderId: string
+  marketplaceOrderId: string | null
   accountName: string
   code: string
   flow: string
   success: boolean
-  operationId: string
+  operationId: string | null
   errors: {
   source: string
   code: string
   description: string
-}[]
+}[] | null
   fields: {
   mainOrderId: string
   franchiseOrderId?: string
-}
-  message: string
+} | null
+  message: string | null
 }
 
 export type UpdateOrderStatusRequest = {
@@ -145,21 +145,21 @@ export type UpdateOrderStatusRequest = {
 }
 
 export type Approveorder = {
-  marketplaceOrderId: string
-  accountName: string
+  marketplaceOrderId: string | null
+  accountName: string | null
   code: string
   flow: string
   success: boolean
-  operationId: string
+  operationId: string | null
   errors: {
   source: "Fulfillment" | "Checkout" | "Order Integration"
   code: string
   description: string
-}[]
+}[] | null
   fields: {
   mainOrderId?: string
   franchiseOrderId?: string
-}
+} | null
   message: string
 }
 
@@ -215,12 +215,12 @@ export type PlaceFulfillmentOrderRequest = {
   documentType: string
   document: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
-  isCorporate?: boolean
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
+  isCorporate?: boolean | null
 }
   shippingData: {
   address?: {
@@ -254,7 +254,7 @@ export type PlaceFulfillmentOrderRequest = {
 }[]
   updateStatus?: string
 }
-  paymentData?: Record<string, unknown>
+  paymentData?: Record<string, unknown> | null
   marketingData?: {
   utmSource?: string
   utmMedium?: string

@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { DefaultValuesRequest } from './types.js'
 
 class DefaultValuesApi_defaultValues {
@@ -6,7 +8,7 @@ class DefaultValuesApi_defaultValues {
 
   postApiDataentitiesDefaultValuesDocuments(params: {
   body: DefaultValuesRequest
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   Id?: string
   Href?: string
   DocumentId?: string
@@ -15,14 +17,14 @@ class DefaultValuesApi_defaultValues {
   Id?: string
   Href?: string
   DocumentId?: string
-}>({ method: 'POST', path: `/api/dataentities/defaultValues/documents`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/dataentities/defaultValues/documents`, body: params.body }, opts))
   }
 
   getApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
   unitId: string
   _schema: string
   _fields: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   defaultValues?: {
   entity?: string
@@ -35,20 +37,20 @@ class DefaultValuesApi_defaultValues {
   entity?: string
   entityValueId?: string
 }[]
-}>({ method: 'GET', path: `/api/dataentities/defaultValues/documents/${params.unitId}`, query: { '_schema': params._schema, '_fields': params._fields } })
+}>(withCall({ method: 'GET', path: `/api/dataentities/defaultValues/documents/${encodePathParam(params.unitId)}`, query: { '_schema': params._schema, '_fields': params._fields } }, opts))
   }
 
   patchApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
   unitId: string
   body: DefaultValuesRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/dataentities/defaultValues/documents/${params.unitId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/defaultValues/documents/${encodePathParam(params.unitId)}`, body: params.body }, opts))
   }
 
   deleteApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
   unitId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/dataentities/defaultValues/documents/${params.unitId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/defaultValues/documents/${encodePathParam(params.unitId)}` }, opts))
   }
 }
 

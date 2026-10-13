@@ -1,11 +1,13 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class CatalogApiSellerPortalApi_product {
   constructor(private http: VtexHttpClient) {}
 
   getProduct(params: {
   productId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   externalId?: string
   status: string
@@ -50,11 +52,11 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
-  transportModal?: string
-  taxCode?: string
+  transportModal?: string | null
+  taxCode?: string | null
   origin: string
   createdAt: string
   updatedAt: string
@@ -104,15 +106,15 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
-  transportModal?: string
-  taxCode?: string
+  transportModal?: string | null
+  taxCode?: string | null
   origin: string
   createdAt: string
   updatedAt: string
-}>({ method: 'GET', path: `/api/catalog-seller-portal/products/${params.productId}` })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/products/${encodePathParam(params.productId)}` }, opts))
   }
 
   putProduct(params: {
@@ -134,8 +136,8 @@ class CatalogApiSellerPortalApi_product {
   value: string
 }[]
   slug: string
-  transportModal?: string
-  taxCode?: string
+  transportModal?: string | null
+  taxCode?: string | null
   images: {
   id: string
   url: string
@@ -164,18 +166,18 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
   origin: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/catalog-seller-portal/products/${params.productId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog-seller-portal/products/${encodePathParam(params.productId)}`, body: params.body }, opts))
   }
 
   getProductDescription(params: {
   productId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   productId: string
   createdAt: string
   updatedAt: string
@@ -184,7 +186,7 @@ class CatalogApiSellerPortalApi_product {
   productId: string
   createdAt: string
   updatedAt: string
-}>({ method: 'GET', path: `/api/catalog-seller-portal/products/${params.productId}/description` })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/products/${encodePathParam(params.productId)}/description` }, opts))
   }
 
   putProductDescription(params: {
@@ -193,13 +195,13 @@ class CatalogApiSellerPortalApi_product {
   productId: string
   description: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/catalog-seller-portal/products/${params.productId}/description`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog-seller-portal/products/${encodePathParam(params.productId)}/description`, body: params.body }, opts))
   }
 
   getProductQuery(params: {
   param: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   externalId?: string
   description?: string
@@ -245,7 +247,7 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
   transportModal?: string
@@ -300,7 +302,7 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
   transportModal?: string
@@ -308,7 +310,7 @@ class CatalogApiSellerPortalApi_product {
   origin: string
   createdAt: string
   updatedAt: string
-}>({ method: 'GET', path: `/api/catalog-seller-portal/products/${params.param}` })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/products/${encodePathParam(params.param)}` }, opts))
   }
 
   postProduct(params: {
@@ -355,14 +357,14 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
   origin: string
-  transportModal?: string
-  taxCode?: string
+  transportModal?: string | null
+  taxCode?: string | null
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   externalId?: string
   status: string
@@ -408,12 +410,12 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
   origin: string
-  transportModal?: string
-  taxCode?: string
+  transportModal?: string | null
+  taxCode?: string | null
   createdAt: string
   updatedAt: string
 }> {
@@ -463,15 +465,15 @@ class CatalogApiSellerPortalApi_product {
   specs: {
   name: string
   value: string
-}[]
+}[] | null
   images: string[]
 }[]
   origin: string
-  transportModal?: string
-  taxCode?: string
+  transportModal?: string | null
+  taxCode?: string | null
   createdAt: string
   updatedAt: string
-}>({ method: 'POST', path: `/api/catalog-seller-portal/products`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/catalog-seller-portal/products`, body: params.body }, opts))
   }
 }
 class CatalogApiSellerPortalApi_sku {
@@ -482,7 +484,7 @@ class CatalogApiSellerPortalApi_sku {
   to?: string
   id?: number
   externalid?: number
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   data?: {
   id?: string
   productId?: string
@@ -505,13 +507,13 @@ class CatalogApiSellerPortalApi_sku {
   from?: number
   to?: number
 }
-}>({ method: 'GET', path: `/api/catalog-seller-portal/skus/_search`, query: { 'from': params.from, 'to': params.to, 'id': params.id, 'externalid': params.externalid } })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/skus/_search`, query: { 'from': params.from, 'to': params.to, 'id': params.id, 'externalid': params.externalid } }, opts))
   }
 
   listSKU(params: {
   from?: string
   to?: string
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   data?: string[]
   _metadata?: {
   total?: number
@@ -526,7 +528,7 @@ class CatalogApiSellerPortalApi_sku {
   from?: number
   to?: number
 }
-}>({ method: 'GET', path: `/api/catalog-seller-portal/skus/ids`, query: { 'from': params.from, 'to': params.to } })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/skus/ids`, query: { 'from': params.from, 'to': params.to } }, opts))
   }
 }
 class CatalogApiSellerPortalApi_brand {
@@ -538,7 +540,7 @@ class CatalogApiSellerPortalApi_brand {
   to?: string
   orderBy?: string
   name?: string
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   data: {
   id: string
   name: string
@@ -567,7 +569,7 @@ class CatalogApiSellerPortalApi_brand {
   to: number
   orderBy: string
 }
-}>({ method: 'GET', path: `/api/catalog-seller-portal/brands`, query: { 'q': params.q, 'from': params.from, 'to': params.to, 'orderBy': params.orderBy, 'name': params.name } })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/brands`, query: { 'q': params.q, 'from': params.from, 'to': params.to, 'orderBy': params.orderBy, 'name': params.name } }, opts))
   }
 
   postBrand(params: {
@@ -575,7 +577,7 @@ class CatalogApiSellerPortalApi_brand {
   name: string
   isActive: boolean
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   name?: string
   isActive?: boolean
@@ -588,12 +590,12 @@ class CatalogApiSellerPortalApi_brand {
   isActive?: boolean
   createdAt?: string
   updatedAt?: string
-}>({ method: 'POST', path: `/api/catalog-seller-portal/brands`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/catalog-seller-portal/brands`, body: params.body }, opts))
   }
 
   getBrand(params: {
   brandId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   name?: string
   isActive?: boolean
@@ -606,7 +608,7 @@ class CatalogApiSellerPortalApi_brand {
   isActive?: boolean
   createdAt?: string
   updatedAt?: string
-}>({ method: 'GET', path: `/api/catalog-seller-portal/brands/${params.brandId}` })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/brands/${encodePathParam(params.brandId)}` }, opts))
   }
 
   putBrand(params: {
@@ -616,8 +618,8 @@ class CatalogApiSellerPortalApi_brand {
   name: string
   isActive: boolean
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/catalog-seller-portal/brands/${params.brandId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog-seller-portal/brands/${encodePathParam(params.brandId)}`, body: params.body }, opts))
   }
 }
 class CatalogApiSellerPortalApi_category {
@@ -625,7 +627,7 @@ class CatalogApiSellerPortalApi_category {
 
   getCategoryTree(params: {
   depth?: number
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   roots: {
   value: {
   id: string
@@ -660,7 +662,7 @@ class CatalogApiSellerPortalApi_category {
 }[]
   createdAt?: string
   updatedAt?: string
-}>({ method: 'GET', path: `/api/catalog-seller-portal/category-tree`, query: { 'depth': params.depth } })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/category-tree`, query: { 'depth': params.depth } }, opts))
   }
 
   updateCategoryTree(params: {
@@ -680,13 +682,13 @@ class CatalogApiSellerPortalApi_category {
 }[]
 }[]
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/catalog-seller-portal/category-tree`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog-seller-portal/category-tree`, body: params.body }, opts))
   }
 
   getbyid(params: {
   categoryId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   value: {
   id: string
   name: string
@@ -713,7 +715,7 @@ class CatalogApiSellerPortalApi_category {
   isActive: boolean
 }
 }[]
-}>({ method: 'GET', path: `/api/catalog-seller-portal/category-tree/categories/${params.categoryId}` })
+}>(withCall({ method: 'GET', path: `/api/catalog-seller-portal/category-tree/categories/${encodePathParam(params.categoryId)}` }, opts))
   }
 
   createCategory(params: {
@@ -721,7 +723,7 @@ class CatalogApiSellerPortalApi_category {
   parentId: string
   Name: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   value: {
   id: string
   name: string
@@ -748,7 +750,7 @@ class CatalogApiSellerPortalApi_category {
   isActive: boolean
 }
 }[]
-}>({ method: 'POST', path: `/api/catalog-seller-portal/category-tree/categories`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/catalog-seller-portal/category-tree/categories`, body: params.body }, opts))
   }
 }
 

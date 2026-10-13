@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { withCall } from '../../core/call.js'
 import type { GetPricesRequestObject, Items, Response2, Item1, ConfigExternalPriceSourceRequest } from './types.js'
 
 class PricingHubDeprecatedApi_pricingHubPrices {
@@ -7,15 +9,15 @@ class PricingHubDeprecatedApi_pricingHubPrices {
   postApiPricingHubPrices(params: {
   an: string
   body: GetPricesRequestObject
-}): Promise<Response2> {
-    return this.http.request<Response2>({ method: 'POST', path: `/api/pricing-hub/prices`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<Response2> {
+    return this.http.request<Response2>(withCall({ method: 'POST', path: `/api/pricing-hub/prices`, query: { 'an': params.an }, body: params.body, server: 'https://prchub.{environment}.com.br' }, opts))
   }
 
   configExternalPriceSource(params: {
   an?: string
   body: ConfigExternalPriceSourceRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/pricing-hub/prices/config`, query: { 'an': params.an }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/pricing-hub/prices/config`, query: { 'an': params.an }, body: params.body, server: 'https://prchub.{environment}.com.br' }, opts))
   }
 }
 

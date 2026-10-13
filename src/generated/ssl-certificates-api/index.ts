@@ -1,16 +1,18 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class SslCertificatesApi_sslCertificates {
   constructor(private http: VtexHttpClient) {}
 
-  getApiEdgeCertificates(params: Record<string, never>): Promise<{
+  getApiEdgeCertificates(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   id?: string
   account?: string
   host?: string
   serialNumber?: string
   subjectDistinguishedName?: string
   subjectCommonName?: string
-  subjectOrganization?: string
+  subjectOrganization?: string | null
   issuerDistinguishedName?: string
   issuerCommonName?: string
   issuerOrganization?: string
@@ -31,7 +33,7 @@ class SslCertificatesApi_sslCertificates {
   serialNumber?: string
   subjectDistinguishedName?: string
   subjectCommonName?: string
-  subjectOrganization?: string
+  subjectOrganization?: string | null
   issuerDistinguishedName?: string
   issuerCommonName?: string
   issuerOrganization?: string
@@ -44,7 +46,7 @@ class SslCertificatesApi_sslCertificates {
   createdAt?: string
   updatedAt?: string
   status?: "Active" | "Overwritten" | "Installing" | "Unknown" | "Expires soon" | "Installation failed" | "Expired"
-}[]>({ method: 'GET', path: `/api/edge/certificates` })
+}[]>(withCall({ method: 'GET', path: `/api/edge/certificates` }, opts))
   }
 
   putApiEdgeCertificates(params: {
@@ -53,14 +55,14 @@ class SslCertificatesApi_sslCertificates {
   certificate: string
   privateKey: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   account?: string
   host?: string
   serialNumber?: string
   subjectDistinguishedName?: string
   subjectCommonName?: string
-  subjectOrganization?: string
+  subjectOrganization?: string | null
   issuerDistinguishedName?: string
   issuerCommonName?: string
   issuerOrganization?: string
@@ -81,7 +83,7 @@ class SslCertificatesApi_sslCertificates {
   serialNumber?: string
   subjectDistinguishedName?: string
   subjectCommonName?: string
-  subjectOrganization?: string
+  subjectOrganization?: string | null
   issuerDistinguishedName?: string
   issuerCommonName?: string
   issuerOrganization?: string
@@ -94,19 +96,19 @@ class SslCertificatesApi_sslCertificates {
   createdAt?: string
   updatedAt?: string
   status?: "Active" | "Overwritten" | "Installing" | "Unknown" | "Expires soon" | "Installation failed" | "Expired"
-}[]>({ method: 'PUT', path: `/api/edge/certificates`, body: params.body })
+}[]>(withCall({ method: 'PUT', path: `/api/edge/certificates`, body: params.body }, opts))
   }
 
   getApiEdgeCertificatesByCertificateId(params: {
   certificateId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   account?: string
   host?: string
   serialNumber?: string
   subjectDistinguishedName?: string
   subjectCommonName?: string
-  subjectOrganization?: string
+  subjectOrganization?: string | null
   issuerDistinguishedName?: string
   issuerCommonName?: string
   issuerOrganization?: string
@@ -127,7 +129,7 @@ class SslCertificatesApi_sslCertificates {
   serialNumber?: string
   subjectDistinguishedName?: string
   subjectCommonName?: string
-  subjectOrganization?: string
+  subjectOrganization?: string | null
   issuerDistinguishedName?: string
   issuerCommonName?: string
   issuerOrganization?: string
@@ -140,7 +142,7 @@ class SslCertificatesApi_sslCertificates {
   createdAt?: string
   updatedAt?: string
   status?: "Active" | "Overwritten" | "Installing" | "Unknown" | "Expires soon" | "Installation failed" | "Expired"
-}>({ method: 'GET', path: `/api/edge/certificates/${params.certificateId}` })
+}>(withCall({ method: 'GET', path: `/api/edge/certificates/${encodePathParam(params.certificateId)}` }, opts))
   }
 }
 

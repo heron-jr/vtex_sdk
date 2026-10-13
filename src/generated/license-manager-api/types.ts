@@ -3,24 +3,24 @@ export type AccountResponse = {
   id?: string
   name?: string
   accountName?: string
-  lv?: string
+  lv?: string | null
   isOperating?: boolean
-  defaultUrl?: string
-  district?: string
-  country?: string
-  complement?: string
+  defaultUrl?: string | null
+  district?: string | null
+  country?: string | null
+  complement?: string | null
   companyName?: string
-  cnpj?: string
+  cnpj?: string | null
   haveParentAccount?: boolean
-  parentAccountId?: string
-  parentAccountName?: string
-  city?: string
-  address?: string
-  logo?: string
+  parentAccountId?: string | null
+  parentAccountName?: string | null
+  city?: string | null
+  address?: string | null
+  logo?: string | null
   hasLogo?: boolean
-  number?: string
-  postalCode?: string
-  state?: string
+  number?: string | null
+  postalCode?: string | null
+  state?: string | null
   telephone?: string
   tradingName?: string
   licenses?: LicenseItems[]
@@ -34,20 +34,20 @@ export type AccountResponse = {
   email?: string
   phone?: string
 }
-  operationDate?: string
-  inactivationDate?: string
+  operationDate?: string | null
+  inactivationDate?: string | null
   creationDate?: string
   hosts?: string[]
   sites?: SiteItems[]
   appKey?: {
-  token?: string
-  name?: string
+  token?: string | null
+  name?: string | null
 }
   appKeys?: AppKeyItems[]
 }
 
 export type LicenseItems = {
-  expiration?: string
+  expiration?: string | null
   id?: number
   isPurchased?: boolean
   products?: {
@@ -55,8 +55,8 @@ export type LicenseItems = {
   name?: string
   domains?: string[]
   endpoints?: {
-  webApiUrl?: string
-  consoleUrl?: string
+  webApiUrl?: string | null
+  consoleUrl?: string | null
 }
 }[]
   name?: string
@@ -66,10 +66,10 @@ export type SiteItems = {
   id?: number
   name?: string
   tradingName?: string
-  LV?: string
-  logo?: string
+  LV?: string | null
+  logo?: string | null
   monetaryUnitId?: number
-  domains?: string[]
+  domains?: string[] | null
   hosts?: string[]
   aliases?: string[]
 }
@@ -77,7 +77,7 @@ export type SiteItems = {
 export type AppKeyItems = {
   id?: string
   appKey?: string
-  appToken?: string
+  appToken?: string | null
   label?: string
   createdIn?: string
   isActive?: boolean
@@ -96,7 +96,7 @@ export type CreatenewappkeyRequest = {
 export type CreatenewappkeyResponse = {
   id: string
   appKey: string
-  appToken: string
+  appToken: string | null
   label: string
   createdIn: string
   isActive: boolean
@@ -147,21 +147,21 @@ export type RoleItems = {
   isAdmin?: boolean
   roleType?: number
   products?: ProductItems[]
-  resources?: string
-  logins?: string
+  resources?: string | null
+  logins?: string | null
   name?: string
 }
 
 export type ProductItems = {
-  id?: string
-  categoryId?: string
-  categoryName?: string
-  description?: string
-  consoleUrlMask?: string
-  urlConfiguration?: string
-  webApiUrlMask?: string
-  url?: string
-  productResources?: string
+  id?: string | null
+  categoryId?: string | null
+  categoryName?: string | null
+  description?: string | null
+  consoleUrlMask?: string | null
+  urlConfiguration?: string | null
+  webApiUrlMask?: string | null
+  url?: string | null
+  productResources?: string | null
   name?: string
 }
 
@@ -172,7 +172,7 @@ export type StoreItems = {
 }
 
 export type VLMError = {
-  Details?: string
+  Details?: string | null
   HttpStatusCode?: number
   VLMErrorCode?: number
   Message?: string

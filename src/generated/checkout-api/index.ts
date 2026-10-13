@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { OrderForm, OrderFormSimulationRequest, Item, PriceChangeRequest, SetsinglecustomfieldvalueRequest, UpdateorderFormconfigurationRequest, PaymentConfiguration, WaitingTime } from './types.js'
 
 class CheckoutApi_shoppingCart {
@@ -17,9 +19,9 @@ class CheckoutApi_shoppingCart {
   country?: string
   postalCode?: string
   geoCoordinates?: number[]
-  allowedOutdatedData?: "inventoryData" | "deliveryData" | "promotionData" | "paymentData" | "taxData"[]
+  allowedOutdatedData?: ("inventoryData" | "deliveryData" | "promotionData" | "paymentData" | "taxData")[]
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   items?: {
   id?: string
   requestIndex?: number
@@ -39,14 +41,14 @@ class CheckoutApi_shoppingCart {
   name?: string
   allowGiftMessage?: boolean
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   price?: number
 }[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -54,8 +56,8 @@ class CheckoutApi_shoppingCart {
 }[]
   measurementUnit?: string
   unitMultiplier?: number
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   availability?: string
   priceDefinition?: {
   calculatedSellingPrice?: number
@@ -73,9 +75,9 @@ class CheckoutApi_shoppingCart {
   paymentData?: {
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -90,7 +92,7 @@ class CheckoutApi_shoppingCart {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -99,7 +101,7 @@ class CheckoutApi_shoppingCart {
   description?: string
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -119,14 +121,14 @@ class CheckoutApi_shoppingCart {
   availableAssociations?: Record<string, unknown>
 }
   selectableGifts?: string[]
-  marketingData?: Record<string, unknown>
-  postalCode?: string
+  marketingData?: Record<string, unknown> | null
+  postalCode?: string | null
   country?: string
   logisticsInfo?: {
   itemIndex?: number
-  addressId?: string
-  selectedSla?: string
-  selectedDeliveryChannel?: string
+  addressId?: string | null
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
   quantity?: number
   shipsTo?: string[]
   slas?: {
@@ -141,14 +143,14 @@ class CheckoutApi_shoppingCart {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   availableDeliveryWindows?: {
   startDateUtc?: string
   endDateUtc?: string
@@ -168,14 +170,14 @@ class CheckoutApi_shoppingCart {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   deliveryChannels?: {
@@ -199,14 +201,14 @@ class CheckoutApi_shoppingCart {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   availableDeliveryWindows?: {
   startDateUtc?: string
   endDateUtc?: string
@@ -226,14 +228,14 @@ class CheckoutApi_shoppingCart {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   price?: number
@@ -241,7 +243,7 @@ class CheckoutApi_shoppingCart {
 }[]
 }
   pickupPoints?: string[]
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   totals?: {
   id?: string
   name?: string
@@ -276,14 +278,14 @@ class CheckoutApi_shoppingCart {
   name?: string
   allowGiftMessage?: boolean
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   price?: number
 }[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -291,8 +293,8 @@ class CheckoutApi_shoppingCart {
 }[]
   measurementUnit?: string
   unitMultiplier?: number
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   availability?: string
   priceDefinition?: {
   calculatedSellingPrice?: number
@@ -310,9 +312,9 @@ class CheckoutApi_shoppingCart {
   paymentData?: {
   installmentOptions?: {
   paymentSystem?: number
-  bin?: string
-  paymentName?: string
-  paymentGroupName?: string
+  bin?: string | null
+  paymentName?: string | null
+  paymentGroupName?: string | null
   value?: number
   installments?: {
   count?: number
@@ -327,7 +329,7 @@ class CheckoutApi_shoppingCart {
   id?: number
   name?: string
   groupName?: string
-  validator?: Record<string, unknown>
+  validator?: Record<string, unknown> | null
   stringId?: string
   template?: string
   requiresDocument?: boolean
@@ -336,7 +338,7 @@ class CheckoutApi_shoppingCart {
   description?: string
   requiresAuthentication?: boolean
   dueDate?: string
-  availablePayments?: string
+  availablePayments?: string | null
 }[]
   payments?: {
   paymentSystem?: number
@@ -356,14 +358,14 @@ class CheckoutApi_shoppingCart {
   availableAssociations?: Record<string, unknown>
 }
   selectableGifts?: string[]
-  marketingData?: Record<string, unknown>
-  postalCode?: string
+  marketingData?: Record<string, unknown> | null
+  postalCode?: string | null
   country?: string
   logisticsInfo?: {
   itemIndex?: number
-  addressId?: string
-  selectedSla?: string
-  selectedDeliveryChannel?: string
+  addressId?: string | null
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
   quantity?: number
   shipsTo?: string[]
   slas?: {
@@ -378,14 +380,14 @@ class CheckoutApi_shoppingCart {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   availableDeliveryWindows?: {
   startDateUtc?: string
   endDateUtc?: string
@@ -405,14 +407,14 @@ class CheckoutApi_shoppingCart {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   deliveryChannels?: {
@@ -436,14 +438,14 @@ class CheckoutApi_shoppingCart {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   availableDeliveryWindows?: {
   startDateUtc?: string
   endDateUtc?: string
@@ -463,14 +465,14 @@ class CheckoutApi_shoppingCart {
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
-  address?: Record<string, unknown>
-  additionalInfo?: string
-  dockId?: string
+  friendlyName?: string | null
+  address?: Record<string, unknown> | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   price?: number
@@ -478,7 +480,7 @@ class CheckoutApi_shoppingCart {
 }[]
 }
   pickupPoints?: string[]
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   totals?: {
   id?: string
   name?: string
@@ -492,37 +494,37 @@ class CheckoutApi_shoppingCart {
 }[]
 }
 }[]
-}>({ method: 'POST', path: `/api/checkout/pub/orderForms/simulation`, query: { 'RnbBehavior': params.RnbBehavior, 'sc': params.sc, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForms/simulation`, query: { 'RnbBehavior': params.RnbBehavior, 'sc': params.sc, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   createANewCart(params: {
   forceNewCart?: boolean
   individualShippingEstimates?: boolean
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'GET', path: `/api/checkout/pub/orderForm`, query: { 'forceNewCart': params.forceNewCart, 'individualShippingEstimates': params.individualShippingEstimates } })
+} = {}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'GET', path: `/api/checkout/pub/orderForm`, query: { 'forceNewCart': params.forceNewCart, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   getCartInformationById(params: {
   orderFormId: string
   refreshOutdatedData?: boolean
   individualShippingEstimates?: boolean
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'GET', path: `/api/checkout/pub/orderForm/${params.orderFormId}`, query: { 'refreshOutdatedData': params.refreshOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}`, query: { 'refreshOutdatedData': params.refreshOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   removeAllItems(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: Record<string, unknown>
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items/removeAll`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/removeAll`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   removeallpersonaldata(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/checkout/changeToAnonymousUser/${params.orderFormId}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/checkout/changeToAnonymousUser/${encodePathParam(params.orderFormId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   itemsUpdate(params: {
@@ -535,8 +537,8 @@ class CheckoutApi_shoppingCart {
   index?: number
 }[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items/update`, query: { 'allowedOutdatedData': params.allowedOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/update`, query: { 'allowedOutdatedData': params.allowedOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   items(params: {
@@ -552,8 +554,8 @@ class CheckoutApi_shoppingCart {
   price?: number
 }[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items`, query: { 'allowedOutdatedData': params.allowedOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items`, query: { 'allowedOutdatedData': params.allowedOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   itemsHandle(params: {
@@ -570,14 +572,14 @@ class CheckoutApi_shoppingCart {
   name?: string
   content?: {
   content?: string
-}
+} | null
 }[]
   noSplitItem?: boolean
   allowedOutdatedData?: string[]
 }[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PATCH', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PATCH', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   priceChange(params: {
@@ -585,16 +587,16 @@ class CheckoutApi_shoppingCart {
   itemIndex: string
   individualShippingEstimates?: boolean
   body: PriceChangeRequest
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items/${params.itemIndex}/price`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/price`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   deleteApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexPrice(params: {
   orderFormId: string
   itemIndex: string
   individualShippingEstimates?: boolean
-}): Promise<Record<string, unknown>> {
-    return this.http.request<Record<string, unknown>>({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items/${params.itemIndex}/price`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<Record<string, unknown>> {
+    return this.http.request<Record<string, unknown>>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/price`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   ignoreProfileData(params: {
@@ -603,16 +605,16 @@ class CheckoutApi_shoppingCart {
   body: {
   ignoreProfileData?: boolean
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PATCH', path: `/api/checkout/pub/orderForm/${params.orderFormId}/profile`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PATCH', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/profile`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   getCartInstallments(params: {
   orderFormId: string
   paymentSystem: number
   individualShippingEstimates?: boolean
-}): Promise<{
-  bin?: string
+}, opts?: CallOptions): Promise<{
+  bin?: string | null
   installments?: {
   count?: number
   hasInterestRate?: boolean
@@ -630,11 +632,11 @@ class CheckoutApi_shoppingCart {
 }[]
   paymentSystem?: number
   value?: number
-  paymentName?: string
-  paymentGroupName?: string
+  paymentName?: string | null
+  paymentGroupName?: string | null
 }> {
     return this.http.request<{
-  bin?: string
+  bin?: string | null
   installments?: {
   count?: number
   hasInterestRate?: boolean
@@ -652,9 +654,9 @@ class CheckoutApi_shoppingCart {
 }[]
   paymentSystem?: number
   value?: number
-  paymentName?: string
-  paymentGroupName?: string
-}>({ method: 'GET', path: `/api/checkout/pub/orderForm/${params.orderFormId}/installments`, query: { 'paymentSystem': params.paymentSystem, 'individualShippingEstimates': params.individualShippingEstimates } })
+  paymentName?: string | null
+  paymentGroupName?: string | null
+}>(withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/installments`, query: { 'paymentSystem': params.paymentSystem, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   addCoupons(params: {
@@ -663,12 +665,12 @@ class CheckoutApi_shoppingCart {
   body: {
   text?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
   userProfileId?: string
@@ -677,7 +679,7 @@ class CheckoutApi_shoppingCart {
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -685,11 +687,11 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-  userType?: string
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -699,33 +701,33 @@ class CheckoutApi_shoppingCart {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -740,7 +742,7 @@ class CheckoutApi_shoppingCart {
 }[]
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -749,7 +751,7 @@ class CheckoutApi_shoppingCart {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -765,7 +767,7 @@ class CheckoutApi_shoppingCart {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -774,15 +776,15 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -795,15 +797,15 @@ class CheckoutApi_shoppingCart {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -813,16 +815,16 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -834,7 +836,7 @@ class CheckoutApi_shoppingCart {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -843,14 +845,14 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -859,30 +861,30 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-}
+} | null
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   paymentData?: {
-  giftCards?: {
+  giftCards?: ({
   redemptionCode?: string
   value?: number
   balance?: number
@@ -890,44 +892,44 @@ class CheckoutApi_shoppingCart {
   id?: string
   inUse?: boolean
   isSpecialCard?: boolean
-}[]
-  transactions?: {
+} | null)[]
+  transactions?: ({
   isActive?: boolean
   transactionId?: string
   merchantName?: string
   payments?: {
   accountId?: string
-  bin?: string
+  bin?: string | null
   installments?: number
   paymentSystem?: number
   referenceValue?: number
   value?: number
 }[]
   sharedTransaction?: boolean
-}[]
+} | null)[]
 }
   marketingData?: {
   coupon?: string
-  utmSource?: string
-  utmMedium?: string
-  utmCampaign?: string
-  utmiPage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-}
-  sellers?: {
+  utmSource?: string | null
+  utmMedium?: string | null
+  utmCampaign?: string | null
+  utmiPage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+} | null
+  sellers?: ({
   id?: string
   name?: string
-  logo?: string
-}[]
+  logo?: string | null
+} | null)[]
   clientPreferencesData?: {
   locale?: string
   optinNewsLetter?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: Record<string, unknown>
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -942,26 +944,26 @@ class CheckoutApi_shoppingCart {
   geoCoordinates?: number[]
 }
 }
-  customData?: Record<string, unknown>
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
+} | null)[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
@@ -972,7 +974,7 @@ class CheckoutApi_shoppingCart {
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
   userProfileId?: string
@@ -981,7 +983,7 @@ class CheckoutApi_shoppingCart {
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -989,11 +991,11 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-  userType?: string
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -1003,33 +1005,33 @@ class CheckoutApi_shoppingCart {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -1044,7 +1046,7 @@ class CheckoutApi_shoppingCart {
 }[]
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -1053,7 +1055,7 @@ class CheckoutApi_shoppingCart {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -1069,7 +1071,7 @@ class CheckoutApi_shoppingCart {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -1078,15 +1080,15 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -1099,15 +1101,15 @@ class CheckoutApi_shoppingCart {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -1117,16 +1119,16 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -1138,7 +1140,7 @@ class CheckoutApi_shoppingCart {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -1147,14 +1149,14 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -1163,30 +1165,30 @@ class CheckoutApi_shoppingCart {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-}
+} | null
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   paymentData?: {
-  giftCards?: {
+  giftCards?: ({
   redemptionCode?: string
   value?: number
   balance?: number
@@ -1194,44 +1196,44 @@ class CheckoutApi_shoppingCart {
   id?: string
   inUse?: boolean
   isSpecialCard?: boolean
-}[]
-  transactions?: {
+} | null)[]
+  transactions?: ({
   isActive?: boolean
   transactionId?: string
   merchantName?: string
   payments?: {
   accountId?: string
-  bin?: string
+  bin?: string | null
   installments?: number
   paymentSystem?: number
   referenceValue?: number
   value?: number
 }[]
   sharedTransaction?: boolean
-}[]
+} | null)[]
 }
   marketingData?: {
   coupon?: string
-  utmSource?: string
-  utmMedium?: string
-  utmCampaign?: string
-  utmiPage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-}
-  sellers?: {
+  utmSource?: string | null
+  utmMedium?: string | null
+  utmCampaign?: string | null
+  utmiPage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+} | null
+  sellers?: ({
   id?: string
   name?: string
-  logo?: string
-}[]
+  logo?: string | null
+} | null)[]
   clientPreferencesData?: {
   locale?: string
   optinNewsLetter?: boolean
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: Record<string, unknown>
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
   invoiceData?: {
   address?: {
   postalCode?: string
@@ -1246,31 +1248,31 @@ class CheckoutApi_shoppingCart {
   geoCoordinates?: number[]
 }
 }
-  customData?: Record<string, unknown>
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
-  items?: {
+  items?: ({
   id?: string
   seller?: string
   name?: string
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
-}[]
+} | null)[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
 }
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/coupons`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/coupons`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 }
 class CheckoutApi_cartAttachments {
@@ -1280,14 +1282,14 @@ class CheckoutApi_cartAttachments {
   email: string
   ensureComplete?: boolean
   individualShippingEstimates?: boolean
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   userProfileId?: string
   profileProvider?: string
   availableAccounts?: string[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -1295,26 +1297,26 @@ class CheckoutApi_cartAttachments {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   userProfile?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
-  profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
+  profileCompleteOnLoading?: boolean | null
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
 }
   isComplete?: boolean
 }> {
@@ -1325,7 +1327,7 @@ class CheckoutApi_cartAttachments {
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -1333,37 +1335,37 @@ class CheckoutApi_cartAttachments {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   userProfile?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   document?: string
   documentType?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
-  profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
+  profileCompleteOnLoading?: boolean | null
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
 }
   isComplete?: boolean
-}>({ method: 'GET', path: `/api/checkout/pub/profiles`, query: { 'email': params.email, 'ensureComplete': params.ensureComplete, 'individualShippingEstimates': params.individualShippingEstimates } })
+}>(withCall({ method: 'GET', path: `/api/checkout/pub/profiles`, query: { 'email': params.email, 'ensureComplete': params.ensureComplete, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   addClientProfile(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
-  email: string
-  firstName: string
+  email: string | null
+  firstName: string | null
   lastName: string
   documentType: string
   document: string
@@ -1375,8 +1377,8 @@ class CheckoutApi_cartAttachments {
   corporatePhone?: string
   isCorporate?: boolean
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/clientProfileData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/clientProfileData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   addShippingAddress(params: {
@@ -1387,7 +1389,7 @@ class CheckoutApi_cartAttachments {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -1395,18 +1397,18 @@ class CheckoutApi_cartAttachments {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
+  complement?: string | null
   reference?: string
   geoCoordinates?: number[]
 }[]
   logisticsInfo?: {
   itemIndex?: number
-  selectedDeliveryChannel?: string
-  selectedSla?: string
+  selectedDeliveryChannel?: string | null
+  selectedSla?: string | null
 }[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/shippingData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/shippingData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   addClientPreferences(params: {
@@ -1414,10 +1416,10 @@ class CheckoutApi_cartAttachments {
   individualShippingEstimates?: boolean
   body: {
   locale?: string
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/clientPreferencesData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/clientPreferencesData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   addMarketingData(params: {
@@ -1433,8 +1435,8 @@ class CheckoutApi_cartAttachments {
   utmiPart?: string
   utmiCampaign?: string
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/marketingData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/marketingData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   addPaymentData(params: {
@@ -1453,8 +1455,8 @@ class CheckoutApi_cartAttachments {
   hasDefaultBillingAddress?: boolean
 }[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/paymentData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/paymentData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   postApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexAttachmentsByAttachmentName(params: {
@@ -1463,10 +1465,12 @@ class CheckoutApi_cartAttachments {
   attachmentName: string
   individualShippingEstimates?: boolean
   body: {
-  content: Record<string, unknown>
+  content: {
+  [key: string]: unknown
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items/${params.itemIndex}/attachments/${params.attachmentName}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/attachments/${encodePathParam(params.attachmentName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   deleteApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexAttachmentsByAttachmentName(params: {
@@ -1474,8 +1478,8 @@ class CheckoutApi_cartAttachments {
   itemIndex: string
   attachmentName: string
   individualShippingEstimates?: boolean
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${params.orderFormId}/items/${params.itemIndex}/attachments/${params.attachmentName}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/attachments/${encodePathParam(params.attachmentName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   postApiCheckoutPubOrderFormByOrderFormIdAttachmentsSubscriptionData(params: {
@@ -1497,8 +1501,8 @@ class CheckoutApi_cartAttachments {
 }
 }[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/subscriptionData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/subscriptionData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   deleteApiCheckoutPubOrderFormByOrderFormIdAttachmentsSubscriptionData(params: {
@@ -1507,8 +1511,8 @@ class CheckoutApi_cartAttachments {
   body: {
   subscriptions: Record<string, unknown>[]
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/subscriptionData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/subscriptionData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   addMerchantContextData(params: {
@@ -1519,12 +1523,12 @@ class CheckoutApi_cartAttachments {
   salesAssociateId?: string
 }
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   salesAssociateId?: string
 }> {
     return this.http.request<{
   salesAssociateId?: string
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/merchantContextData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/merchantContextData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   postApiCheckoutPubOrderFormByOrderFormIdAttachmentsInvoiceData(params: {
@@ -1544,8 +1548,8 @@ class CheckoutApi_cartAttachments {
   street?: string
 }
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/attachments/invoiceData`, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/invoiceData`, body: params.body }, opts))
   }
 }
 class CheckoutApi_customData {
@@ -1555,9 +1559,11 @@ class CheckoutApi_customData {
   orderFormId: string
   appId: string
   individualShippingEstimates?: boolean
-  body: Record<string, unknown>
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customData/${params.appId}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+  body: {
+  [key: string]: unknown
+}
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customData/${encodePathParam(params.appId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   setSingleCustomFieldValue(params: {
@@ -1566,8 +1572,8 @@ class CheckoutApi_customData {
   appFieldName: string
   individualShippingEstimates?: boolean
   body: SetsinglecustomfieldvalueRequest
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customData/${params.appId}/${params.appFieldName}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customData/${encodePathParam(params.appId)}/${encodePathParam(params.appFieldName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   removesinglecustomfieldvalue(params: {
@@ -1575,8 +1581,8 @@ class CheckoutApi_customData {
   appId: string
   appFieldName: string
   individualShippingEstimates?: boolean
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customData/${params.appId}/${params.appFieldName}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customData/${encodePathParam(params.appId)}/${encodePathParam(params.appFieldName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   putApiCheckoutPubOrderFormByOrderFormIdCustomFields(params: {
@@ -1593,8 +1599,8 @@ class CheckoutApi_customData {
   refId?: string
 }[]
 }[]
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customFields`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsOrder(params: {
@@ -1605,8 +1611,8 @@ class CheckoutApi_customData {
   value: string
   refId?: string
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customFields/order`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/order`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsItemByItemId(params: {
@@ -1618,16 +1624,16 @@ class CheckoutApi_customData {
   value: string
   refId?: string
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customFields/item/${params.itemId}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/item/${encodePathParam(params.itemId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   deleteApiCheckoutPubOrderFormByOrderFormIdCustomFieldsItemByItemId(params: {
   orderFormId: string
   itemId: string
   individualShippingEstimates?: boolean
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customFields/item/${params.itemId}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/item/${encodePathParam(params.itemId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsAddressByAddressId(params: {
@@ -1639,8 +1645,8 @@ class CheckoutApi_customData {
   value: string
   refId?: string
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'PUT', path: `/api/checkout/pub/orderForm/${params.orderFormId}/customFields/address/${params.addressId}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/address/${encodePathParam(params.addressId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 }
 class CheckoutApi_configuration {
@@ -1648,30 +1654,30 @@ class CheckoutApi_configuration {
 
   getorderFormconfiguration(params: {
   individualShippingEstimates?: boolean
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   paymentConfiguration?: {
   requiresAuthenticationForPreAuthorizedPaymentOption?: boolean
   allowInstallmentsMerge?: boolean
 }
   taxConfiguration?: {
-  url?: string
-  authorizationHeader?: string
+  url?: string | null
+  authorizationHeader?: string | null
   appId?: string
   isMarketplaceResponsibleForTaxes?: boolean
-}
+} | null
   minimumQuantityAccumulatedForItems?: number
   decimalDigitsPrecision?: number
-  minimumValueAccumulated?: number
+  minimumValueAccumulated?: number | null
   apps?: {
   id?: string
   fields?: string[]
   major?: number
-}[]
-  allowMultipleDeliveries?: boolean
-  allowManualPrice?: boolean
-  savePersonalDataAsOptIn?: boolean
-  maxNumberOfWhiteLabelSellers?: number
-  maskFirstPurchaseData?: boolean
+}[] | null
+  allowMultipleDeliveries?: boolean | null
+  allowManualPrice?: boolean | null
+  savePersonalDataAsOptIn?: boolean | null
+  maxNumberOfWhiteLabelSellers?: number | null
+  maskFirstPurchaseData?: boolean | null
   recaptchaValidation?: string
 }> {
     return this.http.request<{
@@ -1680,65 +1686,65 @@ class CheckoutApi_configuration {
   allowInstallmentsMerge?: boolean
 }
   taxConfiguration?: {
-  url?: string
-  authorizationHeader?: string
+  url?: string | null
+  authorizationHeader?: string | null
   appId?: string
   isMarketplaceResponsibleForTaxes?: boolean
-}
+} | null
   minimumQuantityAccumulatedForItems?: number
   decimalDigitsPrecision?: number
-  minimumValueAccumulated?: number
+  minimumValueAccumulated?: number | null
   apps?: {
   id?: string
   fields?: string[]
   major?: number
-}[]
-  allowMultipleDeliveries?: boolean
-  allowManualPrice?: boolean
-  savePersonalDataAsOptIn?: boolean
-  maxNumberOfWhiteLabelSellers?: number
-  maskFirstPurchaseData?: boolean
+}[] | null
+  allowMultipleDeliveries?: boolean | null
+  allowManualPrice?: boolean | null
+  savePersonalDataAsOptIn?: boolean | null
+  maxNumberOfWhiteLabelSellers?: number | null
+  maskFirstPurchaseData?: boolean | null
   recaptchaValidation?: string
-}>({ method: 'GET', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}>(withCall({ method: 'GET', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   createorderFormconfiguration(params: {
   individualShippingEstimates?: boolean
   body: UpdateorderFormconfigurationRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   updateorderFormconfiguration(params: {
   individualShippingEstimates?: boolean
   body: UpdateorderFormconfigurationRequest
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PATCH', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   getWindowToChangeSeller(params: {
   individualShippingEstimates?: boolean
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/api/checkout/pvt/configuration/window-to-change-seller`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+} = {}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/checkout/pvt/configuration/window-to-change-seller`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   updateWindowToChangeSeller(params: {
   individualShippingEstimates?: boolean
   body: WaitingTime
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/checkout/pvt/configuration/window-to-change-seller`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/checkout/pvt/configuration/window-to-change-seller`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   clearorderFormMessages(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: Record<string, unknown>
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   orderFormId?: string
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
   userProfileId?: string
@@ -1747,7 +1753,7 @@ class CheckoutApi_configuration {
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -1755,11 +1761,11 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-  userType?: string
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -1769,33 +1775,33 @@ class CheckoutApi_configuration {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -1810,7 +1816,7 @@ class CheckoutApi_configuration {
 }[]
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -1819,7 +1825,7 @@ class CheckoutApi_configuration {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -1835,7 +1841,7 @@ class CheckoutApi_configuration {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -1844,15 +1850,15 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -1865,20 +1871,20 @@ class CheckoutApi_configuration {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -1888,16 +1894,16 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -1909,7 +1915,7 @@ class CheckoutApi_configuration {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -1918,14 +1924,14 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -1934,28 +1940,28 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-}
+} | null
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   paymentData?: {
   giftCards?: {
   redemptionCode?: string
@@ -1971,8 +1977,8 @@ class CheckoutApi_configuration {
   transactionId?: string
   merchantName?: string
   payments?: {
-  accountId?: string
-  bin?: string
+  accountId?: string | null
+  bin?: string | null
   installments?: number
   paymentSystem?: number
   referenceValue?: number
@@ -1986,26 +1992,26 @@ class CheckoutApi_configuration {
   utmSource?: string
   utmMedium?: string
   utmCampaign?: string
-  utmiPage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-}
+  utmiPage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+} | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
-  minimumOrderValue?: number
+  logo?: string | null
+  minimumOrderValue?: number | null
 }[]
   clientPreferencesData?: {
   locale?: string
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: Record<string, unknown>
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
-  invoiceData?: Record<string, unknown>
-  customData?: Record<string, unknown>
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
+  invoiceData?: Record<string, unknown> | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -2014,17 +2020,17 @@ class CheckoutApi_configuration {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
 }[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
@@ -2035,7 +2041,7 @@ class CheckoutApi_configuration {
   salesChannel?: string
   loggedIn?: boolean
   isCheckedIn?: boolean
-  storeId?: string
+  storeId?: string | null
   allowManualPrice?: boolean
   canEditData?: boolean
   userProfileId?: string
@@ -2044,7 +2050,7 @@ class CheckoutApi_configuration {
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   city?: string
   state?: string
@@ -2052,11 +2058,11 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-  userType?: string
+  userType?: string | null
   ignoreProfileData?: boolean
   value?: number
   messages?: string[]
@@ -2066,33 +2072,33 @@ class CheckoutApi_configuration {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -2107,7 +2113,7 @@ class CheckoutApi_configuration {
 }[]
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -2116,7 +2122,7 @@ class CheckoutApi_configuration {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -2132,7 +2138,7 @@ class CheckoutApi_configuration {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2141,15 +2147,15 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -2162,20 +2168,20 @@ class CheckoutApi_configuration {
   quantity?: number
 }[]
   attachmentOfferings?: {
-  name: string
-  required: boolean
-  schema: Record<string, unknown>
-}[]
+  name: string | null
+  required: boolean | null
+  schema: Record<string, unknown> | null
+}[] | null
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -2185,16 +2191,16 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -2206,7 +2212,7 @@ class CheckoutApi_configuration {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2215,14 +2221,14 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2231,28 +2237,28 @@ class CheckoutApi_configuration {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
-}
+} | null
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   paymentData?: {
   giftCards?: {
   redemptionCode?: string
@@ -2268,8 +2274,8 @@ class CheckoutApi_configuration {
   transactionId?: string
   merchantName?: string
   payments?: {
-  accountId?: string
-  bin?: string
+  accountId?: string | null
+  bin?: string | null
   installments?: number
   paymentSystem?: number
   referenceValue?: number
@@ -2283,26 +2289,26 @@ class CheckoutApi_configuration {
   utmSource?: string
   utmMedium?: string
   utmCampaign?: string
-  utmiPage?: string
-  utmiPart?: string
-  utmiCampaign?: string
-}
+  utmiPage?: string | null
+  utmiPart?: string | null
+  utmiCampaign?: string | null
+} | null
   sellers?: {
   id?: string
   name?: string
-  logo?: string
-  minimumOrderValue?: number
+  logo?: string | null
+  minimumOrderValue?: number | null
 }[]
   clientPreferencesData?: {
   locale?: string
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
 }
-  commercialConditionData?: Record<string, unknown>
+  commercialConditionData?: Record<string, unknown> | null
   storePreferencesData?: Record<string, unknown>
-  giftRegistryData?: Record<string, unknown>
-  openTextField?: string
-  invoiceData?: Record<string, unknown>
-  customData?: Record<string, unknown>
+  giftRegistryData?: Record<string, unknown> | null
+  openTextField?: string | null
+  invoiceData?: Record<string, unknown> | null
+  customData?: Record<string, unknown> | null
   itemMetadata?: {
   items?: {
   id?: string
@@ -2311,22 +2317,22 @@ class CheckoutApi_configuration {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
 }[]
 }
-  hooksData?: Record<string, unknown>
+  hooksData?: Record<string, unknown> | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
 }
-  subscriptionData?: Record<string, unknown>
+  subscriptionData?: Record<string, unknown> | null
   itemsOrdination?: {
   criteria?: string
   ascending?: boolean
 }
-}>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/messages/clear`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/messages/clear`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 }
 class CheckoutApi_fulfillment {
@@ -2337,7 +2343,7 @@ class CheckoutApi_fulfillment {
   postalCode?: string
   countryCode?: string
   individualShippingEstimates?: boolean
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   paging?: {
   page?: number
   pageSize?: number
@@ -2351,7 +2357,7 @@ class CheckoutApi_fulfillment {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2360,7 +2366,7 @@ class CheckoutApi_fulfillment {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
+  complement?: string | null
   reference?: string
   geoCoordinates?: number[]
 }
@@ -2388,7 +2394,7 @@ class CheckoutApi_fulfillment {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2397,7 +2403,7 @@ class CheckoutApi_fulfillment {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
+  complement?: string | null
   reference?: string
   geoCoordinates?: number[]
 }
@@ -2410,14 +2416,14 @@ class CheckoutApi_fulfillment {
 }[]
 }
 }[]
-}>({ method: 'GET', path: `/api/checkout/pub/pickup-points`, query: { 'geoCoordinates': params.geoCoordinates, 'postalCode': params.postalCode, 'countryCode': params.countryCode, 'individualShippingEstimates': params.individualShippingEstimates } })
+}>(withCall({ method: 'GET', path: `/api/checkout/pub/pickup-points`, query: { 'geoCoordinates': params.geoCoordinates, 'postalCode': params.postalCode, 'countryCode': params.countryCode, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
   getAddressByPostalCode(params: {
   countryCode: string
   postalCode: string
   individualShippingEstimates?: boolean
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   postalCode?: string
   city?: string
   state?: string
@@ -2425,7 +2431,7 @@ class CheckoutApi_fulfillment {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
+  complement?: string | null
   reference?: string
   geoCoordinates?: number[]
 }> {
@@ -2437,10 +2443,10 @@ class CheckoutApi_fulfillment {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
+  complement?: string | null
   reference?: string
   geoCoordinates?: number[]
-}>({ method: 'GET', path: `/api/checkout/pub/postal-code/${params.countryCode}/${params.postalCode}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}>(withCall({ method: 'GET', path: `/api/checkout/pub/postal-code/${encodePathParam(params.countryCode)}/${encodePathParam(params.postalCode)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 }
 class CheckoutApi_orderPlacement {
@@ -2452,13 +2458,13 @@ class CheckoutApi_orderPlacement {
   body: {
   referenceId: string
   savePersonalData?: boolean
-  optinNewsLetter?: boolean
+  optinNewsLetter?: boolean | null
   value: number
   referenceValue: number
   interestValue: number
 }
-}): Promise<OrderForm> {
-    return this.http.request<OrderForm>({ method: 'POST', path: `/api/checkout/pub/orderForm/${params.orderFormId}/transaction`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}, opts?: CallOptions): Promise<OrderForm> {
+    return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/transaction`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   placeOrder(params: {
@@ -2484,7 +2490,7 @@ class CheckoutApi_orderPlacement {
 }
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -2495,8 +2501,8 @@ class CheckoutApi_orderPlacement {
   isGift?: boolean
 }[]
   clientProfileData: {
-  email: string
-  firstName?: string
+  email: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
@@ -2507,12 +2513,12 @@ class CheckoutApi_orderPlacement {
   stateInscription?: string
   corporatePhone?: string
   isCorporate?: boolean
-}
+} | null
   shippingData: {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   postalCode?: string
   city?: string
   state?: string
@@ -2520,15 +2526,15 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
+  complement?: string | null
   reference?: string
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   itemIndex: number
-  selectedSla: string
-  selectedDeliveryChannel?: string
-  lockTTL?: string
+  selectedSla: string | null
+  selectedDeliveryChannel?: string | null
+  lockTTL?: string | null
   shippingEstimate?: string
   price: number
   deliveryWindow?: {
@@ -2540,7 +2546,7 @@ class CheckoutApi_orderPlacement {
 }
 }[]
   updateStatus?: string
-}
+} | null
   paymentData: {
   giftCards?: {
   redemptionCode: string
@@ -2572,7 +2578,7 @@ class CheckoutApi_orderPlacement {
 }[]
   payments: {
   accountId?: string
-  bin?: string
+  bin?: string | null
   installments: number
   paymentSystem: number
   referenceValue: number
@@ -2588,14 +2594,14 @@ class CheckoutApi_orderPlacement {
   utmiPage?: string
   utmiPart?: string
   utmiCampaign?: string
-}
+} | null
   openTextField?: string
   salesAssociateData?: {
   salesAssociateId?: string
 }
 }
-}): Promise<{
-  orderForm?: string
+}, opts?: CallOptions): Promise<{
+  orderForm?: string | null
   transactionData?: {
   merchantTransactions?: {
   id?: string
@@ -2603,14 +2609,14 @@ class CheckoutApi_orderPlacement {
   merchantName?: string
   payments?: {
   paymentSystem?: number
-  bin?: string
-  accountId?: string
-  tokenId?: string
+  bin?: string | null
+  accountId?: string | null
+  tokenId?: string | null
   value?: number
   referenceValue?: number
-  giftCardRedemptionCode?: string
-  giftCardProvider?: string
-  giftCardId?: string
+  giftCardRedemptionCode?: string | null
+  giftCardProvider?: string | null
+  giftCardId?: string | null
 }[]
 }[]
   receiverUri?: string
@@ -2619,11 +2625,11 @@ class CheckoutApi_orderPlacement {
   orders?: {
   orderId?: string
   orderGroup?: string
-  state?: string
+  state?: string | null
   isCheckedIn?: boolean
-  sellerOrderId?: string
-  storeId?: string
-  checkedInPickupPointId?: string
+  sellerOrderId?: string | null
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   value?: number
   items?: {
   uniqueId?: string
@@ -2631,33 +2637,33 @@ class CheckoutApi_orderPlacement {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -2672,7 +2678,7 @@ class CheckoutApi_orderPlacement {
 }[]
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -2681,7 +2687,7 @@ class CheckoutApi_orderPlacement {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -2694,8 +2700,8 @@ class CheckoutApi_orderPlacement {
   sellers?: {
   id?: string
   name?: string
-  logo?: string
-  minimumOrderValue?: number
+  logo?: string | null
+  minimumOrderValue?: number | null
 }[]
   totals?: {
   id?: string
@@ -2703,22 +2709,22 @@ class CheckoutApi_orderPlacement {
   value?: number
 }[]
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
@@ -2727,7 +2733,7 @@ class CheckoutApi_orderPlacement {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2736,15 +2742,15 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -2757,15 +2763,15 @@ class CheckoutApi_orderPlacement {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -2775,16 +2781,16 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -2796,7 +2802,7 @@ class CheckoutApi_orderPlacement {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2805,14 +2811,14 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -2821,8 +2827,8 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
 }
@@ -2842,7 +2848,7 @@ class CheckoutApi_orderPlacement {
   merchantName?: string
   payments?: {
   accountId?: string
-  bin?: string
+  bin?: string | null
   installments?: number
   paymentSystem?: number
   referenceValue?: number
@@ -2859,7 +2865,7 @@ class CheckoutApi_orderPlacement {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
 }[]
@@ -2872,7 +2878,7 @@ class CheckoutApi_orderPlacement {
   timeZoneLastChange?: string
   isCompleted?: boolean
   hostName?: string
-  merchantName?: string
+  merchantName?: string | null
   userType?: string
   roundingError?: number
   allowEdition?: boolean
@@ -2884,7 +2890,7 @@ class CheckoutApi_orderPlacement {
 }[]
 }> {
     return this.http.request<{
-  orderForm?: string
+  orderForm?: string | null
   transactionData?: {
   merchantTransactions?: {
   id?: string
@@ -2892,14 +2898,14 @@ class CheckoutApi_orderPlacement {
   merchantName?: string
   payments?: {
   paymentSystem?: number
-  bin?: string
-  accountId?: string
-  tokenId?: string
+  bin?: string | null
+  accountId?: string | null
+  tokenId?: string | null
   value?: number
   referenceValue?: number
-  giftCardRedemptionCode?: string
-  giftCardProvider?: string
-  giftCardId?: string
+  giftCardRedemptionCode?: string | null
+  giftCardProvider?: string | null
+  giftCardId?: string | null
 }[]
 }[]
   receiverUri?: string
@@ -2908,11 +2914,11 @@ class CheckoutApi_orderPlacement {
   orders?: {
   orderId?: string
   orderGroup?: string
-  state?: string
+  state?: string | null
   isCheckedIn?: boolean
-  sellerOrderId?: string
-  storeId?: string
-  checkedInPickupPointId?: string
+  sellerOrderId?: string | null
+  storeId?: string | null
+  checkedInPickupPointId?: string | null
   value?: number
   items?: {
   uniqueId?: string
@@ -2920,33 +2926,33 @@ class CheckoutApi_orderPlacement {
   productId?: string
   productRefId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   name?: string
   skuName?: string
-  modalType?: string
-  parentItemIndex?: number
-  parentAssemblyBinding?: string
+  modalType?: string | null
+  parentItemIndex?: number | null
+  parentAssemblyBinding?: string | null
   priceValidUntil?: string
   tax?: number
   price?: number
   listPrice?: number
-  manualPrice?: number
-  manualPriceAppliedBy?: string
+  manualPrice?: number | null
+  manualPriceAppliedBy?: string | null
   sellingPrice?: number
   rewardValue?: number
   isGift?: boolean
   additionalInfo?: {
-  dimension?: string
+  dimension?: string | null
   brandName?: string
   brandId?: string
-  offeringInfo?: string
-  offeringType?: string
-  offeringTypeId?: string
+  offeringInfo?: string | null
+  offeringType?: string | null
+  offeringTypeId?: string | null
 }
-  preSaleDate?: string
+  preSaleDate?: string | null
   productCategoryIds?: string
   productCategories?: {
-  "{ID}"?: string
+  [key: string]: string
 }
   quantity?: number
   seller?: string
@@ -2961,7 +2967,7 @@ class CheckoutApi_orderPlacement {
 }[]
   attachments?: string[]
   priceTags?: {
-  identifier?: string
+  identifier?: string | null
   isPercentual?: boolean
   name?: string
   rawValue?: number
@@ -2970,7 +2976,7 @@ class CheckoutApi_orderPlacement {
   availability?: string
   measurementUnit?: string
   unitMultiplier?: number
-  manufacturerCode?: string
+  manufacturerCode?: string | null
   priceDefinition?: {
   calculatedSellingPrice?: number
   total?: number
@@ -2983,8 +2989,8 @@ class CheckoutApi_orderPlacement {
   sellers?: {
   id?: string
   name?: string
-  logo?: string
-  minimumOrderValue?: number
+  logo?: string | null
+  minimumOrderValue?: number | null
 }[]
   totals?: {
   id?: string
@@ -2992,22 +2998,22 @@ class CheckoutApi_orderPlacement {
   value?: number
 }[]
   clientProfileData?: {
-  email?: string
-  firstName?: string
+  email?: string | null
+  firstName?: string | null
   lastName?: string
   documentType?: string
   document?: string
   phone?: string
-  corporateName?: string
-  tradeName?: string
-  corporateDocument?: string
-  stateInscription?: string
-  corporatePhone?: string
+  corporateName?: string | null
+  tradeName?: string | null
+  corporateDocument?: string | null
+  stateInscription?: string | null
+  corporatePhone?: string | null
   isCorporate?: boolean
   profileCompleteOnLoading?: boolean
-  profileErrorOnLoading?: boolean
-  customerClass?: string
-}
+  profileErrorOnLoading?: boolean | null
+  customerClass?: string | null
+} | null
   ratesAndBenefitsData?: {
   rateAndBenefitsIdentifiers?: string[]
   teaser?: string[]
@@ -3016,7 +3022,7 @@ class CheckoutApi_orderPlacement {
   address?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -3025,15 +3031,15 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
-}
+} | null
   logisticsInfo?: {
   itemIndex?: number
-  selectedSla?: string
-  selectedDeliveryChannel?: string
-  addressId?: string
+  selectedSla?: string | null
+  selectedDeliveryChannel?: string | null
+  addressId?: string | null
   slas?: {
   id?: string
   deliveryChannel?: string
@@ -3046,15 +3052,15 @@ class CheckoutApi_orderPlacement {
   quantity?: number
 }[]
   shippingEstimate?: string
-  shippingEstimateDate?: string
+  shippingEstimateDate?: string | null
   useIndividualShippingEstimates?: boolean
-  lockTTL?: string
+  lockTTL?: string | null
   price?: number
   listPrice?: number
   tax?: number
   pickupStoreInfo?: {
   isPickupStore?: boolean
-  friendlyName?: string
+  friendlyName?: string | null
   address?: {
   addressType?: string
   postalCode?: string
@@ -3064,16 +3070,16 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
+} | null
+  additionalInfo?: string | null
+  dockId?: string | null
 }
-  additionalInfo?: string
-  dockId?: string
-}
-  pickupPointId?: string
+  pickupPointId?: string | null
   pickupDistance?: number
-  polygonName?: string
+  polygonName?: string | null
   transitTime?: string
 }[]
   shipsTo?: string[]
@@ -3085,7 +3091,7 @@ class CheckoutApi_orderPlacement {
   selectedAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -3094,14 +3100,14 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
   availableAddresses?: {
   addressType?: string
   receiverName?: string
-  addressId?: string
+  addressId?: string | null
   isDisposable?: boolean
   postalCode?: string
   city?: string
@@ -3110,8 +3116,8 @@ class CheckoutApi_orderPlacement {
   street?: string
   number?: string
   neighborhood?: string
-  complement?: string
-  reference?: string
+  complement?: string | null
+  reference?: string | null
   geoCoordinates?: number[]
 }[]
 }
@@ -3131,7 +3137,7 @@ class CheckoutApi_orderPlacement {
   merchantName?: string
   payments?: {
   accountId?: string
-  bin?: string
+  bin?: string | null
   installments?: number
   paymentSystem?: number
   referenceValue?: number
@@ -3148,7 +3154,7 @@ class CheckoutApi_orderPlacement {
   skuName?: string
   productId?: string
   refId?: string
-  ean?: string
+  ean?: string | null
   imageUrl?: string
   detailUrl?: string
 }[]
@@ -3161,7 +3167,7 @@ class CheckoutApi_orderPlacement {
   timeZoneLastChange?: string
   isCompleted?: boolean
   hostName?: string
-  merchantName?: string
+  merchantName?: string | null
   userType?: string
   roundingError?: number
   allowEdition?: boolean
@@ -3171,14 +3177,14 @@ class CheckoutApi_orderPlacement {
   orderFormCreationDate?: string
   salesAssociateId?: string
 }[]
-}>({ method: 'PUT', path: `/api/checkout/pub/orders`, query: { 'sc': params.sc, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/checkout/pub/orders`, query: { 'sc': params.sc, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
   processOrder(params: {
   orderGroup: string
   individualShippingEstimates?: boolean
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/checkout/pub/gatewayCallback/${params.orderGroup}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/checkout/pub/gatewayCallback/${encodePathParam(params.orderGroup)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 }
 class CheckoutApi_region {
@@ -3190,12 +3196,12 @@ class CheckoutApi_region {
   postalCode?: string
   geoCoordinates?: number[]
   individualShippingEstimates?: boolean
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
 }> {
     return this.http.request<{
@@ -3203,9 +3209,9 @@ class CheckoutApi_region {
   sellers?: {
   id?: string
   name?: string
-  logo?: string
+  logo?: string | null
 }[]
-}>({ method: 'GET', path: `/api/checkout/pub/regions/${params.regionId}`, query: { 'country': params.country, 'postalCode': params.postalCode, 'geoCoordinates': params.geoCoordinates, 'individualShippingEstimates': params.individualShippingEstimates } })
+}>(withCall({ method: 'GET', path: `/api/checkout/pub/regions/${encodePathParam(params.regionId)}`, query: { 'country': params.country, 'postalCode': params.postalCode, 'geoCoordinates': params.geoCoordinates, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 }
 

@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class VtexDoApi_note {
   constructor(private http: VtexHttpClient) {}
@@ -8,8 +10,8 @@ class VtexDoApi_note {
   perPage?: number
   page?: number
   reason?: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/notes`, query: { 'target.id': params['target.id'], 'perPage': params.perPage, 'page': params.page, 'reason': params.reason } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/notes`, query: { 'target.id': params['target.id'], 'perPage': params.perPage, 'page': params.page, 'reason': params.reason }, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
   newNote(params: {
@@ -26,7 +28,7 @@ class VtexDoApi_note {
   name?: string
 }
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   domain?: string
   owner?: string
@@ -42,8 +44,8 @@ class VtexDoApi_note {
   id?: string
   name?: string
   email?: string
-  key?: string
-}
+  key?: string | null
+} | null
 }> {
     return this.http.request<{
   id?: string
@@ -61,16 +63,16 @@ class VtexDoApi_note {
   id?: string
   name?: string
   email?: string
-  key?: string
-}
-}>({ method: 'POST', path: `/notes`, body: params.body })
+  key?: string | null
+} | null
+}>(withCall({ method: 'POST', path: `/notes`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
   getNote(params: {
   noteId: string
   reason?: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/notes/${params.noteId}`, query: { 'reason': params.reason } })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/notes/${encodePathParam(params.noteId)}`, query: { 'reason': params.reason }, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 }
 class VtexDoApi_task {
@@ -83,11 +85,11 @@ class VtexDoApi_task {
   page?: string
   perPage?: string
   status?: string
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   piiHidden?: boolean
   items?: {
-  comments?: string[]
-  id?: string
+  comments?: string[] | null
+  id?: string | null
   surrogateKey?: string
   domain?: string
   target?: {
@@ -115,11 +117,11 @@ class VtexDoApi_task {
   status?: string
   creationDate?: string
   assignee?: {
-  id?: string
+  id?: string | null
   name?: string
   email?: string
-  key?: string
-}
+  key?: string | null
+} | null
 }[]
   paging?: {
   page?: number
@@ -131,8 +133,8 @@ class VtexDoApi_task {
     return this.http.request<{
   piiHidden?: boolean
   items?: {
-  comments?: string[]
-  id?: string
+  comments?: string[] | null
+  id?: string | null
   surrogateKey?: string
   domain?: string
   target?: {
@@ -160,11 +162,11 @@ class VtexDoApi_task {
   status?: string
   creationDate?: string
   assignee?: {
-  id?: string
+  id?: string | null
   name?: string
   email?: string
-  key?: string
-}
+  key?: string | null
+} | null
 }[]
   paging?: {
   page?: number
@@ -172,7 +174,7 @@ class VtexDoApi_task {
   total?: number
   pages?: number
 }
-}>({ method: 'GET', path: `/tasks`, query: { 'assignee.email': params['assignee.email'], 'target.id': params['target.id'], 'context': params.context, 'page': params.page, 'perPage': params.perPage, 'status': params.status } })
+}>(withCall({ method: 'GET', path: `/tasks`, query: { 'assignee.email': params['assignee.email'], 'target.id': params['target.id'], 'context': params.context, 'page': params.page, 'perPage': params.perPage, 'status': params.status }, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
   newTask(params: {
@@ -186,29 +188,29 @@ class VtexDoApi_task {
   context: string
   name: string
   priority: string
-  surrogateKey: string
+  surrogateKey: string | null
   description?: string
   dueDate: string
   assignee: {
-  id?: string
-  name?: string
+  id?: string | null
+  name?: string | null
   email: string
 }
   followers: {
-  id?: string
-  name?: string
+  id?: string | null
+  name?: string | null
   email: string
 }[]
-  parentTaskId?: string
+  parentTaskId?: string | null
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/tasks`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/tasks`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
   getTask(params: {
   taskId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'GET', path: `/tasks/${params.taskId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'GET', path: `/tasks/${encodePathParam(params.taskId)}`, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
   editTask(params: {
@@ -216,8 +218,8 @@ class VtexDoApi_task {
   body: {
   status: "Open" | "Closed" | "Suspended" | "InProgress"
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/tasks/${params.taskId}`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/tasks/${encodePathParam(params.taskId)}`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
   addComment(params: {
@@ -225,8 +227,8 @@ class VtexDoApi_task {
   body: {
   text: string
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/tasks/${params.taskId}/comments`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/tasks/${encodePathParam(params.taskId)}/comments`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 }
 

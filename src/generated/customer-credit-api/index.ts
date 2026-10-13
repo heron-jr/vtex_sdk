@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class CustomerCreditApi_invoices {
   constructor(private http: VtexHttpClient) {}
@@ -15,7 +17,7 @@ class CustomerCreditApi_invoices {
   friendlyId?: string
   observation?: string
   creditAccountId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   data: {
   id: string
   friendlyId: string
@@ -24,14 +26,14 @@ class CustomerCreditApi_invoices {
   accountId: string
   creditValue: number
   createdAt: string
-  resolvedAt?: string
+  resolvedAt?: string | null
   updatedAt: string
-  paymentLink?: string
+  paymentLink?: string | null
   originalDueDate: string
   dueDate: string
   installment: number
   orderId: string
-  observation?: string
+  observation?: string | null
   transactionId: string
   numberOfInstallments: number
   creditAccountId: string
@@ -52,14 +54,14 @@ class CustomerCreditApi_invoices {
   accountId: string
   creditValue: number
   createdAt: string
-  resolvedAt?: string
+  resolvedAt?: string | null
   updatedAt: string
-  paymentLink?: string
+  paymentLink?: string | null
   originalDueDate: string
   dueDate: string
   installment: number
   orderId: string
-  observation?: string
+  observation?: string | null
   transactionId: string
   numberOfInstallments: number
   creditAccountId: string
@@ -70,13 +72,13 @@ class CustomerCreditApi_invoices {
   totalPaid?: number
   totalCancelled?: number
 }
-}>({ method: 'GET', path: `/api/creditcontrol/invoices`, query: { 'from': params.from, 'to': params.to, 'createdDateFrom': params.createdDateFrom, 'createdDateTo': params.createdDateTo, 'dueDateFrom': params.dueDateFrom, 'dueDateTo': params.dueDateTo, 'value': params.value, 'status': params.status, 'friendlyId': params.friendlyId, 'observation': params.observation, 'creditAccountId': params.creditAccountId } })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/invoices`, query: { 'from': params.from, 'to': params.to, 'createdDateFrom': params.createdDateFrom, 'createdDateTo': params.createdDateTo, 'dueDateFrom': params.dueDateFrom, 'dueDateTo': params.dueDateTo, 'value': params.value, 'status': params.status, 'friendlyId': params.friendlyId, 'observation': params.observation, 'creditAccountId': params.creditAccountId } }, opts))
   }
 
   retrieveInvoicebyId(params: {
   creditAccountId: string
   invoiceId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   friendlyId: string
   status: "Opened" | "Paid" | "Cancelled"
@@ -109,7 +111,7 @@ class CustomerCreditApi_invoices {
   transactionId: string
   numberOfInstallments: number
   creditAccountId: string
-}>({ method: 'GET', path: `/api/creditcontrol/accounts/${params.creditAccountId}/invoices/${params.invoiceId}` })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}` }, opts))
   }
 
   changeInvoice(params: {
@@ -118,23 +120,23 @@ class CustomerCreditApi_invoices {
   friendlyId?: string
   body: {
   status: "Opened" | "Paid" | "Cancelled"
-  observation?: string
-  paymentLink?: string
+  observation?: string | null
+  paymentLink?: string | null
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/invoices/${params.invoiceId}`, query: { 'friendlyId': params.friendlyId }, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}`, query: { 'friendlyId': params.friendlyId }, body: params.body }, opts))
   }
 
   cancelInvoice(params: {
   creditAccountId: string
   invoiceId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/creditcontrol/accounts/${params.creditAccountId}/invoices/${params.invoiceId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}` }, opts))
   }
 
   searchallinvoicesofaAccount(params: {
   creditAccountId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   data: {
   id: string
   friendlyId: string
@@ -183,13 +185,13 @@ class CustomerCreditApi_invoices {
   totalPaid?: number
   totalCancelled?: number
 }
-}>({ method: 'GET', path: `/api/creditcontrol/accounts/${params.creditAccountId}/invoices` })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices` }, opts))
   }
 
   markaninvoiceasPaid(params: {
   creditAccountId: string
   invoiceId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   friendlyId: string
   status: "Opened" | "Paid" | "Cancelled"
@@ -222,7 +224,7 @@ class CustomerCreditApi_invoices {
   transactionId: string
   numberOfInstallments: number
   creditAccountId: string
-}>({ method: 'POST', path: `/api/creditcontrol/accounts/${params.creditAccountId}/invoices/${params.invoiceId}/payments` })
+}>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}/payments` }, opts))
   }
 
   postponeaninvoice(params: {
@@ -231,8 +233,8 @@ class CustomerCreditApi_invoices {
   body: {
   dueDays: number
 }
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/invoices/${params.invoiceId}/postponement`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}/postponement`, body: params.body }, opts))
   }
 }
 class CustomerCreditApi_account {
@@ -243,7 +245,7 @@ class CustomerCreditApi_account {
   to?: string
   status?: "Opened" | "Paid" | "Cancelled"
   email?: string
-}): Promise<{
+} = {}, opts?: CallOptions): Promise<{
   data: {
   id: string
   balance: number
@@ -284,7 +286,7 @@ class CustomerCreditApi_account {
   summary: {
   count: number
 }
-}>({ method: 'GET', path: `/api/creditcontrol/accounts`, query: { 'from': params.from, 'to': params.to, 'status': params.status, 'email': params.email } })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts`, query: { 'from': params.from, 'to': params.to, 'status': params.status, 'email': params.email } }, opts))
   }
 
   openanAccount(params: {
@@ -296,7 +298,7 @@ class CustomerCreditApi_account {
   description: string
   tolerance: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   balance: number
   document: string
@@ -327,12 +329,12 @@ class CustomerCreditApi_account {
   email: string
   tolerance: number
   availableBalance: number
-}>({ method: 'POST', path: `/api/creditcontrol/accounts`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts`, body: params.body }, opts))
   }
 
   retrieveaAccountbyId(params: {
   creditAccountId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   balance: number
   document: string
@@ -363,7 +365,7 @@ class CustomerCreditApi_account {
   email: string
   tolerance: number
   availableBalance: number
-}>({ method: 'GET', path: `/api/creditcontrol/accounts/${params.creditAccountId}` })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}` }, opts))
   }
 
   updateemailanddescriptionofaaccount(params: {
@@ -375,7 +377,7 @@ class CustomerCreditApi_account {
   creditLimit?: number
   tolerance?: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   balance: number
   document?: string
@@ -406,7 +408,7 @@ class CustomerCreditApi_account {
   email: string
   tolerance: number
   availableBalance: number
-}>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}`, body: params.body }, opts))
   }
 
   closeanAccount(params: {
@@ -416,7 +418,7 @@ class CustomerCreditApi_account {
   documentType?: "CPF" | "CNPJ" | "Other"
   email?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   balance: number
   document: string
@@ -447,12 +449,12 @@ class CustomerCreditApi_account {
   email: string
   tolerance: number
   availableBalance: number
-}>({ method: 'DELETE', path: `/api/creditcontrol/accounts/${params.creditAccountId}`, body: params.body })
+}>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}`, body: params.body }, opts))
   }
 
   accountstatements(params: {
   creditAccountId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   statements: {
   value: number
   date: string
@@ -481,7 +483,7 @@ class CustomerCreditApi_account {
   currentBalance: number
   intervalBalance: number
   previousBalance: number
-}>({ method: 'GET', path: `/api/creditcontrol/accounts/${params.creditAccountId}/statements` })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/statements` }, opts))
   }
 
   changecreditlimitofanAccount(params: {
@@ -489,7 +491,7 @@ class CustomerCreditApi_account {
   body: {
   value: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   balance: number
   status: string
@@ -516,7 +518,7 @@ class CustomerCreditApi_account {
   email: string
   tolerance: number
   availableBalance: number
-}>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/creditlimit`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/creditlimit`, body: params.body }, opts))
   }
 
   decreasebalanceofanaccount(params: {
@@ -525,12 +527,12 @@ class CustomerCreditApi_account {
   body: {
   value: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   value: string
 }> {
     return this.http.request<{
   value: string
-}>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/statements/${params.statementId}`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/statements/${encodePathParam(params.statementId)}`, body: params.body }, opts))
   }
 
   createorUpdateSettlement(params: {
@@ -539,14 +541,14 @@ class CustomerCreditApi_account {
   body: {
   value: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   value: number
   id: string
 }> {
     return this.http.request<{
   value: number
   id: string
-}>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/transactions/${params.transactionId}/settlement`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}/settlement`, body: params.body }, opts))
   }
 
   createaPreAuthorization(params: {
@@ -557,7 +559,7 @@ class CustomerCreditApi_account {
   installments: number
   expirationDate?: string
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   value: number
   expirationDate?: string
@@ -568,7 +570,7 @@ class CustomerCreditApi_account {
   value: number
   expirationDate?: string
   installments: number
-}>({ method: 'POST', path: `/api/creditcontrol/accounts/${params.creditAccountId}/transactions`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions`, body: params.body }, opts))
   }
 
   createaPreAuthorizationUsingid(params: {
@@ -579,7 +581,7 @@ class CustomerCreditApi_account {
   settle: boolean
   installments: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   value: number
   installments: number
@@ -588,14 +590,14 @@ class CustomerCreditApi_account {
   id: string
   value: number
   installments: number
-}>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/transactions/${params.transactionId}`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}`, body: params.body }, opts))
   }
 
   cancelaPreAuthorization(params: {
   creditAccountId: string
   transactionId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/creditcontrol/accounts/${params.creditAccountId}/transactions/${params.transactionId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}` }, opts))
   }
 
   addanaccountHolder(params: {
@@ -605,7 +607,7 @@ class CustomerCreditApi_account {
   email: string
 }
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   level: number
   claims: {
   email: string
@@ -620,18 +622,18 @@ class CustomerCreditApi_account {
 }
   id: string
   createdAt: string
-}>({ method: 'POST', path: `/api/creditcontrol/accounts/${params.creditAccountId}/holders`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/holders`, body: params.body }, opts))
   }
 
   deleteanaccountholder(params: {
   creditAccountId: string
   holderId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
 }> {
     return this.http.request<{
   id: string
-}>({ method: 'DELETE', path: `/api/creditcontrol/accounts/${params.creditAccountId}/holders/${params.holderId}` })
+}>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/holders/${encodePathParam(params.holderId)}` }, opts))
   }
 
   changetoleranceofanaccount(params: {
@@ -639,7 +641,7 @@ class CustomerCreditApi_account {
   body: {
   value: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   balance: number
   status: string
@@ -666,7 +668,7 @@ class CustomerCreditApi_account {
   email: string
   tolerance: number
   availableBalance: number
-}>({ method: 'PUT', path: `/api/creditcontrol/accounts/${params.creditAccountId}/tolerance`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/tolerance`, body: params.body }, opts))
   }
 
   partialorTotalRefundaSettlement(params: {
@@ -675,18 +677,18 @@ class CustomerCreditApi_account {
   body: {
   value: number
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   value: number
 }> {
     return this.http.request<{
   value: number
-}>({ method: 'POST', path: `/api/creditcontrol/accounts/${params.creditAccountId}/transactions/${params.transactionId}/refunds`, body: params.body })
+}>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}/refunds`, body: params.body }, opts))
   }
 }
 class CustomerCreditApi_storeConfiguration {
   constructor(private http: VtexHttpClient) {}
 
-  retrievestoreconfiguration(params: Record<string, never>): Promise<{
+  retrievestoreconfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   dailyInterestRate: number
   invoicePostponementLimit: number
   taxRate: number
@@ -729,7 +731,7 @@ class CustomerCreditApi_storeConfiguration {
   timeOfDay: string
 }[]
 }
-}>({ method: 'GET', path: `/api/creditcontrol/storeconfig` })
+}>(withCall({ method: 'GET', path: `/api/creditcontrol/storeconfig` }, opts))
   }
 
   createorchangestoreconfiguration(params: {
@@ -755,7 +757,7 @@ class CustomerCreditApi_storeConfiguration {
 }[]
 }
 }
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   dailyInterestRate: number
   invoicePostponementLimit: number
   taxRate: number
@@ -798,7 +800,7 @@ class CustomerCreditApi_storeConfiguration {
   timeOfDay: string
 }[]
 }
-}>({ method: 'PUT', path: `/api/creditcontrol/storeconfig`, body: params.body })
+}>(withCall({ method: 'PUT', path: `/api/creditcontrol/storeconfig`, body: params.body }, opts))
   }
 }
 

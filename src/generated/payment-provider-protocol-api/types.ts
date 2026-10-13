@@ -27,7 +27,7 @@ export type SuccessApproved = {
   status: string
   authorizationId: string
   bankIssueInvoiceId?: string
-  paymentUrl?: string
+  paymentUrl?: string | null
   paymentAppData?: {
   appName: string
   payload: string
@@ -37,11 +37,11 @@ export type SuccessApproved = {
   barCodeImageType?: string
   barCodeImageNumber?: string
   tid: string
-  nsu: string
-  acquirer: string
+  nsu: string | null
+  acquirer: string | null
   redirectUrl?: string
-  code?: string
-  message?: string
+  code?: string | null
+  message?: string | null
   delayToAutoSettle: number
   delayToAutoSettleAfterAntifraud: number
   delayToCancel: number
@@ -80,7 +80,7 @@ export type CancelPaymentRequest = {
 export type Success1 = {
   paymentId: string
   cancellationId: string
-  code: string
+  code: string | null
   message: string
   requestId: string
   connectorMetadata?: {
@@ -91,7 +91,7 @@ export type Success1 = {
 
 export type FailGenericError1 = {
   paymentId: string
-  cancellationId: string
+  cancellationId: string | null
   code: string
   message: string
   requestId: string
@@ -101,7 +101,7 @@ export type Success2 = {
   paymentId: string
   settleId: string
   value: number
-  code: string
+  code: string | null
   message: string
   requestId: string
   connectorMetadata?: {
@@ -112,7 +112,7 @@ export type Success2 = {
 
 export type FailGenericError2 = {
   paymentId: string
-  settleId: string
+  settleId: string | null
   value: number
   code: string
   message: string
@@ -123,7 +123,7 @@ export type Success3 = {
   paymentId: string
   refundId: string
   value: number
-  code: string
+  code: string | null
   message: string
   requestId: string
   connectorMetadata?: {
@@ -134,7 +134,7 @@ export type Success3 = {
 
 export type FailGenericError3 = {
   paymentId: string
-  refundId: string
+  refundId: string | null
   value: number
   code: string
   message: string

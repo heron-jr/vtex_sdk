@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 import type { SimulationItemResult, SubscriptionCycleResponse, StorePlan, ReportResponse, PlanResponse, SubscriptionGroupResponse, PlanRequest, ShippingAddressRequest, PurchaseSettingsRequest, SubscriptionGroupRequest, PriceTag, SimulateResponseVO, Settings } from './types.js'
 
 class SubscriptionsApiV3Api_cycles {
@@ -6,55 +8,55 @@ class SubscriptionsApiV3Api_cycles {
 
   getApiRnsPubCyclesByCycleId(params: {
   cycleId: string
-}): Promise<SubscriptionCycleResponse> {
-    return this.http.request<SubscriptionCycleResponse>({ method: 'GET', path: `/api/rns/pub/cycles/${params.cycleId}` })
+}, opts?: CallOptions): Promise<SubscriptionCycleResponse> {
+    return this.http.request<SubscriptionCycleResponse>(withCall({ method: 'GET', path: `/api/rns/pub/cycles/${encodePathParam(params.cycleId)}` }, opts))
   }
 
   getApiRnsPubCycles(params: {
-  beginDate?: string
-  endDate?: string
-  subscriptionId?: string
-  customerEmail?: string
-  status?: string
+  beginDate?: string | null
+  endDate?: string | null
+  subscriptionId?: string | null
+  customerEmail?: string | null
+  status?: string | null
   page?: number
   size?: number
-}): Promise<SubscriptionCycleResponse[]> {
-    return this.http.request<SubscriptionCycleResponse[]>({ method: 'GET', path: `/api/rns/pub/cycles`, query: { 'beginDate': params.beginDate, 'endDate': params.endDate, 'subscriptionId': params.subscriptionId, 'customerEmail': params.customerEmail, 'status': params.status, 'page': params.page, 'size': params.size } })
+} = {}, opts?: CallOptions): Promise<SubscriptionCycleResponse[]> {
+    return this.http.request<SubscriptionCycleResponse[]>(withCall({ method: 'GET', path: `/api/rns/pub/cycles`, query: { 'beginDate': params.beginDate, 'endDate': params.endDate, 'subscriptionId': params.subscriptionId, 'customerEmail': params.customerEmail, 'status': params.status, 'page': params.page, 'size': params.size } }, opts))
   }
 
   postApiRnsPubCyclesByCycleIdRetry(params: {
   cycleId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/api/rns/pub/cycles/${params.cycleId}/retry` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/rns/pub/cycles/${encodePathParam(params.cycleId)}/retry` }, opts))
   }
 }
 class SubscriptionsApiV3Api_plans {
   constructor(private http: VtexHttpClient) {}
 
   getApiRnsPvtPlans(params: {
-  periodicity?: string
-  interval?: string
+  periodicity?: string | null
+  interval?: string | null
   page?: number
   size?: number
-}): Promise<StorePlan[]> {
-    return this.http.request<StorePlan[]>({ method: 'GET', path: `/api/rns/pvt/plans`, query: { 'periodicity': params.periodicity, 'interval': params.interval, 'page': params.page, 'size': params.size } })
+} = {}, opts?: CallOptions): Promise<StorePlan[]> {
+    return this.http.request<StorePlan[]>(withCall({ method: 'GET', path: `/api/rns/pvt/plans`, query: { 'periodicity': params.periodicity, 'interval': params.interval, 'page': params.page, 'size': params.size } }, opts))
   }
 
   getApiRnsPvtPlansById(params: {
   id: string
-}): Promise<StorePlan> {
-    return this.http.request<StorePlan>({ method: 'GET', path: `/api/rns/pvt/plans/${params.id}` })
+}, opts?: CallOptions): Promise<StorePlan> {
+    return this.http.request<StorePlan>(withCall({ method: 'GET', path: `/api/rns/pvt/plans/${encodePathParam(params.id)}` }, opts))
   }
 }
 class SubscriptionsApiV3Api_reports {
   constructor(private http: VtexHttpClient) {}
 
-  getApiRnsPvtReports(params: Record<string, never>): Promise<{
+  getApiRnsPvtReports(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   account?: string
   name?: "subscriptionsWithStatus" | "subscriptionsScheduledBetweenDate" | "subscriptionsUpdatedBetweenDate" | "subscriptionsCreatedBetweenDate" | "executionsBetweenDate"
   description?: string
-  reason?: string
-  behalfOf?: string
+  reason?: string | null
+  behalfOf?: string | null
   params?: {
   type?: "string" | "date"
   format?: string
@@ -65,21 +67,21 @@ class SubscriptionsApiV3Api_reports {
   account?: string
   name?: "subscriptionsWithStatus" | "subscriptionsScheduledBetweenDate" | "subscriptionsUpdatedBetweenDate" | "subscriptionsCreatedBetweenDate" | "executionsBetweenDate"
   description?: string
-  reason?: string
-  behalfOf?: string
+  reason?: string | null
+  behalfOf?: string | null
   params?: {
   type?: "string" | "date"
   format?: string
   name?: "status" | "beginDate" | "endDate"
 }[]
-}[]>({ method: 'GET', path: `/api/rns/pvt/reports` })
+}[]>(withCall({ method: 'GET', path: `/api/rns/pvt/reports` }, opts))
   }
 
   getApiRnsPvtReportsByReportNameDocumentsByDocumentId(params: {
   reportName: string
   documentId: string
-}): Promise<ReportResponse> {
-    return this.http.request<ReportResponse>({ method: 'GET', path: `/api/rns/pvt/reports/${params.reportName}/documents/${params.documentId}` })
+}, opts?: CallOptions): Promise<ReportResponse> {
+    return this.http.request<ReportResponse>(withCall({ method: 'GET', path: `/api/rns/pvt/reports/${encodePathParam(params.reportName)}/documents/${encodePathParam(params.documentId)}` }, opts))
   }
 
   postApiRnsPvtReportsByReportNameDocuments(params: {
@@ -88,8 +90,8 @@ class SubscriptionsApiV3Api_reports {
   status?: string
   beginDate?: string
   endDate?: string
-}): Promise<ReportResponse> {
-    return this.http.request<ReportResponse>({ method: 'POST', path: `/api/rns/pvt/reports/${params.reportName}/documents`, query: { 'email': params.email, 'status': params.status, 'beginDate': params.beginDate, 'endDate': params.endDate } })
+}, opts?: CallOptions): Promise<ReportResponse> {
+    return this.http.request<ReportResponse>(withCall({ method: 'POST', path: `/api/rns/pvt/reports/${encodePathParam(params.reportName)}/documents`, query: { 'email': params.email, 'status': params.status, 'beginDate': params.beginDate, 'endDate': params.endDate } }, opts))
   }
 }
 class SubscriptionsApiV3Api_subscriptions {
@@ -97,24 +99,24 @@ class SubscriptionsApiV3Api_subscriptions {
 
   getApiRnsPubSubscriptionsById(params: {
   id: string
-}): Promise<SubscriptionGroupResponse> {
-    return this.http.request<SubscriptionGroupResponse>({ method: 'GET', path: `/api/rns/pub/subscriptions/${params.id}` })
+}, opts?: CallOptions): Promise<SubscriptionGroupResponse> {
+    return this.http.request<SubscriptionGroupResponse>(withCall({ method: 'GET', path: `/api/rns/pub/subscriptions/${encodePathParam(params.id)}` }, opts))
   }
 
   patchApiRnsPubSubscriptionsById(params: {
   id: string
   body: {
   customerEmail: string
-  title?: string
-  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING"
+  title?: string | null
+  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING" | null
   nextPurchaseDate?: string
   isSkipped?: boolean
   plan?: PlanRequest
   shippingAddress?: ShippingAddressRequest
   purchaseSettings?: PurchaseSettingsRequest
 }
-}): Promise<SubscriptionGroupResponse> {
-    return this.http.request<SubscriptionGroupResponse>({ method: 'PATCH', path: `/api/rns/pub/subscriptions/${params.id}`, body: params.body })
+}, opts?: CallOptions): Promise<SubscriptionGroupResponse> {
+    return this.http.request<SubscriptionGroupResponse>(withCall({ method: 'PATCH', path: `/api/rns/pub/subscriptions/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
   getApiRnsPubSubscriptions(params: {
@@ -127,34 +129,34 @@ class SubscriptionsApiV3Api_subscriptions {
   originalOrderId?: string
   page?: number
   size?: number
-}): Promise<SubscriptionGroupResponse[]> {
-    return this.http.request<SubscriptionGroupResponse[]>({ method: 'GET', path: `/api/rns/pub/subscriptions`, query: { 'customerEmail': params.customerEmail, 'status': params.status, 'addressId': params.addressId, 'paymentId': params.paymentId, 'planId': params.planId, 'nextPurchaseDate': params.nextPurchaseDate, 'originalOrderId': params.originalOrderId, 'page': params.page, 'size': params.size } })
+} = {}, opts?: CallOptions): Promise<SubscriptionGroupResponse[]> {
+    return this.http.request<SubscriptionGroupResponse[]>(withCall({ method: 'GET', path: `/api/rns/pub/subscriptions`, query: { 'customerEmail': params.customerEmail, 'status': params.status, 'addressId': params.addressId, 'paymentId': params.paymentId, 'planId': params.planId, 'nextPurchaseDate': params.nextPurchaseDate, 'originalOrderId': params.originalOrderId, 'page': params.page, 'size': params.size } }, opts))
   }
 
   postApiRnsPubSubscriptions(params: {
   body: SubscriptionGroupRequest
-}): Promise<SubscriptionGroupResponse> {
-    return this.http.request<SubscriptionGroupResponse>({ method: 'POST', path: `/api/rns/pub/subscriptions`, body: params.body })
+}, opts?: CallOptions): Promise<SubscriptionGroupResponse> {
+    return this.http.request<SubscriptionGroupResponse>(withCall({ method: 'POST', path: `/api/rns/pub/subscriptions`, body: params.body }, opts))
   }
 
   patchApiRnsPubSubscriptionsByIdItemsByItemId(params: {
   id: string
   itemId: string
   body: {
-  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING"
-  isSkipped?: boolean
+  status?: "ACTIVE" | "PAUSED" | "CANCELED" | "EXPIRED" | "MISSING" | null
+  isSkipped?: boolean | null
   quantity?: number
   manualPrice?: number
 }
-}): Promise<SubscriptionGroupResponse> {
-    return this.http.request<SubscriptionGroupResponse>({ method: 'PATCH', path: `/api/rns/pub/subscriptions/${params.id}/items/${params.itemId}`, body: params.body })
+}, opts?: CallOptions): Promise<SubscriptionGroupResponse> {
+    return this.http.request<SubscriptionGroupResponse>(withCall({ method: 'PATCH', path: `/api/rns/pub/subscriptions/${encodePathParam(params.id)}/items/${encodePathParam(params.itemId)}`, body: params.body }, opts))
   }
 
   deleteApiRnsPubSubscriptionsByIdItemsByItemId(params: {
   id: string
   itemId: string
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'DELETE', path: `/api/rns/pub/subscriptions/${params.id}/items/${params.itemId}` })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/rns/pub/subscriptions/${encodePathParam(params.id)}/items/${encodePathParam(params.itemId)}` }, opts))
   }
 
   postApiRnsPubSubscriptionsByIdItems(params: {
@@ -162,27 +164,27 @@ class SubscriptionsApiV3Api_subscriptions {
   body: {
   skuId: string
   quantity: number
-  manualPrice?: number
+  manualPrice?: number | null
 }
-}): Promise<SubscriptionGroupResponse> {
-    return this.http.request<SubscriptionGroupResponse>({ method: 'POST', path: `/api/rns/pub/subscriptions/${params.id}/items`, body: params.body })
+}, opts?: CallOptions): Promise<SubscriptionGroupResponse> {
+    return this.http.request<SubscriptionGroupResponse>(withCall({ method: 'POST', path: `/api/rns/pub/subscriptions/${encodePathParam(params.id)}/items`, body: params.body }, opts))
   }
 
   postApiRnsPubSubscriptionsByIdSimulate(params: {
   id: string
-}): Promise<SimulateResponseVO> {
-    return this.http.request<SimulateResponseVO>({ method: 'POST', path: `/api/rns/pub/subscriptions/${params.id}/simulate` })
+}, opts?: CallOptions): Promise<SimulateResponseVO> {
+    return this.http.request<SimulateResponseVO>(withCall({ method: 'POST', path: `/api/rns/pub/subscriptions/${encodePathParam(params.id)}/simulate` }, opts))
   }
 
   postApiRnsPubSubscriptionsSimulate(params: {
   body: SubscriptionGroupRequest
-}): Promise<SimulateResponseVO> {
-    return this.http.request<SimulateResponseVO>({ method: 'POST', path: `/api/rns/pub/subscriptions/simulate`, body: params.body })
+}, opts?: CallOptions): Promise<SimulateResponseVO> {
+    return this.http.request<SimulateResponseVO>(withCall({ method: 'POST', path: `/api/rns/pub/subscriptions/simulate`, body: params.body }, opts))
   }
 
   getApiRnsPubSubscriptionsBySubscriptionIdConversationMessage(params: {
   subscriptionId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id?: string
   from?: {
   conversationRelatedTo?: string
@@ -191,7 +193,7 @@ class SubscriptionsApiV3Api_subscriptions {
   aliasMaskType?: string
   email?: string
   name?: string
-  role?: string
+  role?: string | null
 }
   to?: {
   conversationRelatedTo?: string
@@ -206,7 +208,7 @@ class SubscriptionsApiV3Api_subscriptions {
   firstWords?: string
   body?: string
   hasAttachment?: boolean
-  attachmentNames?: string[]
+  attachmentNames?: (string | null)[] | null
   date?: string
 }[]> {
     return this.http.request<{
@@ -218,7 +220,7 @@ class SubscriptionsApiV3Api_subscriptions {
   aliasMaskType?: string
   email?: string
   name?: string
-  role?: string
+  role?: string | null
 }
   to?: {
   conversationRelatedTo?: string
@@ -233,27 +235,27 @@ class SubscriptionsApiV3Api_subscriptions {
   firstWords?: string
   body?: string
   hasAttachment?: boolean
-  attachmentNames?: string[]
+  attachmentNames?: (string | null)[] | null
   date?: string
-}[]>({ method: 'GET', path: `/api/rns/pub/subscriptions/${params.subscriptionId}/conversation-message` })
+}[]>(withCall({ method: 'GET', path: `/api/rns/pub/subscriptions/${encodePathParam(params.subscriptionId)}/conversation-message` }, opts))
   }
 }
 class SubscriptionsApiV3Api_settings {
   constructor(private http: VtexHttpClient) {}
 
-  getSettings(params: Record<string, never>): Promise<Settings> {
-    return this.http.request<Settings>({ method: 'GET', path: `/api/rns/settings` })
+  getSettings(params: Record<string, never> = {}, opts?: CallOptions): Promise<Settings> {
+    return this.http.request<Settings>(withCall({ method: 'GET', path: `/api/rns/settings` }, opts))
   }
 
   editSettings(params: {
   body: {
   slaOption: "NONE" | "CHEAPEST" | "CUSTOMER_CHOICE" | "STORE_CHOICE"
-  defaultSla: string
+  defaultSla: string | null
   isUsingV3: boolean
   onMigrationProcess: boolean
   executionHourInUtc: number
   workflowVersion: string
-  deliveryChannels: "delivery" | "pickupInPoint"[]
+  deliveryChannels: ("delivery" | "pickupInPoint")[]
   randomIdGeneration: boolean
   isMultipleInstallmentsEnabledOnCreation: boolean
   isMultipleInstallmentsEnabledOnUpdate: boolean
@@ -261,13 +263,13 @@ class SubscriptionsApiV3Api_settings {
   enableAttachments?: boolean
   splitSameSkuWithDifferentAttachments?: boolean
 }
-  orderCustomDataAppId: string
+  orderCustomDataAppId: string | null
   postponeExpiration: boolean
   manualPriceAllowed: boolean
   useItemPriceFromOriginalOrder: boolean
 }
-}): Promise<Settings> {
-    return this.http.request<Settings>({ method: 'POST', path: `/api/rns/settings`, body: params.body })
+}, opts?: CallOptions): Promise<Settings> {
+    return this.http.request<Settings>(withCall({ method: 'POST', path: `/api/rns/settings`, body: params.body }, opts))
   }
 }
 

@@ -1,4 +1,6 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { withCall } from '../../core/call.js'
 import type { UserIdentification, SessionPing, PageCart, PageEmptyCart, PageConfirmation, Click, Query, AutocompleteClick, AutocompleteQuery, CartProduct, OrderProduct, Session, Anonymous } from './types.js'
 
 class VtexIntelligentSearchEventsApiHeadlessApi_events {
@@ -6,8 +8,8 @@ class VtexIntelligentSearchEventsApiHeadlessApi_events {
 
   postEvent(params: {
   body: SessionPing | Query | Click | PageConfirmation | AutocompleteQuery | AutocompleteClick
-}): Promise<unknown> {
-    return this.http.request<unknown>({ method: 'POST', path: `/event`, body: params.body })
+}, opts?: CallOptions): Promise<unknown> {
+    return this.http.request<unknown>(withCall({ method: 'POST', path: `/event`, body: params.body, server: 'https://sp.vtex.com/event-api/v1/{accountName}' }, opts))
   }
 }
 

@@ -113,8 +113,8 @@ export type Shipping = {
   street: string
   number: string
   neighborhood: string
-  complement: string
-  reference: string
+  complement: string | null
+  reference: string | null
 }
 
 export type CreateGiftCardSettlementTransactionRequest = {
@@ -124,7 +124,7 @@ export type CreateGiftCardSettlementTransactionRequest = {
 
 export type Cart2 = {
   grandTotal: number
-  relationName: string
+  relationName: string | null
   redemptionCode: string
   discounts: number
   shipping: number

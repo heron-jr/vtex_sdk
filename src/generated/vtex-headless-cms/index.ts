@@ -1,11 +1,13 @@
 import type { VtexHttpClient } from '../../core/http.js'
+import type { CallOptions } from '../../core/types.js'
+import { encodePathParam, withCall } from '../../core/call.js'
 
 class VtexHeadlessCmsApi_pages {
   constructor(private http: VtexHttpClient) {}
 
   getAllContentTypes(params: {
   projectId: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   contentTypes?: {
   id?: string
   name?: string
@@ -16,7 +18,10 @@ class VtexHeadlessCmsApi_pages {
   schema?: {
   title: string
   description: string
-  widget?: Record<string, unknown>
+  widget?: {
+  [key: string]: unknown
+}
+  [key: string]: unknown
 }
 }[]
 }[]
@@ -33,12 +38,15 @@ class VtexHeadlessCmsApi_pages {
   schema?: {
   title: string
   description: string
-  widget?: Record<string, unknown>
+  widget?: {
+  [key: string]: unknown
+}
+  [key: string]: unknown
 }
 }[]
 }[]
 }[]
-}>({ method: 'GET', path: `/_v/cms/api/${params.projectId}` })
+}>(withCall({ method: 'GET', path: `/_v/cms/api/${encodePathParam(params.projectId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getPagesbyContentType(params: {
@@ -48,7 +56,7 @@ class VtexHeadlessCmsApi_pages {
   versionId?: string
   releaseId?: string
   'filters[{field}]'?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   hasNextPage?: boolean
   totalItems?: number
   data?: {
@@ -83,7 +91,7 @@ class VtexHeadlessCmsApi_pages {
 }[]
   parameters?: Record<string, unknown>
 }[]
-}>({ method: 'GET', path: `/_v/cms/api/${params.projectId}/${params['content-type']}`, query: { 'page': params.page, 'versionId': params.versionId, 'releaseId': params.releaseId, 'filters[{field}]': params['filters[{field}]'] } })
+}>(withCall({ method: 'GET', path: `/_v/cms/api/${encodePathParam(params.projectId)}/${encodePathParam(params['content-type'])}`, query: { 'page': params.page, 'versionId': params.versionId, 'releaseId': params.releaseId, 'filters[{field}]': params['filters[{field}]'] }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
   getCMSpage(params: {
@@ -92,7 +100,7 @@ class VtexHeadlessCmsApi_pages {
   'document-id': string
   versionId?: string
   releaseId?: string
-}): Promise<{
+}, opts?: CallOptions): Promise<{
   id: string
   name: string
   type: string
@@ -117,7 +125,7 @@ class VtexHeadlessCmsApi_pages {
   name: string
   data: Record<string, unknown>
 }[]
-}>({ method: 'GET', path: `/_v/cms/api/${params.projectId}/${params['content-type']}/${params['document-id']}`, query: { 'versionId': params.versionId, 'releaseId': params.releaseId } })
+}>(withCall({ method: 'GET', path: `/_v/cms/api/${encodePathParam(params.projectId)}/${encodePathParam(params['content-type'])}/${encodePathParam(params['document-id'])}`, query: { 'versionId': params.versionId, 'releaseId': params.releaseId }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 }
 
