@@ -879,9 +879,11 @@ EOF
 - [ ] **Step 1: Write the failing test.** Replace `test/core/retry.test.ts` with
 
 ```ts
+import { getEventListeners } from 'node:events'
+import { performance } from 'node:perf_hooks'
 import { describe, it, expect } from 'vitest'
 import {
-  isRetrySafe, isConnectPhaseError, shouldRetryFailure, parseRetryAfterMs, backoffDelay, sleep,
+  isRetrySafe, isConnectPhaseError, shouldRetryFailure, parseRetryAfterMs, backoffDelay, sleep, MAX_TIMER_MS,
 } from '../../src/core/retry.js'
 
 describe('isRetrySafe', () => {
@@ -893,6 +895,10 @@ describe('isRetrySafe', () => {
     expect(isRetrySafe('PATCH')).toBe(false)
     expect(isRetrySafe('POST', true)).toBe(true)
   })
+  it('lets idempotent: false demote a command-style PUT/DELETE', () => {
+    expect(isRetrySafe('PUT', false)).toBe(false)
+    expect(isRetrySafe('DELETE', false)).toBe(false)
+  })
 })
 
 describe('isConnectPhaseError', () => {
@@ -902,17 +908,24 @@ describe('isConnectPhaseError', () => {
   it.each(['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_CONNECT_TIMEOUT'])('recognizes %s', (code) => {
     expect(isConnectPhaseError(withCode(code))).toBe(true)
   })
-  it.each(['ECONNRESET', 'UND_ERR_SOCKET', 'EPIPE'])('does not treat %s as connect-phase', (code) => {
+  it.each(['ECONNRESET', 'UND_ERR_SOCKET', 'EPIPE', 'ETIMEDOUT'])('does not treat %s as connect-phase', (code) => {
     expect(isConnectPhaseError(withCode(code))).toBe(false)
   })
-  it('handles errors without a cause', () => {
+  it('reads a top-level code (AggregateError from undici, or an injected fetch)', () => {
+    expect(isConnectPhaseError(Object.assign(new AggregateError([], 'connect'), { code: 'ECONNREFUSED' }))).toBe(true)
+    expect(isConnectPhaseError(Object.assign(new Error('refused'), { code: 'ECONNREFUSED' }))).toBe(true)
+  })
+  it('handles values without a usable code', () => {
     expect(isConnectPhaseError(new Error('x'))).toBe(false)
     expect(isConnectPhaseError(undefined)).toBe(false)
+    expect(isConnectPhaseError(null)).toBe(false)
+    expect(isConnectPhaseError('ECONNREFUSED')).toBe(false)
+    expect(isConnectPhaseError({ cause: null })).toBe(false)
   })
 })
 
 describe('shouldRetryFailure', () => {
-  const ctx = (method: string, extra: { idempotent?: boolean; attempt?: number } = {}) => ({
+  const ctx = (method: string, extra: { idempotent?: boolean; attempt?: number; maxRetries?: number } = {}) => ({
     method, attempt: 0, maxRetries: 3, ...extra,
   })
 
@@ -923,6 +936,13 @@ describe('shouldRetryFailure', () => {
     expect(shouldRetryFailure(ctx('GET'), { kind: 'status', status: 503 })).toBe(true)
     expect(shouldRetryFailure(ctx('POST'), { kind: 'status', status: 503 })).toBe(false)
     expect(shouldRetryFailure(ctx('POST', { idempotent: true }), { kind: 'status', status: 503 })).toBe(true)
+    expect(shouldRetryFailure(ctx('PUT', { idempotent: false }), { kind: 'status', status: 503 })).toBe(false)
+  })
+  it('only treats 500-599 as server errors', () => {
+    expect(shouldRetryFailure(ctx('GET'), { kind: 'status', status: 500 })).toBe(true)
+    expect(shouldRetryFailure(ctx('GET'), { kind: 'status', status: 599 })).toBe(true)
+    expect(shouldRetryFailure(ctx('GET'), { kind: 'status', status: 600 })).toBe(false)
+    expect(shouldRetryFailure(ctx('GET'), { kind: 'status', status: 408 })).toBe(false)
   })
   it('never retries other 4xx', () => {
     expect(shouldRetryFailure(ctx('GET'), { kind: 'status', status: 404 })).toBe(false)
@@ -930,14 +950,18 @@ describe('shouldRetryFailure', () => {
   it('retries timeouts only for retry-safe requests', () => {
     expect(shouldRetryFailure(ctx('GET'), { kind: 'timeout' })).toBe(true)
     expect(shouldRetryFailure(ctx('PATCH'), { kind: 'timeout' })).toBe(false)
+    expect(shouldRetryFailure(ctx('PATCH', { idempotent: true }), { kind: 'timeout' })).toBe(true)
   })
   it('retries connect-phase errors for every method, other network errors only when safe', () => {
     expect(shouldRetryFailure(ctx('POST'), { kind: 'network', connectPhase: true })).toBe(true)
     expect(shouldRetryFailure(ctx('POST'), { kind: 'network', connectPhase: false })).toBe(false)
+    expect(shouldRetryFailure(ctx('POST', { idempotent: true }), { kind: 'network', connectPhase: false })).toBe(true)
     expect(shouldRetryFailure(ctx('GET'), { kind: 'network', connectPhase: false })).toBe(true)
   })
-  it('stops when the retry budget is spent', () => {
+  it('stops exactly when the retry budget is spent', () => {
+    expect(shouldRetryFailure(ctx('GET', { attempt: 2 }), { kind: 'status', status: 503 })).toBe(true)
     expect(shouldRetryFailure(ctx('GET', { attempt: 3 }), { kind: 'status', status: 503 })).toBe(false)
+    expect(shouldRetryFailure(ctx('GET', { maxRetries: 0 }), { kind: 'status', status: 429 })).toBe(false)
   })
 })
 
@@ -981,29 +1005,53 @@ describe('backoffDelay', () => {
     expect(backoffDelay(0, undefined, 30_000, () => 0.5)).toBe(100)
     expect(backoffDelay(2, undefined, 30_000, () => 0.5)).toBe(400)
     expect(backoffDelay(20, undefined, 1_000, () => 0.999)).toBe(999)
+    expect(backoffDelay(0, undefined, 30_000, () => 0)).toBe(0)
+  })
+  it('keeps a huge attempt count under the cap', () => {
+    expect(backoffDelay(5_000, undefined, 15_000, () => 0.999)).toBe(14_985)
   })
 })
 
 describe('sleep', () => {
-  it('resolves after the delay', async () => {
-    const started = Date.now()
-    await sleep(20)
-    expect(Date.now() - started).toBeGreaterThanOrEqual(15)
-  })
-  it('rejects promptly with the abort reason', async () => {
+  it('resolves after the delay and removes its abort listener', async () => {
     const controller = new AbortController()
-    const started = Date.now()
+    const started = performance.now()
+    const pending = sleep(20, controller.signal)
+    expect(getEventListeners(controller.signal, 'abort')).toHaveLength(1)
+    await pending
+    expect(performance.now() - started).toBeGreaterThanOrEqual(15)
+    expect(getEventListeners(controller.signal, 'abort')).toHaveLength(0)
+  })
+  it('rejects promptly with the abort reason and removes its listener', async () => {
+    const controller = new AbortController()
+    const started = performance.now()
     const pending = sleep(5_000, controller.signal).catch((e: unknown) => e)
     setTimeout(() => controller.abort(), 10)
     const err = await pending
     expect((err as Error).name).toBe('AbortError')
-    expect(Date.now() - started).toBeLessThan(1_000)
+    expect(performance.now() - started).toBeLessThan(1_000)
+    expect(getEventListeners(controller.signal, 'abort')).toHaveLength(0)
+  })
+  it('passes a custom abort reason through unchanged', async () => {
+    const controller = new AbortController()
+    const reason = new Error('shutting down')
+    const pending = sleep(5_000, controller.signal).catch((e: unknown) => e)
+    controller.abort(reason)
+    expect(await pending).toBe(reason)
   })
   it('rejects immediately when already aborted', async () => {
     const controller = new AbortController()
     controller.abort()
     const err = await sleep(5_000, controller.signal).catch((e: unknown) => e)
     expect((err as Error).name).toBe('AbortError')
+  })
+  it('falls back to an AbortError when a signal has no reason', async () => {
+    const signal = { aborted: true, reason: undefined } as unknown as AbortSignal
+    const err = await sleep(5_000, signal).catch((e: unknown) => e)
+    expect((err as Error).name).toBe('AbortError')
+  })
+  it('exposes the setTimeout ceiling', () => {
+    expect(MAX_TIMER_MS).toBe(2_147_483_647)
   })
 })
 ```
@@ -1018,6 +1066,9 @@ Expected: FAIL. `isRetrySafe` and the other new functions are not exported.
 The old `shouldRetry`/`computeBackoff` stay until Task 6 because the current transport still imports them.
 
 ```ts
+
+/** Largest delay setTimeout honors; larger values fire after about 1 ms. */
+export const MAX_TIMER_MS = 2_147_483_647
 
 export interface RetryContext {
   method: string
@@ -1035,28 +1086,32 @@ export type Failure =
 const RETRY_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'])
 const CONNECT_PHASE_CODES = new Set(['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_CONNECT_TIMEOUT'])
 
-/** GET/HEAD/OPTIONS/PUT/DELETE, or any request the caller marked idempotent. */
+/**
+ * GET/HEAD/OPTIONS/PUT/DELETE are retry-safe by default. An explicit `idempotent`
+ * wins: `true` promotes a POST/PATCH, `false` demotes a command-style PUT/DELETE.
+ */
 export function isRetrySafe(method: string, idempotent?: boolean): boolean {
-  return idempotent === true || RETRY_SAFE_METHODS.has(method.toUpperCase())
+  return idempotent ?? RETRY_SAFE_METHODS.has(method.toUpperCase())
 }
 
-/** True when a fetch rejection happened before the request reached the server. */
+/** True when a fetch rejection happened before any request bytes were written. */
 export function isConnectPhaseError(err: unknown): boolean {
-  const code = (err as { cause?: { code?: unknown } } | null | undefined)?.cause?.code
+  const error = err as { code?: unknown; cause?: { code?: unknown } | null } | null | undefined
+  const code = error?.cause?.code ?? error?.code
   return typeof code === 'string' && CONNECT_PHASE_CODES.has(code)
 }
 
 /**
  * 429 is always retried. 5xx, timeouts and mid-flight network errors are retried only
  * for retry-safe requests, because a non-idempotent write may already have been applied.
- * Connect-phase failures are always retried: the request never left the machine.
+ * Connect-phase failures are always retried: no request bytes were written.
  */
 export function shouldRetryFailure(ctx: RetryContext, failure: Failure): boolean {
   if (ctx.attempt >= ctx.maxRetries) return false
   const safe = isRetrySafe(ctx.method, ctx.idempotent)
   switch (failure.kind) {
     case 'status':
-      return failure.status === 429 || (safe && failure.status >= 500)
+      return failure.status === 429 || (safe && failure.status >= 500 && failure.status <= 599)
     case 'timeout':
       return safe
     case 'network':
@@ -1064,7 +1119,11 @@ export function shouldRetryFailure(ctx: RetryContext, failure: Failure): boolean
   }
 }
 
-/** Delay before the next attempt: Retry-After when given, else exponential backoff with full jitter. */
+/**
+ * Delay before the next attempt (`attempt` = retries already performed, 0-based):
+ * Retry-After when given, else exponential backoff with full jitter. Callers must
+ * reject a Retry-After above `capMs` before calling; the clamp here is a safety net.
+ */
 export function backoffDelay(
   attempt: number,
   retryAfterMs: number | undefined,
@@ -1079,18 +1138,20 @@ export function backoffDelay(
 /** setTimeout-based sleep that rejects with the signal's reason as soon as it aborts. */
 export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
+    const abortReason = () => signal?.reason ?? new DOMException('This operation was aborted', 'AbortError')
     if (signal?.aborted) {
-      reject(signal.reason)
+      reject(abortReason())
       return
     }
     const onAbort = () => {
       clearTimeout(timer)
-      reject(signal?.reason)
+      reject(abortReason())
     }
+    const delay = Math.min(Math.max(Number.isNaN(ms) ? 0 : ms, 0), MAX_TIMER_MS)
     const timer = setTimeout(() => {
       signal?.removeEventListener('abort', onAbort)
       resolve()
-    }, ms)
+    }, delay)
     signal?.addEventListener('abort', onAbort, { once: true })
   })
 }
@@ -1578,6 +1639,15 @@ describe('retry policy', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('idempotent: false demotes a command-style PUT so a 503 is not retried', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({}, 503)))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock, maxRetries: 3 })
+    await expect(http.request({ method: 'PUT', path: '/x', body: {}, idempotent: false })).rejects.toBeInstanceOf(
+      VtexServerError,
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('retry: false disables retries for a GET', async () => {
     const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({}, 503)))
     const http = new VtexHttpClient({ ...BASE, fetch: fetchMock, maxRetries: 3 })
@@ -1592,6 +1662,26 @@ describe('retry policy', () => {
       VtexServerError,
     )
     expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+})
+
+describe('numeric option validation', () => {
+  it.each([
+    ['maxRetries', -1], ['maxRetries', 1.5], ['maxRetries', Number.NaN],
+    ['timeoutMs', 0], ['timeoutMs', Number.NaN], ['timeoutMs', Number.POSITIVE_INFINITY],
+    ['maxRetryAfterMs', -1], ['maxRetryAfterMs', Number.NaN],
+  ])('rejects %s = %s at construction', (name, value) => {
+    expect(() => new VtexHttpClient({ ...BASE, [name]: value })).toThrow(VtexUsageError)
+  })
+
+  it('rejects invalid per-call timeout and retry options before sending', async () => {
+    const fetchMock = vi.fn()
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x', timeoutMs: Number.NaN })).rejects.toBeInstanceOf(VtexUsageError)
+    await expect(http.request({ method: 'GET', path: '/x', retry: { maxRetries: -1 } })).rejects.toBeInstanceOf(
+      VtexUsageError,
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
 
@@ -2013,7 +2103,10 @@ export interface CallOptions {
   timeoutMs?: number
   /** `false` disables retries for this call; `{ maxRetries }` overrides the client default. */
   retry?: false | { maxRetries?: number }
-  /** Marks a POST/PATCH as safe to retry, e.g. an upsert keyed by a natural id. */
+  /**
+   * Overrides the method's default retry safety: `true` promotes a POST/PATCH (e.g. an
+   * upsert keyed by a natural id); `false` demotes a command-style PUT/DELETE.
+   */
   idempotent?: boolean
 }
 
@@ -2060,12 +2153,21 @@ import {
   DEFAULT_SERVER, buildRequestUrl, normalizeAccount, resolveServer, validateEnvironment, type ResolvedServer,
 } from './url.js'
 import { buildAuthHeaders } from './auth.js'
-import { VtexNetworkError, VtexRequestError, VtexTimeoutError, mapResponseToError } from './errors.js'
-import { backoffDelay, isConnectPhaseError, parseRetryAfterMs, shouldRetryFailure, sleep, type Failure } from './retry.js'
+import { VtexNetworkError, VtexRequestError, VtexTimeoutError, VtexUsageError, mapResponseToError } from './errors.js'
+import {
+  MAX_TIMER_MS, backoffDelay, isConnectPhaseError, parseRetryAfterMs, shouldRetryFailure, sleep, type Failure,
+} from './retry.js'
 import { isJsonContentType, serializeBody } from './body.js'
 
 const MAX_REDIRECTS = 3
-const MAX_TIMER_MS = 2_147_483_647
+
+/** Rejects NaN, Infinity, negatives and (optionally) fractions in numeric options. */
+function checkedNumber(name: string, value: unknown, min: number, integer = false): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || (integer && !Number.isInteger(value))) {
+    throw new VtexUsageError(`${name} must be a finite ${integer ? 'integer' : 'number'} >= ${min} (got ${String(value)})`)
+  }
+  return value
+}
 
 /**
  * Combines multiple AbortSignals into one that aborts when any of them abort.
@@ -2157,9 +2259,9 @@ export class VtexHttpClient {
     this.account = normalizeAccount(config.account)
     this.environment = validateEnvironment(config.environment ?? 'vtexcommercestable')
     this.#authHeaders = buildAuthHeaders(config)
-    this.#maxRetries = config.maxRetries ?? 3
-    this.#timeoutMs = config.timeoutMs ?? 30_000
-    this.#maxRetryAfterMs = Math.min(config.maxRetryAfterMs ?? 30_000, MAX_TIMER_MS)
+    this.#maxRetries = checkedNumber('maxRetries', config.maxRetries ?? 3, 0, true)
+    this.#timeoutMs = Math.min(checkedNumber('timeoutMs', config.timeoutMs ?? 30_000, 1), MAX_TIMER_MS)
+    this.#maxRetryAfterMs = Math.min(checkedNumber('maxRetryAfterMs', config.maxRetryAfterMs ?? 30_000, 0), MAX_TIMER_MS)
     this.#fetch = config.fetch ?? fetch
     this.#hooks = config.hooks ?? {}
     this.#server(DEFAULT_SERVER)
@@ -2199,7 +2301,10 @@ export class VtexHttpClient {
       if (value !== undefined) setHeader(headers, name, String(value))
     }
 
-    const maxRetries = opts.retry === false ? 0 : (opts.retry?.maxRetries ?? this.#maxRetries)
+    const maxRetries =
+      opts.retry === false ? 0 : checkedNumber('retry.maxRetries', opts.retry?.maxRetries ?? this.#maxRetries, 0, true)
+    const timeoutMs =
+      opts.timeoutMs === undefined ? this.#timeoutMs : Math.min(checkedNumber('timeoutMs', opts.timeoutMs, 1), MAX_TIMER_MS)
     let attempt = 0
     let redirects = 0
 
@@ -2209,7 +2314,7 @@ export class VtexHttpClient {
       const timer = setTimeout(() => {
         timedOut = true
         controller.abort()
-      }, opts.timeoutMs ?? this.#timeoutMs)
+      }, timeoutMs)
       let dispose: () => void = () => {}
 
       try {
@@ -2295,6 +2400,9 @@ export class VtexHttpClient {
 - [ ] **Step 6: Replace `src/core/retry.ts` with the final version (drops `shouldRetry`/`computeBackoff`)**
 
 ```ts
+/** Largest delay setTimeout honors; larger values fire after about 1 ms. */
+export const MAX_TIMER_MS = 2_147_483_647
+
 export interface RetryContext {
   method: string
   idempotent?: boolean
@@ -2311,28 +2419,32 @@ export type Failure =
 const RETRY_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'])
 const CONNECT_PHASE_CODES = new Set(['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_CONNECT_TIMEOUT'])
 
-/** GET/HEAD/OPTIONS/PUT/DELETE, or any request the caller marked idempotent. */
+/**
+ * GET/HEAD/OPTIONS/PUT/DELETE are retry-safe by default. An explicit `idempotent`
+ * wins: `true` promotes a POST/PATCH, `false` demotes a command-style PUT/DELETE.
+ */
 export function isRetrySafe(method: string, idempotent?: boolean): boolean {
-  return idempotent === true || RETRY_SAFE_METHODS.has(method.toUpperCase())
+  return idempotent ?? RETRY_SAFE_METHODS.has(method.toUpperCase())
 }
 
-/** True when a fetch rejection happened before the request reached the server. */
+/** True when a fetch rejection happened before any request bytes were written. */
 export function isConnectPhaseError(err: unknown): boolean {
-  const code = (err as { cause?: { code?: unknown } } | null | undefined)?.cause?.code
+  const error = err as { code?: unknown; cause?: { code?: unknown } | null } | null | undefined
+  const code = error?.cause?.code ?? error?.code
   return typeof code === 'string' && CONNECT_PHASE_CODES.has(code)
 }
 
 /**
  * 429 is always retried. 5xx, timeouts and mid-flight network errors are retried only
  * for retry-safe requests, because a non-idempotent write may already have been applied.
- * Connect-phase failures are always retried: the request never left the machine.
+ * Connect-phase failures are always retried: no request bytes were written.
  */
 export function shouldRetryFailure(ctx: RetryContext, failure: Failure): boolean {
   if (ctx.attempt >= ctx.maxRetries) return false
   const safe = isRetrySafe(ctx.method, ctx.idempotent)
   switch (failure.kind) {
     case 'status':
-      return failure.status === 429 || (safe && failure.status >= 500)
+      return failure.status === 429 || (safe && failure.status >= 500 && failure.status <= 599)
     case 'timeout':
       return safe
     case 'network':
@@ -2358,7 +2470,11 @@ export function parseRetryAfterMs(value: string | null | undefined, now: number 
   return Math.max(0, at - now)
 }
 
-/** Delay before the next attempt: Retry-After when given, else exponential backoff with full jitter. */
+/**
+ * Delay before the next attempt (`attempt` = retries already performed, 0-based):
+ * Retry-After when given, else exponential backoff with full jitter. Callers must
+ * reject a Retry-After above `capMs` before calling; the clamp here is a safety net.
+ */
 export function backoffDelay(
   attempt: number,
   retryAfterMs: number | undefined,
@@ -2373,18 +2489,20 @@ export function backoffDelay(
 /** setTimeout-based sleep that rejects with the signal's reason as soon as it aborts. */
 export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
+    const abortReason = () => signal?.reason ?? new DOMException('This operation was aborted', 'AbortError')
     if (signal?.aborted) {
-      reject(signal.reason)
+      reject(abortReason())
       return
     }
     const onAbort = () => {
       clearTimeout(timer)
-      reject(signal?.reason)
+      reject(abortReason())
     }
+    const delay = Math.min(Math.max(Number.isNaN(ms) ? 0 : ms, 0), MAX_TIMER_MS)
     const timer = setTimeout(() => {
       signal?.removeEventListener('abort', onAbort)
       resolve()
-    }, ms)
+    }, delay)
     signal?.addEventListener('abort', onAbort, { once: true })
   })
 }
@@ -5510,14 +5628,21 @@ await vtex.raw.giftcardAPI.giftCard.searchGiftCardsfromcartdata({ 'REST-Range': 
 - Retried only on 429, and when the connection could not be established.
 - A timeout, a 5xx or a dropped connection on a write is reported, not retried, because VTEX may already have applied it.
 
-You can opt in for writes you know are idempotent, or opt out anywhere:
+You can override the default per call:
 
 ```ts
 // Upsert keyed by couponCode: safe to repeat
 await vtex.raw.promotionsTaxesAPI.coupons.createOrUpdateCoupon({ body: coupon }, { idempotent: true })
 
+// Some VTEX PUTs are commands (placing an order, debiting a credit account):
+// idempotent: false stops retries on 5xx/timeouts but keeps 429 retries
+await vtex.request({ method: 'PUT', path: '/api/checkout/pub/orders', body: order, idempotent: false })
+
+// No retries at all
 await vtex.orders.get(id, { retry: false })
 ```
+
+A connection that cannot be established times out in about 10 s, and each attempt waits for it. A POST to an unreachable host can therefore take about 40 s over 4 attempts before failing.
 
 **`Retry-After`**
 - Both delta-seconds and HTTP-date values are honored, up to `maxRetryAfterMs` (default 30 s).
@@ -5973,7 +6098,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  359 passed (359)`;
+- `Test Files  25 passed (25)` and `Tests  377 passed (377)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.

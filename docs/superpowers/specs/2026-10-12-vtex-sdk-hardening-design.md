@@ -77,8 +77,8 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
 
 ### 3.3 Retry policy (S3, S6)
 **Classes of request**
-- **Retry-safe:** `GET`, `HEAD`, `OPTIONS`, `PUT`, `DELETE`, or any request whose call options set `idempotent: true`.
-  - Retried on: network errors, per-attempt timeout, 429 and 5xx.
+- **Retry-safe:** `GET`, `HEAD`, `OPTIONS`, `PUT`, `DELETE` by default, or any request whose call options set `idempotent: true`. An explicit `idempotent: false` demotes a command-style PUT/DELETE; the VTEX schemas contain such commands, for example placing an order or debiting a credit account.
+  - Retried on: network errors, per-attempt timeout, 429 and 500–599.
 - **Non-idempotent:** `POST`, `PATCH` (default).
   - Retried only on:
     - 429;
@@ -86,7 +86,8 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
   - Never retried on 5xx, timeouts or mid-flight resets (`ECONNRESET`, `UND_ERR_SOCKET`). These are ambiguous: the server may already have applied the write.
 
 **Limits and delays**
-- **Per-call overrides:** `retry: false` disables retries. `retry: { maxRetries }` overrides the count. `idempotent: true` promotes a POST/PATCH to retry-safe.
+- **Per-call overrides:** `retry: false` disables retries. `retry: { maxRetries }` overrides the count. `idempotent: true` promotes a POST/PATCH to retry-safe; `idempotent: false` demotes a PUT/DELETE.
+- **Connect-phase detection:** the error code is read from `cause.code`, falling back to a top-level `code` (undici's AggregateError, or an injected fetch).
 - **Default `maxRetries`:** 3, unchanged.
 - **`Retry-After`:** accepts delta-seconds and HTTP-date.
   - Capped by the new config `maxRetryAfterMs`, default `30000`.
@@ -143,6 +144,8 @@ VtexError                         (new base, extends Error)
 - `maxCachedClients?: number`, factory only, default `100`.
 
 Nothing is removed.
+
+**Validation:** `maxRetries` (an integer >= 0), `timeoutMs` (> 0) and `maxRetryAfterMs` (>= 0) must be finite numbers, both at construction and per call. Otherwise the SDK throws `VtexUsageError`. Without this check, a `NaN` from an unset environment variable would silently turn every backoff into a retry after about 1 ms. Every timer delay is also clamped to setTimeout's ceiling (`MAX_TIMER_MS`).
 
 ## 4. Code generator (`scripts/codegen*`)
 
