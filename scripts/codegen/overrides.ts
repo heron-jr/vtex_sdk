@@ -47,7 +47,7 @@ export const OVERRIDES: readonly SchemaOverride[] = [
     file: 'VTEX - Promotions & Taxes API.json',
     pointer:
       '/paths/~1api~1rnb~1pvt~1coupon~1usage~1{couponCode}/get/responses/200/content/application~1json/schema/properties/profileUsages',
-    matches: (n) => sameKeys(n?.properties, ['profileId']) && typeof n.properties.profileId === 'object',
+    matches: (n) => sameKeys(n?.properties, ['profileId']) && isContainer(n.properties.profileId),
     transform: (node) => ({
       type: 'object',
       description: node.description,
@@ -93,8 +93,10 @@ export function applyOverrides(file: string, doc: unknown, overrides: readonly S
   let applied = 0
   for (const override of overrides) {
     if (override.file !== file) continue
-    const fail = (cause?: unknown) =>
-      new Error(`Schema override for ${file} no longer applies: ${override.pointer} (${override.reason})`, { cause })
+    const fail = (cause?: unknown, detail = '') =>
+      new Error(`Schema override for ${file} no longer applies${detail}: ${override.pointer} (${override.reason})`, {
+        cause,
+      })
     if (!override.pointer.startsWith('/')) throw fail()
     const segments = override.pointer.split('/').slice(1).map(decodeSegment)
     const last = segments.pop()
@@ -108,13 +110,15 @@ export function applyOverrides(file: string, doc: unknown, overrides: readonly S
     }
     if (Array.isArray(parent)) throw fail() // overrides replace object members only
     const node = parent[last]
-    if (!override.matches(node)) throw fail()
+    let matched: boolean
     let next: unknown
     try {
-      next = override.transform(node)
+      matched = override.matches(node)
+      if (matched) next = override.transform(node)
     } catch (err) {
       throw fail(err)
     }
+    if (!matched) throw fail(undefined, ' (shape changed)')
     if (next === undefined) delete parent[last]
     else parent[last] = next
     applied++

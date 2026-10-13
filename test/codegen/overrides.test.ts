@@ -113,7 +113,31 @@ describe('applyOverrides', () => {
   it('fails loudly when the node no longer has the known-bad shape', () => {
     const doc = sampleDoc()
     doc.components.schemas.Headers = { type: 'object', additionalProperties: { type: 'string' } }
-    expect(() => applyOverrides('A.json', doc, sample)).toThrow(/no longer applies/)
+    expect(() => applyOverrides('A.json', doc, sample)).toThrow(/no longer applies \(shape changed\)/)
+  })
+
+  it('requires a leading slash even when the shifted pointer would resolve', () => {
+    const override: SchemaOverride = { ...sample[0], pointer: 'components/schemas/Headers' }
+    const doc: any = { schemas: { Headers: { properties: { key: {} } } } }
+    expect(() => applyOverrides('A.json', doc, [override])).toThrow(/no longer applies/)
+    expect(doc.schemas.Headers).toEqual({ properties: { key: {} } })
+  })
+
+  it('refuses array parents', () => {
+    const override: SchemaOverride = { file: 'A.json', pointer: '/a/1', matches: () => true, transform: () => undefined, reason: 'x' }
+    const doc: any = { a: [1, 2] }
+    expect(() => applyOverrides('A.json', doc, [override])).toThrow(/no longer applies/)
+    expect(doc.a).toEqual([1, 2])
+  })
+
+  it('refuses an own __proto__ key created by JSON.parse', () => {
+    const override: SchemaOverride = { file: 'A.json', pointer: '/a/__proto__', matches: () => true, transform: () => 1, reason: 'x' }
+    expect(() => applyOverrides('A.json', JSON.parse('{"a":{"__proto__":{}}}'), [override])).toThrow(/no longer applies/)
+  })
+
+  it('wraps errors thrown by a matcher', () => {
+    const throwing: SchemaOverride[] = [{ ...sample[0], matches: () => { throw new Error('boom') } }]
+    expect(() => applyOverrides('A.json', sampleDoc(), throwing)).toThrow(/no longer applies/)
   })
 
   it('wraps errors thrown by a transform', () => {
@@ -175,5 +199,15 @@ describe('shipped OVERRIDES', () => {
         .properties.profileUsages
     usages.properties.other = { type: 'string' }
     expect(() => applyOverrides('VTEX - Promotions & Taxes API.json', promo)).toThrow(/no longer applies/)
+
+    const headers = fixtures()['VTEX - Orders API.json']
+    headers.components.schemas.Headers.properties = { key: { type: 'string' }, other: { type: 'string' } }
+    expect(() => applyOverrides('VTEX - Orders API.json', headers)).toThrow(/shape changed/)
+
+    const search = fixtures()['VTEX - Search API.json']
+    search.paths['/api/catalog_system/pub/products/crossselling/accessories/{productId}'].get.servers = [
+      { url: 'https://{accountName}.{environment}.com.br' },
+    ]
+    expect(() => applyOverrides('VTEX - Search API.json', search)).toThrow(/shape changed/)
   })
 })
