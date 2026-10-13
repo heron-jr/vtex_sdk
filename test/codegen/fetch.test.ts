@@ -87,6 +87,43 @@ describe('fetchSchemas', () => {
     await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: big })).rejects.toThrow(/larger than/)
     expect(existsSync(out)).toBe(false)
   })
+
+  it('stops reading a streamed body (no content-length) once it passes the cap', async () => {
+    let pulls = 0
+    const chunk = new Uint8Array(4 * 1024 * 1024)
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulls++
+        controller.enqueue(chunk)
+      },
+    })
+    const streaming = vi.fn(async () => new Response(stream))
+    await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: streaming })).rejects.toThrow(
+      /Download failed for A.json: .*larger than/,
+    )
+    expect(pulls).toBeLessThan(MAX_SCHEMA_BYTES / chunk.byteLength + 4)
+  })
+
+  it('names the file and the cause when the request itself fails', async () => {
+    const failing = vi.fn(async () => {
+      throw new TypeError('fetch failed', { cause: new Error('unexpected redirect') })
+    })
+    await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: failing })).rejects.toThrow(
+      'Download failed for A.json: fetch failed (unexpected redirect)',
+    )
+  })
+
+  it('validates the whole lock before fetching anything', async () => {
+    const fetchMock = fakeFetch({ 'A.json': A })
+    const unsafeSecond = { ...lockOf({ 'A.json': A }), files: { 'A.json': gitBlobSha(A), '../x.json': gitBlobSha(A) } }
+    await expect(fetchSchemas({ lock: unsafeSecond, outDir: out, fetch: fetchMock })).rejects.toThrow(/unsafe/)
+    const empty = { ...lockOf({ 'A.json': A }), files: {} }
+    await expect(fetchSchemas({ lock: empty, outDir: out, fetch: fetchMock })).rejects.toThrow(/no files/)
+    const caseDup = { ...lockOf({ 'A.json': A }), files: { 'A.json': gitBlobSha(A), 'a.json': gitBlobSha(A) } }
+    await expect(fetchSchemas({ lock: caseDup, outDir: out, fetch: fetchMock })).rejects.toThrow(/Duplicate/)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(existsSync(out)).toBe(false)
+  })
 })
 
 describe('listSchemaLock', () => {
@@ -112,6 +149,10 @@ describe('listSchemaLock', () => {
     ['a traversal name', [{ type: 'file', name: '../package.json', sha: gitBlobSha(A) }], /unsafe/],
     ['a bad sha', [{ type: 'file', name: 'A.json', sha: 'nope' }], /blob SHA/],
     ['a non-array body', { message: 'rate limited' }, /not an array/],
+    ['names differing only in case', [
+      { type: 'file', name: 'A.json', sha: gitBlobSha(A) },
+      { type: 'file', name: 'a.json', sha: gitBlobSha(A) },
+    ], /Duplicate/],
     ['no schemas', [{ type: 'file', name: 'package.json', sha: gitBlobSha(A) }], /no schema files/],
     ['a truncated listing', Array.from({ length: 1000 }, (_, i) => ({ type: 'file', name: `F${i}.json`, sha: gitBlobSha(A) })), /truncated/],
   ])('rejects %s', async (_label, entries, error) => {

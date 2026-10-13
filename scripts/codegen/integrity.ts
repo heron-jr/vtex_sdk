@@ -46,8 +46,13 @@ export function parseSchemaLock(json: unknown): SchemaLock {
     throw new Error('Schema lock files must be an object of name to blob SHA')
   }
   const files: Record<string, string> = {}
+  const seen = new Set<string>()
   for (const [name, sha] of Object.entries(lock.files)) {
-    files[assertSchemaFileName(name)] = assertSha(sha, `blob SHA for ${name}`)
+    const key = assertSchemaFileName(name).toLowerCase()
+    // Case variants collide on Windows and macOS file systems.
+    if (seen.has(key)) throw new Error(`Duplicate schema file name ${JSON.stringify(name)} (names must be unique ignoring case)`)
+    seen.add(key)
+    files[name] = assertSha(sha, `blob SHA for ${name}`)
   }
   if (Object.keys(files).length === 0) throw new Error('Schema lock lists no files')
   return { repo: SCHEMA_REPO, ref, files }
