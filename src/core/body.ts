@@ -19,6 +19,13 @@ export interface SerializedBody {
   contentType: string | undefined
 }
 
+/** Node streams and other async iterables, which JSON.stringify would otherwise turn into internal state. */
+function isNodeStreamLike(value: unknown): boolean {
+  if (value === null || typeof value !== 'object') return false
+  const candidate = value as { pipe?: unknown; [Symbol.asyncIterator]?: unknown }
+  return typeof candidate.pipe === 'function' || typeof candidate[Symbol.asyncIterator] === 'function'
+}
+
 /** Object.prototype.toString tag, so FormData/Blob/... from another realm or library are recognized too. */
 function tagOf(value: unknown): string {
   return Object.prototype.toString.call(value).slice(8, -1)
@@ -44,7 +51,9 @@ export function serializeBody(body: unknown, contentType?: string): SerializedBo
   if (tag === 'ArrayBuffer' || ArrayBuffer.isView(body)) {
     return { body: body as ArrayBuffer, contentType: contentType || 'application/octet-stream' }
   }
-  if (tag === 'ReadableStream') throw new VtexUsageError('Streaming request bodies are not supported')
+  if (tag === 'ReadableStream' || isNodeStreamLike(body)) {
+    throw new VtexUsageError('Streaming request bodies are not supported')
+  }
   const declared = contentType || DEFAULT_CONTENT_TYPE
   if (isJsonContentType(declared)) return { body: toJson(body, declared), contentType: declared }
   if (mediaType(declared) === FORM_URLENCODED) {

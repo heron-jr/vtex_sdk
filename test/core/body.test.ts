@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream'
 import { describe, it, expect } from 'vitest'
 import { isJsonContentType, mediaType, serializeBody } from '../../src/core/body.js'
 import { VtexUsageError } from '../../src/core/errors.js'
@@ -109,7 +110,9 @@ describe('serializeBody', () => {
     const bytes = new Uint8Array([1, 2, 3])
     expect(serializeBody(bytes)).toStrictEqual({ body: bytes, contentType: 'application/octet-stream' })
   })
-  it('refuses streaming bodies', () => {
+  it('refuses streaming bodies, web or Node', () => {
     expect(() => serializeBody(new ReadableStream())).toThrow(VtexUsageError)
+    expect(() => serializeBody(Readable.from(['a']))).toThrow(VtexUsageError)
+    expect(() => serializeBody({ async *[Symbol.asyncIterator]() { yield 'a' } })).toThrow(VtexUsageError)
   })
 })
