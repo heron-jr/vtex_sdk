@@ -27,7 +27,7 @@
  *     allowlisted VTEX server are excluded from `raw.*` and reported.
  */
 import { existsSync } from 'node:fs'
-import { readdir, readFile, mkdir, writeFile, rm } from 'node:fs/promises'
+import { readdir, readFile, mkdir, writeFile, rename, rm } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { methodName, dedupe, tagToNamespace } from './codegen/naming.js'
 import { schemaToType } from './codegen/types.js'
@@ -166,14 +166,16 @@ async function main() {
   try {
     lockJson = JSON.parse(await readFile('scripts/schemas.lock.json', 'utf8'))
   } catch (err) {
-    throw new Error(`scripts/schemas.lock.json is unreadable: ${err instanceof Error ? err.message : String(err)}`)
+    throw new Error(`scripts/schemas.lock.json is unreadable: ${err instanceof Error ? err.message : String(err)}`, {
+      cause: err,
+    })
   }
   const lock = parseSchemaLock(lockJson)
   const locked = Object.keys(lock.files).sort()
   if (files.join('\n') !== locked.join('\n')) {
     throw new Error('schemas/ does not match scripts/schemas.lock.json: run `npm run fetch-schemas`.')
   }
-  const orphanOverrides = OVERRIDES.filter((o) => !(o.file in lock.files))
+  const orphanOverrides = OVERRIDES.filter((o) => !Object.hasOwn(lock.files, o.file))
   if (orphanOverrides.length > 0) {
     throw new Error(
       `Schema overrides target files that are not in the lock: ${orphanOverrides.map((o) => `${o.file} ${o.pointer}`).join('; ')}`,
@@ -357,12 +359,16 @@ async function main() {
   outputs.set('index.ts', aggregator)
   outputs.set('types-index.ts', `${typeExports.join('\n')}\n`)
 
-  await rm('src/generated', { recursive: true, force: true })
+  // Write a sibling directory first and swap it in, so a write error can't leave a partial tree.
+  const staging = 'src/generated.tmp'
+  await rm(staging, { recursive: true, force: true })
   for (const [path, content] of outputs) {
-    const target = join('src/generated', path)
+    const target = join(staging, path)
     await mkdir(dirname(target), { recursive: true })
     await writeFile(target, content)
   }
+  await rm('src/generated', { recursive: true, force: true })
+  await rename(staging, 'src/generated')
 
   // Operations dropped from APIs that are otherwise generated; a re-pin that changes this shows up here.
   const partial = excludedOps.filter((op) => !excludedApis.some((api) => op.startsWith(`${api}: `)))

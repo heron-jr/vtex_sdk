@@ -5,6 +5,7 @@ dist
 schemas/
 schemas.old/
 .schemas-*/
+src/generated.tmp/
 coverage/
 .env
 .env.*

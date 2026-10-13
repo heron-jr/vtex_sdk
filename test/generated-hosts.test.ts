@@ -13,10 +13,11 @@ function generatedServerTemplates(): string[] {
     const index = join(GENERATED_DIR, entry.name, 'index.ts')
     if (!entry.isDirectory() || !existsSync(index)) continue
     const source = readFileSync(index, 'utf8')
-    const literals = [...source.matchAll(/server: (['"`])(.+?)\1/g)]
-    // Every `server:` must be a plain literal this regex sees, or the pin below could be bypassed.
-    expect(literals.length).toBe(source.split('server:').length - 1)
-    for (const match of literals) templates.add(match[2])
+    // Generated calls pass the server as `, server: '<template>'`. Every such option must be a
+    // plain literal this regex sees, or the pin below could be bypassed.
+    const literals = [...source.matchAll(/, server: (['"`])(.+?)\1/g)]
+    expect(literals.length).toBe(source.split(', server: ').length - 1)
+    for (const match of literals) templates.add(match[2]!)
   }
   return [...templates]
 }
