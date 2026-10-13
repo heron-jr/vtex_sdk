@@ -68,8 +68,8 @@ export function normalizeServer(server: ServerObject): string | undefined {
 /**
  * Picks the server for an operation: operation > path item > document. The first
  * level that declares servers decides; within it, the first resolvable entry wins.
- * When no level declares servers, the account host is used. A level whose `servers`
- * is present but not an array counts as declared and unresolvable.
+ * When no level declares servers, the account host is used. An absent, null or empty
+ * `servers` falls through; any other non-array value counts as declared and unresolvable.
  */
 export function pickServer(levels: Array<ServerObject[] | undefined>): string | undefined {
   for (const level of levels) {
