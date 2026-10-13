@@ -4535,23 +4535,94 @@ const sample: SchemaOverride[] = [
   {
     file: 'A.json',
     pointer: '/components/schemas/Headers',
+    matches: (n) => n?.properties?.key !== undefined,
     transform: () => ({ type: 'object', additionalProperties: { type: 'string' } }),
     reason: 'test',
   },
   {
     file: 'A.json',
     pointer: '/paths/~1x~1{id}/get/servers',
+    matches: Array.isArray,
     transform: () => undefined,
     reason: 'drop servers',
   },
 ]
 
+const sampleDoc = (): any => ({
+  components: { schemas: { Headers: { properties: { key: { type: 'string' } } } } },
+  paths: { '/x/{id}': { get: { servers: [{ url: 'https://other.example' }] } } },
+})
+
+const entelperuServers = () => [
+  {
+    url: 'https://entelperu.{environment}.com.br/api/catalog_system/pub/products/crossselling/accessories',
+    variables: { environment: { default: 'DefaultParameterValue' } },
+  },
+]
+
+/** Minimal copies of the current VTEX "before" shapes each shipped override targets. */
+const fixtures = (): Record<string, any> => ({
+  'VTEX - Orders API.json': {
+    paths: {
+      '/api/orders/hook/config': {
+        post: {
+          responses: {
+            200: { content: { 'application/json': { schema: { $ref: '#/components/schemas/HookConfiguration' } } } },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Headers: {
+          title: 'Headers', required: ['key'], type: 'object',
+          properties: { key: { type: 'string' } }, example: { key: 'value' },
+        },
+      },
+    },
+  },
+  'VTEX - Promotions & Taxes API.json': {
+    paths: {
+      '/api/rnb/pvt/coupon/usage/{couponCode}': {
+        get: {
+          responses: {
+            200: {
+              content: {
+                'application/json': {
+                  schema: {
+                    properties: {
+                      profileUsages: {
+                        type: 'object',
+                        description: 'Object with information where and when the coupon was used.',
+                        properties: {
+                          profileId: {
+                            type: 'object',
+                            description: 'Profile ID.',
+                            properties: { orderUsage: { type: 'array', items: { type: 'object' } } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  'VTEX - Search API.json': {
+    paths: {
+      '/api/catalog_system/pub/products/crossselling/showtogether/{productId}': { get: { servers: entelperuServers() } },
+      '/api/catalog_system/pub/products/crossselling/accessories/{productId}': { get: { servers: entelperuServers() } },
+    },
+  },
+})
+
 describe('applyOverrides', () => {
   it('replaces or deletes the node at each pointer for the matching file', () => {
-    const doc: any = {
-      components: { schemas: { Headers: { properties: { key: { type: 'string' } } } } },
-      paths: { '/x/{id}': { get: { servers: [{ url: 'https://other.example' }] } } },
-    }
+    const doc = sampleDoc()
     expect(applyOverrides('A.json', doc, sample)).toBe(2)
     expect(doc.components.schemas.Headers).toEqual({ type: 'object', additionalProperties: { type: 'string' } })
     expect('servers' in doc.paths['/x/{id}'].get).toBe(false)
@@ -4561,18 +4632,79 @@ describe('applyOverrides', () => {
     expect(applyOverrides('B.json', {}, sample)).toBe(0)
   })
 
-  it('fails loudly when a pointer no longer resolves', () => {
-    expect(() => applyOverrides('A.json', { components: { schemas: {} } }, sample)).toThrow(/no longer applies/)
+  it('fails loudly, naming file, pointer and reason, when a pointer no longer resolves', () => {
+    expect(() => applyOverrides('A.json', { components: { schemas: {} } }, sample)).toThrow(
+      'Schema override for A.json no longer applies: /components/schemas/Headers (test)',
+    )
+    expect(() => applyOverrides('A.json', { components: 'x' }, sample)).toThrow(/no longer applies/)
+    expect(() => applyOverrides('A.json', null, sample)).toThrow(/no longer applies/)
   })
 
-  it('ships the documented overrides', () => {
-    expect(OVERRIDES.map((o) => `${o.file} ${o.pointer}`)).toEqual([
-      'VTEX - Orders API.json /components/schemas/Headers',
-      'VTEX - Orders API.json /paths/~1api~1orders~1hook~1config/post/responses/200/content/application~1json/schema',
-      'VTEX - Promotions & Taxes API.json /paths/~1api~1rnb~1pvt~1coupon~1usage~1{couponCode}/get/responses/200/content/application~1json/schema/properties/profileUsages',
-      'VTEX - Search API.json /paths/~1api~1catalog_system~1pub~1products~1crossselling~1showtogether~1{productId}/get/servers',
-      'VTEX - Search API.json /paths/~1api~1catalog_system~1pub~1products~1crossselling~1accessories~1{productId}/get/servers',
-    ])
+  it('fails loudly when the node no longer has the known-bad shape', () => {
+    const doc = sampleDoc()
+    doc.components.schemas.Headers = { type: 'object', additionalProperties: { type: 'string' } }
+    expect(() => applyOverrides('A.json', doc, sample)).toThrow(/no longer applies/)
+  })
+
+  it('wraps errors thrown by a transform', () => {
+    const throwing: SchemaOverride[] = [{ ...sample[0], transform: () => { throw new Error('boom') } }]
+    expect(() => applyOverrides('A.json', sampleDoc(), throwing)).toThrow(/no longer applies/)
+  })
+
+  it.each(['/__proto__/toString', '/constructor/prototype', '/components/schemas/constructor', 'components/schemas/Headers'])(
+    'refuses pointer %s without touching prototypes',
+    (pointer) => {
+      const override: SchemaOverride = { file: 'A.json', pointer, matches: () => true, transform: () => 'PWNED', reason: 'x' }
+      expect(() => applyOverrides('A.json', { components: { schemas: {} } }, [override])).toThrow(/no longer applies/)
+      expect(Object.prototype.toString).not.toBe('PWNED')
+      expect(({} as any).constructor).toBe(Object)
+    },
+  )
+
+  it('decodes ~0 and ~1 in pointer segments', () => {
+    const override: SchemaOverride = { file: 'A.json', pointer: '/a~1b/c~0d', matches: () => true, transform: () => 1, reason: 'x' }
+    const doc: any = { 'a/b': { 'c~d': 0 } }
+    applyOverrides('A.json', doc, [override])
+    expect(doc['a/b']['c~d']).toBe(1)
+  })
+})
+
+describe('shipped OVERRIDES', () => {
+  it('apply to the current VTEX shapes and produce the corrected schemas', () => {
+    const docs = fixtures()
+    let applied = 0
+    for (const [file, doc] of Object.entries(docs)) applied += applyOverrides(file, doc)
+    expect(applied).toBe(OVERRIDES.length)
+
+    const orders = docs['VTEX - Orders API.json']
+    expect(orders.components.schemas.Headers).toEqual({
+      title: 'Headers', type: 'object', additionalProperties: { type: 'string' },
+    })
+    expect(orders.paths['/api/orders/hook/config'].post.responses[200].content['application/json'].schema).toEqual({})
+
+    const usages =
+      docs['VTEX - Promotions & Taxes API.json'].paths['/api/rnb/pvt/coupon/usage/{couponCode}'].get.responses[200]
+        .content['application/json'].schema.properties.profileUsages
+    expect(usages.properties).toBeUndefined()
+    expect(usages.additionalProperties.properties.orderUsage.type).toBe('array')
+
+    const search = docs['VTEX - Search API.json'].paths
+    for (const p of Object.keys(search)) expect('servers' in search[p].get).toBe(false)
+  })
+
+  it('refuse to run once VTEX fixes a schema', () => {
+    const docs = fixtures()
+    docs['VTEX - Orders API.json'].paths['/api/orders/hook/config'].post.responses[200].content['application/json'].schema = {
+      $ref: '#/components/schemas/HookConfigurationResponse',
+    }
+    expect(() => applyOverrides('VTEX - Orders API.json', docs['VTEX - Orders API.json'])).toThrow(/no longer applies/)
+
+    const promo = fixtures()['VTEX - Promotions & Taxes API.json']
+    const usages =
+      promo.paths['/api/rnb/pvt/coupon/usage/{couponCode}'].get.responses[200].content['application/json'].schema
+        .properties.profileUsages
+    usages.properties.other = { type: 'string' }
+    expect(() => applyOverrides('VTEX - Promotions & Taxes API.json', promo)).toThrow(/no longer applies/)
   })
 })
 ```
@@ -4587,75 +4719,121 @@ Expected: FAIL (cannot resolve `overrides.js`).
 ```ts
 /**
  * Targeted corrections for VTEX schema quirks the generic generator cannot detect,
- * such as a literal property name used to mean "any key". Codegen fails when a
- * pointer no longer resolves, so a schema re-pin surfaces stale overrides.
+ * such as a literal property name used to mean "any key". Each override checks that the
+ * node still has the known-bad shape, and codegen fails when a pointer no longer resolves
+ * or the shape changed, so a schema re-pin surfaces stale overrides instead of
+ * silently overwriting a schema VTEX has fixed.
  */
 export interface SchemaOverride {
   /** Schema file name under schemas/. */
   file: string
   /** RFC 6901 JSON pointer to the node to replace. */
   pointer: string
+  /** True while the node still has the known-bad shape; false fails codegen. */
+  matches: (node: any) => boolean
   /** Returns the replacement node; `undefined` deletes the node. */
   transform: (node: any) => unknown
+  /** Why VTEX's schema is wrong; quoted in the failure message. */
   reason: string
 }
 
-export const OVERRIDES: SchemaOverride[] = [
+const sameKeys = (obj: unknown, keys: string[]): boolean =>
+  typeof obj === 'object' && obj !== null && JSON.stringify(Object.keys(obj).sort()) === JSON.stringify([...keys].sort())
+
+const isEntelperuServers = (node: unknown): boolean =>
+  Array.isArray(node) &&
+  node.length > 0 &&
+  node.every((s) => typeof s?.url === 'string' && s.url.startsWith('https://entelperu.'))
+
+export const OVERRIDES: readonly SchemaOverride[] = [
   {
     file: 'VTEX - Orders API.json',
     pointer: '/components/schemas/Headers',
+    matches: (n) => sameKeys(n?.properties, ['key']) && n.additionalProperties === undefined,
     transform: () => ({ title: 'Headers', type: 'object', additionalProperties: { type: 'string' } }),
     reason: 'Order-hook headers are a header-name to value map; the schema shows a literal "key" property.',
   },
   {
     file: 'VTEX - Orders API.json',
     pointer: '/paths/~1api~1orders~1hook~1config/post/responses/200/content/application~1json/schema',
+    matches: (n) => sameKeys(n, ['$ref']) && n.$ref === '#/components/schemas/HookConfiguration',
     transform: () => ({}),
-    reason: 'The documented 200 schema is the hook notification payload, not the configuration response.',
+    reason:
+      'The documented 200 schema is HookConfiguration, the hook notification payload (Domain, OrderId, State...); ' +
+      'the real configuration response is undocumented.',
   },
   {
     file: 'VTEX - Promotions & Taxes API.json',
     pointer:
       '/paths/~1api~1rnb~1pvt~1coupon~1usage~1{couponCode}/get/responses/200/content/application~1json/schema/properties/profileUsages',
-    transform: (node) => {
-      if (!node?.properties?.profileId) throw new Error('profileUsages.properties.profileId not found')
-      return { type: 'object', description: node.description, additionalProperties: node.properties.profileId }
-    },
+    matches: (n) => sameKeys(n?.properties, ['profileId']) && typeof n.properties.profileId === 'object',
+    transform: (node) => ({
+      type: 'object',
+      description: node.description,
+      additionalProperties: { ...node.properties.profileId, description: 'Coupon usage for one profile ID.' },
+    }),
     reason: 'profileUsages is keyed by profile id; the schema shows a literal "profileId" property.',
   },
   {
     file: 'VTEX - Search API.json',
     pointer: '/paths/~1api~1catalog_system~1pub~1products~1crossselling~1showtogether~1{productId}/get/servers',
+    matches: isEntelperuServers,
     transform: () => undefined,
-    reason: 'The operation-level server was copied from another store (entelperu); use the account host.',
+    reason:
+      'The operation-level server was copied from another store (entelperu) and even hard-codes the ' +
+      '/crossselling/accessories path; use the account host.',
   },
   {
     file: 'VTEX - Search API.json',
     pointer: '/paths/~1api~1catalog_system~1pub~1products~1crossselling~1accessories~1{productId}/get/servers',
+    matches: isEntelperuServers,
     transform: () => undefined,
     reason: 'The operation-level server was copied from another store (entelperu); use the account host.',
   },
 ]
 
+/** Segments that would walk into or replace prototypes instead of JSON data. */
+const UNSAFE_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype'])
+
 function decodeSegment(segment: string): string {
   return segment.replace(/~1/g, '/').replace(/~0/g, '~')
 }
 
-/** Applies every override registered for `file` to `doc` in place and returns how many were applied. */
-export function applyOverrides(file: string, doc: any, overrides: SchemaOverride[] = OVERRIDES): number {
+function isContainer(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
+ * Applies every override registered for `file` to `doc` in place and returns how many were
+ * applied (0 for a file with no overrides; the caller compares the total with OVERRIDES.length).
+ * Only own properties are followed, so a pointer can never reach a prototype.
+ */
+export function applyOverrides(file: string, doc: unknown, overrides: readonly SchemaOverride[] = OVERRIDES): number {
   let applied = 0
   for (const override of overrides) {
     if (override.file !== file) continue
-    const fail = () => new Error(`Schema override for ${file} no longer applies: ${override.pointer} (${override.reason})`)
+    const fail = (cause?: unknown) =>
+      new Error(`Schema override for ${file} no longer applies: ${override.pointer} (${override.reason})`, { cause })
+    if (!override.pointer.startsWith('/')) throw fail()
     const segments = override.pointer.split('/').slice(1).map(decodeSegment)
     const last = segments.pop()
-    let parent = doc
+    let parent: unknown = doc
     for (const segment of segments) {
-      parent = parent?.[segment]
-      if (parent === null || typeof parent !== 'object') throw fail()
+      if (UNSAFE_SEGMENTS.has(segment) || !isContainer(parent) || !Object.hasOwn(parent, segment)) throw fail()
+      parent = parent[segment]
     }
-    if (last === undefined || !(last in parent)) throw fail()
-    const next = override.transform(parent[last])
+    if (last === undefined || UNSAFE_SEGMENTS.has(last) || !isContainer(parent) || !Object.hasOwn(parent, last)) {
+      throw fail()
+    }
+    if (Array.isArray(parent)) throw fail() // overrides replace object members only
+    const node = parent[last]
+    if (!override.matches(node)) throw fail()
+    let next: unknown
+    try {
+      next = override.transform(node)
+    } catch (err) {
+      throw fail(err)
+    }
     if (next === undefined) delete parent[last]
     else parent[last] = next
     applied++
@@ -7306,7 +7484,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  456 passed (456)`;
+- `Test Files  25 passed (25)` and `Tests  464 passed (464)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.

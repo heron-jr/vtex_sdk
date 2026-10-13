@@ -244,7 +244,7 @@ Nothing is removed.
   - a schema adds `[key: string]: T`;
   - the index signature is merged with any declared properties.
 - **Placeholder keys:** property keys of the form `{name}` become an index signature `[key: string]: T` instead of a literal key. There are 24 such keys, e.g. `{fieldName}` in Master Data and `{ID}` in Checkout.
-- **Targeted schema overrides** (`scripts/codegen/overrides.ts`) fix quirks where a VTEX schema uses a *literal* key to mean "any key". The generic rules cannot detect these. Each override names its file, its JSON pointer, a transform and the reason. Codegen fails if a pointer no longer resolves, so a schema re-pin surfaces stale overrides. Initial set:
+- **Targeted schema overrides** (`scripts/codegen/overrides.ts`) fix quirks where a VTEX schema uses a *literal* key to mean "any key". The generic rules cannot detect these. Each override names its file, its JSON pointer, a `matches` check of the known-bad "before" shape, a transform and the reason. Codegen fails if a pointer no longer resolves, if the node no longer matches, or if a transform throws. A schema re-pin therefore surfaces stale overrides instead of silently overwriting a schema VTEX has fixed. The pointer walk follows own properties only and refuses `__proto__`, `constructor` and `prototype`. Initial set:
   - Orders API `components/schemas/Headers`: from `{ key: string }` to `Record<string, string>` (order-hook headers).
   - Orders API `POST /api/orders/hook/config` 200 schema: from the notification payload to `unknown`.
   - Promotions & Taxes API coupon usage `profileUsages`: from a literal `profileId` property to a map keyed by profile id.
