@@ -9,7 +9,7 @@ This project is not affiliated with, endorsed by or sponsored by VTEX.
   - Each call goes to the host and base path its API reference declares: for example Gift Card under `/api`, Pricing on `api.vtex.com/{account}`, and several APIs on `{account}.myvtex.com`.
   - Not callable here, though their types are exported:
     - protocols that *you* implement: payment, antifraud and gift card providers, external promotions, B2B password migration and the seller protocols;
-    - APIs served by third-party hosts: Ads, Pick and Pack, Punchout, Tracking, and the Shipping Network API (carriers' VTEX IO apps).
+    - APIs served by hosts outside the allowlist (third-party or store-specific): Ads, Pick and Pack, Punchout, Tracking, and the Shipping Network API (carriers' VTEX IO apps).
 - **Facades**: orders, catalog, master data, pricing, logistics and checkout, with auto-pagination.
 - **Core**:
   - credentials only go to VTEX hosts, and path parameters are encoded;
@@ -69,6 +69,8 @@ await vtex.raw.giftcardAPI.giftCard.searchGiftCardsfromcartdata({ 'REST-Range': 
 - `retry`: `false`, or `{ maxRetries }`;
 - `idempotent`.
 
+Some operations declare a non-JSON `Accept` (for example Master Data v10.2 `application/vnd.vtex.ds.v10+json`, or an XML or text endpoint). The SDK always sends `Accept: application/json`; pass `{ headers: { Accept: '...' } }` when an endpoint needs another type.
+
 ## Retries and idempotency
 
 **GET, HEAD, OPTIONS, PUT and DELETE**
@@ -118,13 +120,15 @@ A connection that cannot be established times out in about 10 s, and each attemp
 
 A caller's `AbortSignal` rejects with the signal's reason, which is an `AbortError` by default.
 
+Every method that returns a promise reports argument errors (for example an empty or `..` id) by rejecting it, so `.catch()` and `Promise.allSettled` see them. `orders.list()` and `masterData.scroll()` validate their options when called and throw synchronously, before returning the iterator.
+
 ## Security model
 
 **What is validated before anything is sent**
 - `account` must be a single DNS label.
 - `environment` is `vtexcommercestable` (the default) or `vtexcommercebeta`.
 
-**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported (frozen) as `VTEX_DOMAIN_ALLOWLIST`. Hosts under `io.vtex.com` (VTEX IO app routes, which run third-party app code) are refused even though they are under `vtex.com`.
+**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported (frozen) as `VTEX_DOMAIN_ALLOWLIST`. On `vtex.com` itself only `api.vtex.com` and `sp.vtex.com` receive credentials: its other subdomains include `*.io.vtex.com` (VTEX IO app routes, which run third-party app code) and sites that may be operated by third parties. VTEX IO routes scoped to your own account (`{account}.myvtex.com`, `/api/io/...` on the account host) are allowed; they run apps installed on that account.
 
 **Where the account comes from:** take `account` from trusted configuration, never from request input. The allowlist cannot stop a valid account name chosen by an attacker (`attacker.myvtex.com` is still a VTEX host). With the factory, the resolver must return that account's own credentials.
 

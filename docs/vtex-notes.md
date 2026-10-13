@@ -28,7 +28,7 @@ Other APIs use a base path or a different VTEX host. Examples at the current pin
 
 The complete, reviewed list of host templates is `EXPECTED_TEMPLATES` in `test/generated-hosts.test.ts`; a schema re-pin that adds a host fails that test until it is reviewed.
 
-Credentials are only sent to hosts under the allowlisted VTEX domains (`VTEX_DOMAIN_ALLOWLIST`). Hosts under `io.vtex.com` (VTEX IO app routes) are always refused.
+Credentials are only sent to hosts under the allowlisted VTEX domains (`VTEX_DOMAIN_ALLOWLIST`); on `vtex.com` only `api.vtex.com` and `sp.vtex.com`. Hosts under `io.vtex.com` (VTEX IO app routes) are always refused.
 
 ## Authentication
 
