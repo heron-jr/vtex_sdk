@@ -133,11 +133,12 @@ describe('schemaToType', () => {
   })
   it('rejects a non-string $ref with a clear error', () => {
     expect(() => schemaToType({ $ref: 123 }, ref)).toThrow(/Invalid \$ref/)
+    expect(() => schemaToType({ $ref: '' }, ref)).toThrow(/Invalid \$ref/)
   })
   it('emits syntactically valid TypeScript for odd inputs', () => {
     const odd = [
       { type: [] }, { type: [], nullable: true }, { enum: ['*/', '`${x}`', '"; export const x = 1; //', '\u2028'] },
-      { type: 'object', properties: { '*/ evil': { type: 'string' }, '__proto__': { type: 'number' } } },
+      { type: 'object', properties: JSON.parse('{"*/ evil":{"type":"string"},"__proto__":{"type":"number"}}') },
       { allOf: [{ oneOf: [{ type: 'string' }, { type: 'number' }] }, { type: 'object', additionalProperties: true }] },
     ]
     for (const schema of odd) {
