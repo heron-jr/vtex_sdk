@@ -142,7 +142,11 @@ VtexError                         (new base, extends Error)
   - A non-object result rejects with `VtexUsageError` and is not cached.
 - **Cache bound:** LRU, default 100 entries, configurable with `maxCachedClients`.
   - The value must be an integer ≥ 1. Anything else, such as `NaN` (which would otherwise leave the cache unbounded), throws `VtexUsageError` when the factory is created.
+- **Config:** validated (credentials is a function, valid environment) and copied when the factory is created.
+- **`clear()`:** with no argument it clears every entry. `clear(undefined)` is a no-op.
+- **Exported type:** the `VtexFactory` interface.
 - **Auth failures:** an entry is evicted when its client gets a 401 or 403. The factory composes an internal response hook with the user's hooks.
+  - The user's hooks are called through the original object, so class-method hooks and their `this` keep working.
   - The resolver runs again on the next `forAccount`. A 403 caused by a missing role therefore re-resolves credentials each time, so the resolver should be cheap or cache on its own side.
   - Callers that already hold the evicted client keep using it.
 

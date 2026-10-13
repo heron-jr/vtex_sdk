@@ -3863,7 +3863,9 @@ EOF
 ```ts
 import { describe, it, expect, vi } from 'vitest'
 import { createVtexFactory } from '../src/factory.js'
-import { VtexAuthError, VtexUsageError } from '../src/core/errors.js'
+import { VtexAuthError, VtexRateLimitError, VtexUsageError } from '../src/core/errors.js'
+
+const json200 = () => new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } })
 
 describe('createVtexFactory', () => {
   it('creates and caches one client per account', async () => {
@@ -3937,11 +3939,104 @@ describe('createVtexFactory', () => {
     expect(credentials).not.toHaveBeenCalled()
   })
 
-  it('takes only credentials from the resolver, never the account', async () => {
-    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T', account: 'other-tenant' })
-    const factory = createVtexFactory({ credentials })
+  it('takes only credentials from the resolver, never the account, environment, fetch or hooks', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json200()))
+    const evilFetch = vi.fn()
+    const evilHook = vi.fn()
+    const credentials = vi.fn().mockResolvedValue({
+      appKey: 'K', appToken: 'T', account: 'other-tenant', environment: 'vtexcommercebeta',
+      fetch: evilFetch, hooks: { onRequest: evilHook },
+    })
+    const factory = createVtexFactory({ credentials, fetch: fetchMock })
     const client = await factory.forAccount('tenant-a')
     expect(client.account).toBe('tenant-a')
+    expect(client.environment).toBe('vtexcommercestable')
+    await client.orders.get('1')
+    expect(fetchMock).toHaveBeenCalledOnce()
+    expect(fetchMock.mock.calls[0][0]).toMatch(/^https:\/\/tenant-a\.vtexcommercestable\.com\.br\//)
+    expect(evilFetch).not.toHaveBeenCalled()
+    expect(evilHook).not.toHaveBeenCalled()
+  })
+
+  it('passes environment and maxRetryAfterMs through to the client', async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response('{}', { status: 429, headers: { 'retry-after': '120' } })),
+    )
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({
+      credentials, fetch: fetchMock, environment: 'vtexcommercebeta', maxRetryAfterMs: 1000,
+    })
+    const client = await factory.forAccount('x')
+    expect(client.environment).toBe('vtexcommercebeta')
+    await expect(client.orders.get('1')).rejects.toBeInstanceOf(VtexRateLimitError)
+    expect(fetchMock).toHaveBeenCalledOnce() // Retry-After above the cap: no retry
+  })
+
+  it('keeps prototype hook methods (class instances) and their this', async () => {
+    const seen: string[] = []
+    class Telemetry {
+      prefix = 't'
+      onRequest() { seen.push(`${this.prefix}:request`) }
+      onRetry() { seen.push(`${this.prefix}:retry`) }
+      onResponse() { seen.push(`${this.prefix}:response`) }
+    }
+    let calls = 0
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        calls++ === 0 ? new Response('{}', { status: 429, headers: { 'retry-after': '0' } }) : json200(),
+      ),
+    )
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials, fetch: fetchMock, hooks: new Telemetry() })
+    const client = await factory.forAccount('x')
+    await client.orders.get('1')
+    expect(seen).toEqual(['t:request', 't:response', 't:retry', 't:request', 't:response'])
+  })
+
+  it('validates the factory config up front and snapshots it', async () => {
+    expect(() => createVtexFactory({ credentials: 'nope' as never })).toThrow(VtexUsageError)
+    expect(() => createVtexFactory({ credentials: vi.fn(), environment: 'evil.example' as never })).toThrow(
+      VtexUsageError,
+    )
+    const config = { credentials: vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' }) }
+    const factory = createVtexFactory(config)
+    Object.assign(config, { environment: 'vtexcommercebeta' })
+    expect((await factory.forAccount('x')).environment).toBe('vtexcommercestable')
+  })
+
+  it('reports a non-string credential without echoing it', async () => {
+    const credentials = vi.fn().mockResolvedValue({ appKey: 123, appToken: 'T-SECRET' })
+    const factory = createVtexFactory({ credentials })
+    const err = await factory.forAccount('x').catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(VtexUsageError)
+    expect((err as Error).message).toMatch(/appKey must be/)
+    expect((err as Error).message).not.toContain('T-SECRET')
+  })
+
+  it('clear(undefined) is a no-op; clear() drops every client', async () => {
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials })
+    const a = await factory.forAccount('a')
+    factory.clear(undefined)
+    expect(await factory.forAccount('a')).toBe(a)
+    factory.clear()
+    expect(await factory.forAccount('a')).not.toBe(a)
+  })
+
+  it('serves a pending build to existing waiters after clear() and rebuilds for new callers', async () => {
+    let release!: (v: unknown) => void
+    const credentials = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise((r) => { release = r }))
+      .mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials })
+    const pending = factory.forAccount('x')
+    factory.clear('x')
+    const fresh = factory.forAccount('x')
+    release({ appKey: 'K', appToken: 'T' })
+    const [old, next] = await Promise.all([pending, fresh])
+    expect(old).not.toBe(next)
+    expect(await factory.forAccount('x')).toBe(next)
   })
 
   it('bounds the cache, dropping the least recently used client', async () => {
@@ -3968,7 +4063,7 @@ describe('createVtexFactory', () => {
     expect(credentials).toHaveBeenCalledTimes(102)
   })
 
-  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '10' as never, null as never])(
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '10' as never, null as never, Object.create(null)])(
     'rejects maxCachedClients %j',
     (maxCachedClients) => {
       expect(() => createVtexFactory({ credentials: vi.fn(), maxCachedClients })).toThrow(VtexUsageError)
@@ -4008,6 +4103,22 @@ describe('createVtexFactory', () => {
     expect(await factory.forAccount('x')).not.toBe(first)
   })
 
+  it('evicts even when the user onResponse hook throws, and only for the failing account', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(url.includes('://a.') ? new Response('{}', { status: 401 }) : json200()),
+    )
+    const onResponse = vi.fn(() => {
+      throw new Error('hook failed')
+    })
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials, fetch: fetchMock, maxRetries: 0, hooks: { onResponse } })
+    const a = await factory.forAccount('a')
+    const b = await factory.forAccount('b')
+    await expect(a.orders.get('1')).rejects.toThrow('hook failed')
+    expect(await factory.forAccount('a')).not.toBe(a)
+    expect(await factory.forAccount('b')).toBe(b)
+  })
+
   it('does not evict a newer client when a stale one gets a 401', async () => {
     let status = 200
     const fetchMock = vi.fn().mockImplementation(() =>
@@ -4044,12 +4155,17 @@ The non-object resolver case already passes, because the old code falls through 
 ```ts
 import type { VtexClientConfig, VtexEnvironment, VtexHooks } from './core/types.js'
 import { VtexUsageError } from './core/errors.js'
-import { normalizeAccount } from './core/url.js'
+import { normalizeAccount, validateEnvironment } from './core/url.js'
 import { VtexClient } from './client.js'
 
 export type VtexCreds = { appKey: string; appToken: string } | { authCookie: string }
 
 export interface VtexFactoryConfig {
+  /**
+   * Returns the credentials for an account. Called once per cached account, and again after
+   * a 401/403 evicts it. It must always settle: a promise that never resolves blocks that
+   * account until `clear()`, so put a timeout on slow secret stores.
+   */
   credentials: (account: string) => VtexCreds | Promise<VtexCreds>
   environment?: VtexEnvironment
   maxRetries?: number
@@ -4061,6 +4177,13 @@ export interface VtexFactoryConfig {
   hooks?: VtexHooks
 }
 
+export interface VtexFactory {
+  /** Cached client for the account (normalized to lowercase). Rejects with VtexUsageError for an invalid name. */
+  forAccount(account: string): Promise<VtexClient>
+  /** Drops one account's client, or every client when called with no argument. */
+  clear(account?: string): void
+}
+
 type Credentials = Pick<VtexClientConfig, 'appKey' | 'appToken' | 'authCookie'>
 
 /** Only credential fields are taken from the resolver, so it cannot redirect the client elsewhere. */
@@ -4068,18 +4191,33 @@ function pickCredentials(creds: VtexCreds): Credentials {
   if (typeof creds !== 'object' || creds === null) {
     throw new VtexUsageError('The credentials resolver must return an object')
   }
-  const source = creds as { appKey?: unknown; appToken?: unknown; authCookie?: unknown }
+  // Values are copied as-is; the client validates them without echoing them.
+  const source = creds as Credentials
   const picked: Credentials = {}
-  if (typeof source.appKey === 'string') picked.appKey = source.appKey
-  if (typeof source.appToken === 'string') picked.appToken = source.appToken
-  if (typeof source.authCookie === 'string') picked.authCookie = source.authCookie
+  if (source.appKey !== undefined) picked.appKey = source.appKey
+  if (source.appToken !== undefined) picked.appToken = source.appToken
+  if (source.authCookie !== undefined) picked.authCookie = source.authCookie
   return picked
 }
 
-export function createVtexFactory(config: VtexFactoryConfig) {
+export function createVtexFactory(config: VtexFactoryConfig): VtexFactory {
+  if (typeof config.credentials !== 'function') {
+    throw new VtexUsageError('credentials must be a function returning the credentials for an account')
+  }
   const maxEntries = config.maxCachedClients === undefined ? 100 : config.maxCachedClients
   if (typeof maxEntries !== 'number' || !Number.isInteger(maxEntries) || maxEntries < 1) {
-    throw new VtexUsageError(`maxCachedClients must be an integer >= 1 (got ${String(maxEntries)})`)
+    const got = typeof maxEntries === 'number' ? String(maxEntries) : typeof maxEntries
+    throw new VtexUsageError(`maxCachedClients must be an integer >= 1 (got ${got})`)
+  }
+  // Snapshot the options so later changes to `config` don't affect clients built afterwards.
+  const resolve = config.credentials
+  const userHooks = config.hooks ?? {}
+  const options = {
+    environment: validateEnvironment(config.environment ?? 'vtexcommercestable'),
+    maxRetries: config.maxRetries,
+    timeoutMs: config.timeoutMs,
+    maxRetryAfterMs: config.maxRetryAfterMs,
+    fetch: config.fetch,
   }
   const cache = new Map<string, Promise<VtexClient>>()
 
@@ -4088,18 +4226,15 @@ export function createVtexFactory(config: VtexFactoryConfig) {
   }
 
   async function build(account: string, onAuthFailure: () => void): Promise<VtexClient> {
-    const creds = await config.credentials(account)
-    const userHooks = config.hooks ?? {}
+    const creds = await resolve(account)
     return new VtexClient({
       ...pickCredentials(creds),
+      ...options,
       account,
-      environment: config.environment,
-      maxRetries: config.maxRetries,
-      timeoutMs: config.timeoutMs,
-      maxRetryAfterMs: config.maxRetryAfterMs,
-      fetch: config.fetch,
       hooks: {
-        ...userHooks,
+        // Call through the user's object (not a spread copy) so prototype methods and `this` survive.
+        onRequest: (info) => userHooks.onRequest?.(info),
+        onRetry: (info) => userHooks.onRetry?.(info),
         onResponse: (info) => {
           if (info.status === 401 || info.status === 403) onAuthFailure()
           userHooks.onResponse?.(info)
@@ -4122,6 +4257,8 @@ export function createVtexFactory(config: VtexFactoryConfig) {
         cache.set(key, cached)
         return cached
       }
+      // Referring to `entry` in its own initializer is safe: build() awaits the resolver
+      // before any request (and so any eviction callback) can run.
       const entry: Promise<VtexClient> = build(key, () => evict(key, entry))
       cache.set(key, entry)
       entry.catch(() => evict(key, entry))
@@ -4132,13 +4269,15 @@ export function createVtexFactory(config: VtexFactoryConfig) {
       }
       return entry
     },
-    clear(account?: string): void {
-      if (account === undefined) {
+    clear(...args: [account?: string]): void {
+      // Only a call with no argument clears everything; clear(undefined) (e.g. a missing
+      // request param) is a no-op rather than a full flush.
+      if (args.length === 0) {
         cache.clear()
         return
       }
       try {
-        cache.delete(normalizeAccount(account))
+        cache.delete(normalizeAccount(args[0] as string))
       } catch {
         // An invalid account name can never be in the cache.
       }
@@ -6451,7 +6590,7 @@ Expected: FAIL:
 export { VtexClient } from './client.js'
 export type { VtexRawResponse } from './client.js'
 export { createVtexFactory } from './factory.js'
-export type { VtexFactoryConfig, VtexCreds } from './factory.js'
+export type { VtexFactory, VtexFactoryConfig, VtexCreds } from './factory.js'
 export type {
   VtexClientConfig, VtexEnvironment, VtexHooks, RequestOptions, CallOptions,
 } from './core/types.js'
@@ -6787,6 +6926,11 @@ Behavior:
 - Account names are normalized before they are used as cache keys.
 - Only `appKey`, `appToken` and `authCookie` are taken from the resolver.
 - A client is evicted after a 401 or 403, so the next `forAccount` call picks up rotated credentials.
+  - This includes a 401/403 from an allowlisted `server` override.
+  - A 403 caused by a missing role re-runs the resolver every time, so keep the resolver cheap or cache on your side.
+- The resolver must always settle. A promise that never resolves blocks that account until `clear()`, so give slow secret stores a timeout.
+- `clear()` with no argument drops every client. `clear(undefined)` does nothing.
+- Options are validated and copied when the factory is created.
 
 ## Facades
 
@@ -7162,7 +7306,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  448 passed (448)`;
+- `Test Files  25 passed (25)` and `Tests  456 passed (456)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
