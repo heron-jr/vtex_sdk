@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import ts from 'typescript'
 import { generateMethod } from '../../scripts/codegen/operation.js'
 
 const refName = (r: string) => r.split('/').pop()!
@@ -182,10 +183,136 @@ describe('generateMethod', () => {
   })
 
   it('refuses unsafe paths', () => {
-    for (const path of ['/a/`x`', '/a/${x}', '/a b', '/a\\b', '/a/{bad name}']) {
+    for (const path of [
+      '/a/`x`', '/a/${x}', '/a b', '/a\\b', '/a/{bad name}', "/a/{x'y}", '/a/{a:b}',
+      '/a/../b', '/a/%2e%2e/b', '/a/%2E/b', '//x', '/a//b', '/a/{', '/a/}', '/a/{}', '/a/%zz', '/a/{constructor}',
+    ]) {
       expect(() =>
         generateMethod({ httpMethod: 'get', path, op: { operationId: 'X', responses: ok }, refName }),
       ).toThrow(/unsafe/)
+    }
+  })
+
+  it('keeps mid-segment placeholders', () => {
+    const code = generateMethod({
+      httpMethod: 'get', path: '/c/carrier@{capacityType}@{shippingPolicyId}', op: { operationId: 'X', responses: ok }, refName,
+    })
+    expect(code).toContain('`/c/carrier@${encodePathParam(params.capacityType)}@${encodePathParam(params.shippingPolicyId)}`')
+  })
+
+  it('escapes quotes, backslashes and line terminators in string literals', () => {
+    const sep = String.fromCharCode(0x2028)
+    const code = generateMethod({
+      httpMethod: 'get',
+      path: '/x',
+      op: {
+        operationId: 'X',
+        parameters: [
+          { name: "a'b", in: 'query', schema: { type: 'string' } },
+          { name: 'a\\b', in: 'query', schema: { type: 'string' } },
+          { name: `l\n${sep}`, in: 'query', schema: { type: 'string' } },
+        ],
+        responses: ok,
+      },
+      refName,
+    })
+    expect(code).toContain("'a\\'b': params['a\\'b']")
+    expect(code).toContain("'a\\\\b': params['a\\\\b']")
+    expect(code).toContain("'l\\u000a\\u2028'")
+    expect(code).not.toContain('\n' + sep)
+  })
+
+  it('refuses invalid header names, reserved names and a body/param clash', () => {
+    const gen = (op: any, httpMethod = 'post', name?: string) =>
+      () => generateMethod({ httpMethod, path: '/x', op: { operationId: 'X', responses: ok, ...op }, refName, name })
+    expect(gen({ parameters: [{ name: 'X-VTEX-API-AppToken ', in: 'header' }] })).toThrow(/invalid header name/)
+    expect(gen({ parameters: [{ name: ' Authorization', in: 'header' }] })).toThrow(/invalid header name/)
+    expect(gen({ parameters: [{ name: '__proto__', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'constructor', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({}, 'get', 'constructor')).toThrow(/method named/)
+    expect(gen({}, 'get', 'http')).toThrow(/method named/)
+    expect(gen({}, 'trace')).toThrow(/HTTP method/)
+    expect(
+      gen({
+        parameters: [{ name: 'body', in: 'query', schema: { type: 'string' } }],
+        requestBody: { content: { 'application/json': { schema: { type: 'object' } } } },
+      }),
+    ).toThrow(/named "body"/)
+  })
+
+  it('requires params when only a header or only a body is required', () => {
+    const header = generateMethod({
+      httpMethod: 'get', path: '/x', refName,
+      op: { operationId: 'X', parameters: [{ name: 'X-Tenant', in: 'header', required: true, schema: { type: 'string' } }], responses: ok },
+    })
+    expect(header).toContain('x(params: {')
+    expect(header).not.toContain('} = {}')
+    const body = generateMethod({
+      httpMethod: 'post', path: '/x', refName,
+      op: { operationId: 'X', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: ok },
+    })
+    expect(body).not.toContain('} = {}')
+  })
+
+  it('limits header and path param types to what the runtime sends', () => {
+    const code = generateMethod({
+      httpMethod: 'get',
+      path: '/x/{flag}/{id}',
+      refName,
+      op: {
+        operationId: 'X',
+        parameters: [
+          { name: 'flag', in: 'path', schema: { type: 'boolean' } },
+          { name: 'id', in: 'path', schema: { type: 'integer' } },
+          { name: 'X-List', in: 'header', schema: { type: 'array', items: { type: 'string' } } },
+          { name: 'X-Mode', in: 'header', schema: { type: 'string', enum: ['a', 'b'], nullable: true } },
+        ],
+        responses: ok,
+      },
+    })
+    expect(code).toContain('  flag: string | number')
+    expect(code).toContain('  id: number')
+    expect(code).toContain("  'X-List'?: string")
+    expect(code).toContain(`  'X-Mode'?: "a" | "b"`)
+  })
+
+  it('uses exact JSON media types and sends other bodies as bytes', () => {
+    const gen = (ct: string) =>
+      generateMethod({
+        httpMethod: 'post', path: '/x', refName,
+        op: { operationId: 'X', requestBody: { content: { [ct]: { schema: { type: 'object' } } } }, responses: ok },
+      })
+    expect(gen('application/json-patch+json')).toContain("contentType: 'application/json-patch+json'")
+    expect(gen('application/json; charset=utf-8')).not.toContain('contentType:')
+    expect(gen('application/octet-stream')).toContain('body: Blob | ArrayBuffer | Uint8Array | string')
+    expect(gen('application/octet-stream')).toContain("contentType: 'application/octet-stream'")
+    expect(gen('*/*')).toContain("contentType: 'application/octet-stream'")
+    expect(gen('multipart/form-data; boundary=x')).toContain('body: FormData')
+  })
+
+  it('emits exactly one well-formed method for hostile schema values', () => {
+    const hostile = ["'", '\\', '`', '${x}', '*/', '\r\n', String.fromCharCode(0x2028), '"; }; x(); //']
+    for (const h of hostile) {
+      const code = generateMethod({
+        httpMethod: 'post',
+        path: '/x',
+        refName,
+        server: `https://api.vtex.com/{accountName}${h}`,
+        op: {
+          operationId: 'X',
+          parameters: [{ name: `q${h}`, in: 'query', schema: { type: 'string', enum: [h] } }],
+          requestBody: { content: { [`application/vnd.x+json;${h}`]: { schema: { type: 'object', properties: { [h]: { type: 'string' } } } } } },
+          responses: ok,
+        },
+      })
+      const source = ts.createSourceFile('m.ts', `class C {\n${code}\n}`, ts.ScriptTarget.ES2022, true)
+      expect((source as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics).toEqual([])
+      const cls = source.statements[0] as ts.ClassDeclaration
+      expect(source.statements).toHaveLength(1)
+      expect(cls.members).toHaveLength(1)
+      const method = cls.members[0] as ts.MethodDeclaration
+      expect(method.body?.statements).toHaveLength(1)
+      expect(ts.isReturnStatement(method.body!.statements[0])).toBe(true)
     }
   })
 })
