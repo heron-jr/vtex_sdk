@@ -491,22 +491,30 @@ import { describe, it, expect } from 'vitest'
 import {
   buildQuery, normalizeAccount, validateEnvironment, isAllowlistedHost,
   resolveServer, encodePathParam, buildRequestUrl, DEFAULT_SERVER,
+  VTEX_DOMAIN_ALLOWLIST, VTEX_ENVIRONMENTS,
 } from '../../src/core/url.js'
 import { VtexUsageError } from '../../src/core/errors.js'
+
+const BACKSLASH = String.fromCharCode(92)
 
 describe('normalizeAccount', () => {
   it('lowercases a valid account', () => {
     expect(normalizeAccount('LojaX')).toBe('lojax')
     expect(normalizeAccount('my-store-1')).toBe('my-store-1')
   })
+  it('accepts the 63-character boundary', () => {
+    expect(normalizeAccount('a'.repeat(63))).toHaveLength(63)
+  })
   it.each([
     'evil.com#', 'evil.com/', 'evil.com?', 'a.evil.com?', 'evil.com\\', 'evil.com:8443#',
     'lojax.evil.com#', 'x@evil.com', ' lojax', '-lojax', '',
+    'a.b', 'lojax.evil.com', 'acme.', '.acme', 'a'.repeat(64), 'acme\n', 'acme\t', 'acme-', 'a_b',
+    'Kacme',
   ])('rejects %j', (account) => {
     expect(() => normalizeAccount(account)).toThrow(VtexUsageError)
   })
-  it('rejects non-strings', () => {
-    expect(() => normalizeAccount(undefined)).toThrow(VtexUsageError)
+  it.each([undefined, null, 123, {}, ['acme']])('rejects non-string %j', (account) => {
+    expect(() => normalizeAccount(account)).toThrow(VtexUsageError)
   })
 })
 
@@ -526,15 +534,23 @@ describe('isAllowlistedHost', () => {
   it.each([
     'acme.vtexcommercestable.com.br', 'acme.myvtex.com', 'api.vtex.com',
     'acme.vtexpayments.com.br', 'portal.vtexcommercebeta.com.br',
+    'vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
   ])('allows %s', (host) => {
     expect(isAllowlistedHost(host)).toBe(true)
   })
-  it.each(['evil.com', 'vtex.com.evil.com', 'evilvtex.com', 'acme.vtexcommercestable.com.br.evil.com'])(
-    'blocks %s',
-    (host) => {
-      expect(isAllowlistedHost(host)).toBe(false)
-    },
-  )
+  it.each([
+    'evil.com', 'vtex.com.evil.com', 'evilvtex.com', 'acme.vtexcommercestable.com.br.evil.com',
+    'acme.vtexcommercestable.com.br.', '127.0.0.1', '[::1]', '', 'a..vtex.com', ' api.vtex.com',
+    'evil.com/.vtex.com',
+  ])('blocks %j', (host) => {
+    expect(isAllowlistedHost(host)).toBe(false)
+  })
+  it('cannot be widened at runtime', () => {
+    expect(Object.isFrozen(VTEX_DOMAIN_ALLOWLIST)).toBe(true)
+    expect(Object.isFrozen(VTEX_ENVIRONMENTS)).toBe(true)
+    expect(() => (VTEX_DOMAIN_ALLOWLIST as string[]).push('attacker.example')).toThrow(TypeError)
+    expect(isAllowlistedHost('attacker.example')).toBe(false)
+  })
 })
 
 describe('resolveServer', () => {
@@ -560,8 +576,29 @@ describe('resolveServer', () => {
     'https://evil.com', 'https://{accountName}.evil.com', 'https://{storeDomain}/api',
     'https://acme.vtexcommercestable.com.br:8443', 'https://u:p@api.vtex.com', 'ftp://api.vtex.com',
     'https://api.vtex.com/x?y=1',
-  ])('rejects %s', (template) => {
+    'https://api.vtex.com/#frag',
+    'https://api.vtex.com/{storeDomain}',
+    'https://{accountName}@api.vtex.com',
+    'https://api.vtex.com:{accountName}',
+    `https://evil.com${BACKSLASH}@api.vtex.com`,
+    'https://evil.com#@api.vtex.com',
+    'https://api.vtex.com\t.evil.com',
+    'https://vtеx.com',
+    'https://127.0.0.1',
+    'https://[::1]',
+    'https://acme.vtexcommercestable.com.br.',
+  ])('rejects %j', (template) => {
     expect(() => resolveServer(template, 'acme', 'vtexcommercestable')).toThrow(VtexUsageError)
+  })
+  it('never lets a backslash smuggle a second host', () => {
+    expect(resolveServer(`https://api.vtex.com${BACKSLASH}@evil.com`, 'acme', 'vtexcommercestable').origin).toBe(
+      'https://api.vtex.com',
+    )
+  })
+  it('validates the account and environment itself (defense in depth)', () => {
+    expect(() => resolveServer('https://api.vtex.com/{accountName}', '../../x', 'vtexcommercestable')).toThrow(VtexUsageError)
+    expect(() => resolveServer('https://api.vtex.com/{accountName}', 'evil.com#', 'vtexcommercestable')).toThrow(VtexUsageError)
+    expect(() => resolveServer(DEFAULT_SERVER, 'acme', 'evil.com#' as never)).toThrow(VtexUsageError)
   })
 })
 
@@ -572,11 +609,18 @@ describe('encodePathParam', () => {
     expect(encodePathParam('../x')).toBe('..%2Fx')
     expect(encodePathParam(42)).toBe('42')
   })
+  it('double-encodes percent signs so %2e%2e stays a literal id', () => {
+    expect(encodePathParam('%2e%2e')).toBe('%252e%252e')
+    expect(encodePathParam('...')).toBe('...')
+  })
   it.each(['', '.', '..'])('rejects %j', (value) => {
     expect(() => encodePathParam(value)).toThrow(VtexUsageError)
   })
-  it('rejects missing values', () => {
-    expect(() => encodePathParam(undefined as unknown as string)).toThrow(VtexUsageError)
+  it.each([undefined, null, Number.NaN, Number.POSITIVE_INFINITY, {}, ['a', 'b']])('rejects %j', (value) => {
+    expect(() => encodePathParam(value as never)).toThrow(VtexUsageError)
+  })
+  it('turns an unpaired surrogate into a usage error', () => {
+    expect(() => encodePathParam('\uD800')).toThrow(VtexUsageError)
   })
 })
 
@@ -587,12 +631,34 @@ describe('buildRequestUrl', () => {
       'https://acme.vtexcommercestable.com.br/api/giftcards/1?a=1',
     )
   })
-  it.each(['giftcards', '/a/../b', '/a/./b', '/a/%2e%2e/b', '/a?b', '/a#b', '/a\\b', '/a b'])(
-    'rejects %j',
-    (path) => {
-      expect(() => buildRequestUrl(server, path)).toThrow(VtexUsageError)
-    },
-  )
+  it('works with an empty base path', () => {
+    expect(buildRequestUrl({ ...server, basePath: '' }, '/x')).toBe('https://acme.vtexcommercestable.com.br/x')
+  })
+  it('keeps encoded ids intact', () => {
+    expect(buildRequestUrl(server, `/orders/${encodePathParam('a/b?c#d')}`)).toBe(
+      'https://acme.vtexcommercestable.com.br/api/orders/a%2Fb%3Fc%23d',
+    )
+  })
+  it.each([
+    'giftcards', '/a/../b', '/a/./b', '/a/%2e%2e/b', '/a?b', '/a#b', '/a\\b', '/a b',
+    '/a\tb', '/a\n../b', '/a/.\t./b', '/a/%2E%2E/b', '/a/%2e/b', '/café',
+  ])('rejects %j', (path) => {
+    expect(() => buildRequestUrl(server, path)).toThrow(VtexUsageError)
+  })
+  it('rejects a non-string path', () => {
+    expect(() => buildRequestUrl(server, undefined as never)).toThrow(VtexUsageError)
+  })
+  it('rejects a base path that would change the origin', () => {
+    expect(() => buildRequestUrl({ ...server, basePath: '@evil.com' }, '/x')).toThrow(VtexUsageError)
+  })
+  it('rejects a non-canonical server origin', () => {
+    expect(() => buildRequestUrl({ origin: 'https://ACME.vtexcommercestable.com.br', basePath: '' }, '/x')).toThrow(VtexUsageError)
+    expect(() => buildRequestUrl({ origin: 'https://acme.vtexcommercestable.com.br:443', basePath: '' }, '/x')).toThrow(VtexUsageError)
+  })
+  it('rejects a server that is not https on an allowlisted host', () => {
+    expect(() => buildRequestUrl({ origin: 'https://evil.com', basePath: '' }, '/x')).toThrow(VtexUsageError)
+    expect(() => buildRequestUrl({ origin: 'http://acme.vtexcommercestable.com.br', basePath: '' }, '/x')).toThrow(VtexUsageError)
+  })
 })
 
 describe('buildQuery', () => {
@@ -623,29 +689,30 @@ import type { VtexEnvironment } from './types.js'
 /** Default server template: the account host. */
 export const DEFAULT_SERVER = 'https://{accountName}.{environment}.com.br'
 
-export const VTEX_ENVIRONMENTS: readonly VtexEnvironment[] = ['vtexcommercestable', 'vtexcommercebeta']
+export const VTEX_ENVIRONMENTS: readonly VtexEnvironment[] = Object.freeze(['vtexcommercestable', 'vtexcommercebeta'] as const)
 
-/** Registrable domains the SDK may send credentials to. */
-export const VTEX_DOMAIN_ALLOWLIST: readonly string[] = [
+/** Registrable domains the SDK may send credentials to. Frozen, because it is the core of host safety. */
+export const VTEX_DOMAIN_ALLOWLIST: readonly string[] = Object.freeze([
   'vtexcommercestable.com.br',
   'vtexcommercebeta.com.br',
   'myvtex.com',
   'vtex.com',
   'vtexpayments.com.br',
-]
+])
 
-const ACCOUNT_RE = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
+const ACCOUNT_RE = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i
+const HOSTNAME_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/
 
-/** Lowercases and validates a VTEX account name (a single DNS label). */
+/** Validates a VTEX account name (a single ASCII DNS label) and lowercases it. */
 export function normalizeAccount(account: unknown): string {
   if (typeof account !== 'string' || account === '') throw new VtexUsageError('VTEX account is required')
-  const normalized = account.toLowerCase()
-  if (!ACCOUNT_RE.test(normalized)) {
+  if (!ACCOUNT_RE.test(account)) {
     throw new VtexUsageError(`Invalid VTEX account name ${JSON.stringify(account)}: use letters, digits and hyphens only`)
   }
-  return normalized
+  return account.toLowerCase()
 }
 
+/** Validates a VTEX environment name; defaults to vtexcommercestable. */
 export function validateEnvironment(environment: unknown = 'vtexcommercestable'): VtexEnvironment {
   if (typeof environment !== 'string' || !(VTEX_ENVIRONMENTS as readonly string[]).includes(environment)) {
     throw new VtexUsageError(
@@ -655,21 +722,25 @@ export function validateEnvironment(environment: unknown = 'vtexcommercestable')
   return environment as VtexEnvironment
 }
 
+/** True when a parsed URL hostname is an allowlisted VTEX domain or a subdomain of one. */
 export function isAllowlistedHost(hostname: string): boolean {
   const host = hostname.toLowerCase()
+  if (!HOSTNAME_RE.test(host)) return false
   return VTEX_DOMAIN_ALLOWLIST.some((domain) => host === domain || host.endsWith(`.${domain}`))
 }
 
 export interface ResolvedServer {
   /** e.g. "https://acme.vtexcommercestable.com.br" */
-  origin: string
+  readonly origin: string
   /** Path prefix without a trailing slash, e.g. "/api" or "" */
-  basePath: string
+  readonly basePath: string
 }
 
-/** Fills a server template with an already-validated account and environment, then checks the host. */
+/** Fills a server template with a validated account and environment, then checks the resulting host. */
 export function resolveServer(template: string, account: string, environment: VtexEnvironment): ResolvedServer {
-  const filled = template.replaceAll('{accountName}', account).replaceAll('{environment}', environment)
+  const accountName = normalizeAccount(account)
+  const env = validateEnvironment(environment)
+  const filled = template.replaceAll('{accountName}', () => accountName).replaceAll('{environment}', () => env)
   if (/[{}]/.test(filled)) throw new VtexUsageError(`Unresolved variable in server template ${JSON.stringify(template)}`)
   let url: URL
   try {
@@ -690,14 +761,23 @@ export function resolveServer(template: string, account: string, environment: Vt
   return { origin: url.origin, basePath: url.pathname.replace(/\/+$/, '') }
 }
 
-/** Encodes one path segment; rejects values that would be empty or dot segments. */
+/** Encodes one path segment; rejects missing, non-finite and dot-segment values. */
 export function encodePathParam(value: string | number): string {
-  if (value === undefined || value === null) throw new VtexUsageError('Path parameter is required')
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new VtexUsageError(`Invalid path parameter ${String(value)}`)
+  } else if (typeof value !== 'string') {
+    throw new VtexUsageError('Path parameter must be a string or a finite number')
+  }
   const text = String(value)
   if (text === '' || text === '.' || text === '..') throw new VtexUsageError(`Invalid path parameter ${JSON.stringify(text)}`)
-  return encodeURIComponent(text)
+  try {
+    return encodeURIComponent(text)
+  } catch {
+    throw new VtexUsageError('Path parameter contains an unpaired surrogate')
+  }
 }
 
+/** Serializes query parameters, skipping undefined/null and repeating array values. */
 export function buildQuery(query?: Record<string, unknown>): string {
   if (!query) return ''
   const params = new URLSearchParams()
@@ -714,15 +794,29 @@ export function buildQuery(query?: Record<string, unknown>): string {
 }
 
 /**
- * Joins server, path and query, refusing paths that are relative, carry their own
- * query/fragment, contain dot segments or would change the origin.
+ * Joins server, path and query. Refuses paths that are not strings, are relative,
+ * carry their own query/fragment, contain dot segments or characters the URL parser
+ * would rewrite, and any result that is not https on an allowlisted host or that
+ * changes the server's origin. Paths must be pre-encoded (see encodePathParam).
  */
 export function buildRequestUrl(server: ResolvedServer, path: string, query?: Record<string, unknown>): string {
-  if (!path.startsWith('/')) throw new VtexUsageError(`Request path must start with "/": ${JSON.stringify(path)}`)
+  if (typeof path !== 'string' || !path.startsWith('/')) {
+    throw new VtexUsageError(`Request path must be a string starting with "/": ${JSON.stringify(path)}`)
+  }
   if (/[?#\\]/.test(path)) throw new VtexUsageError(`Request path must not contain "?", "#" or "\\": ${JSON.stringify(path)}`)
   const rawPath = server.basePath + path
-  const url = new URL(server.origin + rawPath)
-  if (url.origin !== server.origin || url.pathname !== rawPath) {
+  let url: URL
+  try {
+    url = new URL(server.origin + rawPath)
+  } catch {
+    throw new VtexUsageError(`Invalid request URL for path ${JSON.stringify(path)}`)
+  }
+  if (
+    url.protocol !== 'https:' ||
+    !isAllowlistedHost(url.hostname) ||
+    url.origin !== server.origin ||
+    url.pathname !== rawPath
+  ) {
     throw new VtexUsageError(`Request path is not normalized or escapes the server: ${JSON.stringify(path)}`)
   }
   return url.origin + url.pathname + buildQuery(query)
@@ -4952,7 +5046,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - Node.js 20 or newer is required.
 
 ### Security
-- Credentials are sent only to hosts under the allowlisted VTEX domains, after the account and environment are validated.
+- Credentials are sent only to hosts under the allowlisted VTEX domains, after the account and environment are validated. The allowlist is frozen at runtime.
 - Path parameters are percent-encoded. Empty, `.` and `..` values are rejected, and a URL that would change origin or contain dot segments is refused before sending.
 - Redirects are handled manually: same origin only, at most 3 hops.
 - `console.log(client)` and `JSON.stringify(client)` no longer reveal credentials.
@@ -5098,7 +5192,9 @@ A caller's `AbortSignal` rejects with the signal's reason, which is an `AbortErr
 - `account` must be a single DNS label.
 - `environment` is `vtexcommercestable` (the default) or `vtexcommercebeta`.
 
-**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported as `VTEX_DOMAIN_ALLOWLIST`.
+**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported (frozen) as `VTEX_DOMAIN_ALLOWLIST`.
+
+**Where the account comes from:** take `account` from trusted configuration, never from request input. The allowlist cannot stop a valid account name chosen by an attacker (`attacker.myvtex.com` is still a VTEX host). With the factory, the resolver must return that account's own credentials.
 
 **Paths**
 - Path parameters are percent-encoded.
@@ -5521,7 +5617,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  298 passed (298)`;
+- `Test Files  25 passed (25)` and `Tests  356 passed (356)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
