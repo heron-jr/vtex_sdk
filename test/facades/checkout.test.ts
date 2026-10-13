@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { VtexHttpClient } from '../../src/core/http.js'
 import { CheckoutFacade } from '../../src/facades/checkout.js'
+import { VtexServerError } from '../../src/core/errors.js'
 
 describe('CheckoutFacade', () => {
   it('getCart() reads an order form by id', async () => {
@@ -42,7 +43,9 @@ describe('CheckoutFacade', () => {
       Promise.resolve(new Response('{}', { status: 503, headers: { 'content-type': 'application/json' } })),
     )
     const http = new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock })
-    await expect(new CheckoutFacade(http).simulate({ items: [] }, { idempotent: false })).rejects.toThrow()
+    await expect(new CheckoutFacade(http).simulate({ items: [] }, { idempotent: false })).rejects.toBeInstanceOf(
+      VtexServerError,
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })

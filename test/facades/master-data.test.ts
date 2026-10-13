@@ -123,6 +123,36 @@ describe('MasterDataFacade', () => {
     expect(fetchMock.mock.calls[0][1].headers['X-Trace']).toBe('t1')
   })
 
+  it('scroll() stops on abort between pages', async () => {
+    const controller = new AbortController()
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json([{ id: 1 }], { 'X-VTEX-MD-TOKEN': 'tok' })))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const consume = async () => {
+      for await (const _ of md.scroll('CL', {}, { signal: controller.signal })) controller.abort()
+    }
+    await expect(consume()).rejects.toMatchObject({ name: 'AbortError' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('scroll() treats a null body mid-scroll as an error', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(json([{ id: 1 }], { 'X-VTEX-MD-TOKEN': 'tok1' }))
+      .mockResolvedValueOnce(json(null))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const consume = async () => {
+      for await (const _ of md.scroll('CL')) void _
+    }
+    await expect(consume()).rejects.toBeInstanceOf(VtexUnexpectedResponseError)
+  })
+
+  it('get() forwards per-call options alongside fields', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(json({}))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    await md.get('CL', 'x', { fields: ['id'], headers: { 'X-Trace': 't1' } })
+    expect(fetchMock.mock.calls[0][1].headers['X-Trace']).toBe('t1')
+    expect(new URL(fetchMock.mock.calls[0][0]).searchParams.get('_fields')).toBe('id')
+  })
+
   it('get() encodes or rejects traversal ids', async () => {
     const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json({})))
     const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))

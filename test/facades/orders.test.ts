@@ -110,6 +110,10 @@ describe('OrdersFacade', () => {
     await expect(collect(facadeWith(fullPageNoPaging).list({ perPage: 2 }))).rejects.toBeInstanceOf(
       VtexUnexpectedResponseError,
     )
+    const oversizedNoPaging = vi.fn().mockResolvedValue(json({ list: [1, 2, 3] }))
+    await expect(collect(facadeWith(oversizedNoPaging).list({ perPage: 2 }))).rejects.toBeInstanceOf(
+      VtexUnexpectedResponseError,
+    )
 
     const emptyMidRun = vi.fn()
       .mockResolvedValueOnce(page([1], 1, 3, 1))

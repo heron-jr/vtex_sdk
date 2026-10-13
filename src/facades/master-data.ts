@@ -64,7 +64,7 @@ export class MasterDataFacade {
       const { data, headers } = await this.http.requestRaw<unknown>(
         withCall({ method: 'GET', path: `/api/dataentities/${entity}/scroll`, query }, call),
       )
-      if (data === undefined && token) {
+      if (data == null && token) {
         throw new VtexUnexpectedResponseError('Master Data scroll returned an empty body in the middle of a scroll', data)
       }
       const rows = data ?? []

@@ -62,7 +62,7 @@ export class OrdersFacade {
       const total = typeof paging?.total === 'number' ? paging.total : undefined
       if (pages === undefined) {
         // Without paging info a full page may hide more results: refuse to guess.
-        if (items.length === size) {
+        if (items.length >= size) {
           throw new VtexUnexpectedResponseError('List Orders returned a full page without paging information', res)
         }
         return
