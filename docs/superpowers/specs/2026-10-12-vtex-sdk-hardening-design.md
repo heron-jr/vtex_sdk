@@ -139,8 +139,12 @@ VtexError                         (new base, extends Error)
 ### 3.7 Factory (S8)
 - **`forAccount(account)`** normalizes and validates the account (§3.1) and uses the normalized value as the cache key.
 - **Resolver output:** only `appKey`, `appToken` and `authCookie` are taken from it. It can no longer change `account`, `environment`, `fetch` or `hooks`.
+  - A non-object result rejects with `VtexUsageError` and is not cached.
 - **Cache bound:** LRU, default 100 entries, configurable with `maxCachedClients`.
+  - The value must be an integer ≥ 1. Anything else, such as `NaN` (which would otherwise leave the cache unbounded), throws `VtexUsageError` when the factory is created.
 - **Auth failures:** an entry is evicted when its client gets a 401 or 403. The factory composes an internal response hook with the user's hooks.
+  - The resolver runs again on the next `forAccount`. A 403 caused by a missing role therefore re-resolves credentials each time, so the resolver should be cheap or cache on its own side.
+  - Callers that already hold the evicted client keep using it.
 
 ### 3.8 Public request API
 - **New methods:** `VtexClient` gains public `request<T>(opts)` and `requestRaw<T>(opts)`. `requestRaw` returns `{ data, headers, status }`.

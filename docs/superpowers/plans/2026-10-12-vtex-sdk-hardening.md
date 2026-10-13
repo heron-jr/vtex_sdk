@@ -3703,7 +3703,7 @@ describe('VtexClient', () => {
 - [ ] **Step 2: Run it to verify it fails**
 
 Run: `npx vitest run test/client.test.ts`
-Expected: FAIL. `c.environment` is undefined, `inspect(c)` shows the token, and `requestRaw` does not exist.
+Expected: FAIL. The account is not normalized, `JSON.stringify(c)` serializes far more than `{ account, environment }`, and `requestRaw` does not exist.
 
 - [ ] **Step 3: Replace `src/client.ts` with**
 
@@ -3895,6 +3895,20 @@ describe('createVtexFactory', () => {
     expect(credentials).toHaveBeenCalledTimes(4)
   })
 
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '10' as never])(
+    'rejects maxCachedClients %j',
+    (maxCachedClients) => {
+      expect(() => createVtexFactory({ credentials: vi.fn(), maxCachedClients })).toThrow(VtexUsageError)
+    },
+  )
+
+  it('rejects a resolver that returns a non-object and does not cache the failure', async () => {
+    const credentials = vi.fn().mockResolvedValueOnce(null).mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials })
+    await expect(factory.forAccount('x')).rejects.toBeInstanceOf(VtexUsageError)
+    await expect(factory.forAccount('x')).resolves.toBeDefined()
+  })
+
   it('evicts a client after an auth failure so rotated credentials are picked up', async () => {
     const fetchMock = vi.fn().mockImplementation(() =>
       Promise.resolve(new Response('{}', { status: 401, headers: { 'content-type': 'application/json' } })),
@@ -3918,12 +3932,15 @@ Expected: FAIL in the new cases:
 - an invalid account reaches the resolver;
 - the resolver overrides the account;
 - the cache has no bound;
+- an invalid `maxCachedClients` is accepted;
+- a non-object resolver result is not a `VtexUsageError`;
 - there is no eviction after 401.
 
 - [ ] **Step 3: Replace `src/factory.ts` with**
 
 ```ts
 import type { VtexClientConfig, VtexEnvironment, VtexHooks } from './core/types.js'
+import { VtexUsageError } from './core/errors.js'
 import { normalizeAccount } from './core/url.js'
 import { VtexClient } from './client.js'
 
@@ -3945,6 +3962,9 @@ type Credentials = Pick<VtexClientConfig, 'appKey' | 'appToken' | 'authCookie'>
 
 /** Only credential fields are taken from the resolver, so it cannot redirect the client elsewhere. */
 function pickCredentials(creds: VtexCreds): Credentials {
+  if (typeof creds !== 'object' || creds === null) {
+    throw new VtexUsageError('The credentials resolver must return an object')
+  }
   const source = creds as { appKey?: unknown; appToken?: unknown; authCookie?: unknown }
   const picked: Credentials = {}
   if (typeof source.appKey === 'string') picked.appKey = source.appKey
@@ -3954,7 +3974,10 @@ function pickCredentials(creds: VtexCreds): Credentials {
 }
 
 export function createVtexFactory(config: VtexFactoryConfig) {
-  const maxEntries = Math.max(1, config.maxCachedClients ?? 100)
+  const maxEntries = config.maxCachedClients ?? 100
+  if (typeof maxEntries !== 'number' || !Number.isInteger(maxEntries) || maxEntries < 1) {
+    throw new VtexUsageError(`maxCachedClients must be an integer >= 1 (got ${String(maxEntries)})`)
+  }
   const cache = new Map<string, Promise<VtexClient>>()
 
   function evict(account: string, entry: Promise<VtexClient>): void {
@@ -7035,7 +7058,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  434 passed (434)`;
+- `Test Files  25 passed (25)` and `Tests  441 passed (441)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
