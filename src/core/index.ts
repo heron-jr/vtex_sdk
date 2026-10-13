@@ -1,6 +1,0 @@
-export * from './types.js'
-export * from './url.js'
-export * from './auth.js'
-export * from './errors.js'
-export * from './retry.js'
-export { VtexHttpClient } from './http.js'
