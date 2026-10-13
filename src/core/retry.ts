@@ -1,17 +1,3 @@
-export function shouldRetry(status: number | undefined, attempt: number, maxRetries: number): boolean {
-  if (attempt >= maxRetries) return false
-  if (status === undefined) return true // network error
-  if (status === 429) return true
-  return status >= 500
-}
-
-export function computeBackoff(attempt: number, retryAfter: number | undefined, rand: () => number): number {
-  if (retryAfter !== undefined) return retryAfter * 1000
-  const base = Math.pow(2, attempt) * 200
-  const jitter = Math.floor(rand() * 100)
-  return base + jitter
-}
-
 /** Largest delay setTimeout honors; larger values fire after about 1 ms. */
 export const MAX_TIMER_MS = 2_147_483_647
 
@@ -98,7 +84,11 @@ export function backoffDelay(
   return Math.floor(rand() * ceiling)
 }
 
-/** setTimeout-based sleep that rejects with the signal's reason as soon as it aborts. */
+/**
+ * setTimeout-based sleep that rejects with the signal's reason (or an AbortError when
+ * the signal has none) as soon as it aborts. `ms` is clamped to [0, MAX_TIMER_MS];
+ * NaN counts as 0.
+ */
 export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const abortReason = () => signal?.reason ?? new DOMException('This operation was aborted', 'AbortError')

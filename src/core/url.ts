@@ -16,7 +16,7 @@ export const VTEX_DOMAIN_ALLOWLIST: readonly string[] = Object.freeze([
 ])
 
 const ACCOUNT_RE = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i
-const HOSTNAME_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/
+const HOSTNAME_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/i
 
 /** Validates a VTEX account name (a single ASCII DNS label) and lowercases it. */
 export function normalizeAccount(account: unknown): string {
@@ -39,8 +39,8 @@ export function validateEnvironment(environment: unknown = 'vtexcommercestable')
 
 /** True when a parsed URL hostname is an allowlisted VTEX domain or a subdomain of one. */
 export function isAllowlistedHost(hostname: string): boolean {
+  if (typeof hostname !== 'string' || !HOSTNAME_RE.test(hostname)) return false
   const host = hostname.toLowerCase()
-  if (!HOSTNAME_RE.test(host)) return false
   return VTEX_DOMAIN_ALLOWLIST.some((domain) => host === domain || host.endsWith(`.${domain}`))
 }
 
@@ -53,6 +53,7 @@ export interface ResolvedServer {
 
 /** Fills a server template with a validated account and environment, then checks the resulting host. */
 export function resolveServer(template: string, account: string, environment: VtexEnvironment): ResolvedServer {
+  if (typeof template !== 'string') throw new VtexUsageError(`Server template must be a string (got ${typeof template})`)
   const accountName = normalizeAccount(account)
   const env = validateEnvironment(environment)
   const filled = template.replaceAll('{accountName}', () => accountName).replaceAll('{environment}', () => env)
@@ -115,9 +116,8 @@ export function buildQuery(query?: Record<string, unknown>): string {
  * changes the server's origin. Paths must be pre-encoded (see encodePathParam).
  */
 export function buildRequestUrl(server: ResolvedServer, path: string, query?: Record<string, unknown>): string {
-  if (typeof path !== 'string' || !path.startsWith('/')) {
-    throw new VtexUsageError(`Request path must be a string starting with "/": ${JSON.stringify(path)}`)
-  }
+  if (typeof path !== 'string') throw new VtexUsageError(`Request path must be a string (got ${typeof path})`)
+  if (!path.startsWith('/')) throw new VtexUsageError(`Request path must start with "/": ${JSON.stringify(path)}`)
   if (/[?#\\]/.test(path)) throw new VtexUsageError(`Request path must not contain "?", "#" or "\\": ${JSON.stringify(path)}`)
   const rawPath = server.basePath + path
   let url: URL
@@ -128,6 +128,7 @@ export function buildRequestUrl(server: ResolvedServer, path: string, query?: Re
   }
   if (
     url.protocol !== 'https:' ||
+    url.port !== '' ||
     !isAllowlistedHost(url.hostname) ||
     url.origin !== server.origin ||
     url.pathname !== rawPath
@@ -135,9 +136,4 @@ export function buildRequestUrl(server: ResolvedServer, path: string, query?: Re
     throw new VtexUsageError(`Request path is not normalized or escapes the server: ${JSON.stringify(path)}`)
   }
   return url.origin + url.pathname + buildQuery(query)
-}
-
-/** Legacy helper used by the 0.1 transport until the transport rewrite. */
-export function resolveBaseUrl(account: string, environment: VtexEnvironment = 'vtexcommercestable'): string {
-  return resolveServer(DEFAULT_SERVER, normalizeAccount(account), validateEnvironment(environment)).origin
 }

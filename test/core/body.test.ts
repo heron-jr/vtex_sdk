@@ -74,6 +74,18 @@ describe('serializeBody', () => {
     expect(() => serializeBody({ a: { nested: 1 } }, 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
     expect(() => serializeBody({ a: null }, 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
     expect(() => serializeBody(['a'], 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
+    expect(() => serializeBody(new Map([['a', '1']]), 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
+    expect(() => serializeBody(new Date(), 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
+  })
+  it('treats an empty content type as the JSON default', () => {
+    expect(serializeBody({ a: 1 }, '')).toStrictEqual({ body: '{"a":1}', contentType: 'application/json' })
+  })
+  it('does not treat a lookalike media type as form-urlencoded', () => {
+    expect(() => serializeBody({ a: '1' }, 'application/x-www-form-urlencodedfoo')).toThrow(VtexUsageError)
+  })
+  it('keeps a declared content type for URLSearchParams', () => {
+    const out = serializeBody(new URLSearchParams({ a: '1' }), 'application/x-www-form-urlencoded; charset=UTF-8')
+    expect(out.contentType).toBe('application/x-www-form-urlencoded; charset=UTF-8')
   })
   it('passes URLSearchParams through as a form', () => {
     const params = new URLSearchParams({ a: '1' })
@@ -109,10 +121,14 @@ describe('serializeBody', () => {
   it('sends binary buffers as is', () => {
     const bytes = new Uint8Array([1, 2, 3])
     expect(serializeBody(bytes)).toStrictEqual({ body: bytes, contentType: 'application/octet-stream' })
+    const buffer = new ArrayBuffer(4)
+    expect(serializeBody(buffer)).toStrictEqual({ body: buffer, contentType: 'application/octet-stream' })
   })
   it('refuses streaming bodies, web or Node', () => {
     expect(() => serializeBody(new ReadableStream())).toThrow(VtexUsageError)
     expect(() => serializeBody(Readable.from(['a']))).toThrow(VtexUsageError)
     expect(() => serializeBody({ async *[Symbol.asyncIterator]() { yield 'a' } })).toThrow(VtexUsageError)
+    expect(() => serializeBody({ pipe() {} })).toThrow(VtexUsageError)
+    expect(() => serializeBody({ [Symbol.toStringTag]: 'ReadableStream' })).toThrow(VtexUsageError)
   })
 })

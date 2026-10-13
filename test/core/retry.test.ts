@@ -1,6 +1,6 @@
 import { getEventListeners } from 'node:events'
 import { performance } from 'node:perf_hooks'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   isRetrySafe, isConnectPhaseError, shouldRetryFailure, parseRetryAfterMs, backoffDelay, sleep, MAX_TIMER_MS,
 } from '../../src/core/retry.js'
@@ -30,8 +30,11 @@ describe('isConnectPhaseError', () => {
   it.each(['ECONNRESET', 'UND_ERR_SOCKET', 'EPIPE', 'ETIMEDOUT'])('does not treat %s as connect-phase', (code) => {
     expect(isConnectPhaseError(withCode(code))).toBe(false)
   })
-  it('reads a top-level code (AggregateError from undici, or an injected fetch)', () => {
-    expect(isConnectPhaseError(Object.assign(new AggregateError([], 'connect'), { code: 'ECONNREFUSED' }))).toBe(true)
+  it('recognizes the shape undici uses for localhost (an AggregateError cause)', () => {
+    const cause = Object.assign(new AggregateError([], 'connect'), { code: 'ECONNREFUSED' })
+    expect(isConnectPhaseError(Object.assign(new TypeError('fetch failed'), { cause }))).toBe(true)
+  })
+  it('reads a top-level code, as an injected fetch may report it', () => {
     expect(isConnectPhaseError(Object.assign(new Error('refused'), { code: 'ECONNREFUSED' }))).toBe(true)
   })
   it('handles values without a usable code', () => {
@@ -171,5 +174,29 @@ describe('sleep', () => {
   })
   it('exposes the setTimeout ceiling', () => {
     expect(MAX_TIMER_MS).toBe(2_147_483_647)
+  })
+  it('keeps waiting for an oversized delay instead of firing after ~1 ms', async () => {
+    const controller = new AbortController()
+    let settled = false
+    const pending = sleep(Number.POSITIVE_INFINITY, controller.signal).then(
+      () => { settled = true },
+      (e: unknown) => { settled = true; return e },
+    )
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    expect(settled).toBe(false)
+    controller.abort()
+    expect(((await pending) as Error).name).toBe('AbortError')
+  })
+  it('treats a NaN delay as zero', async () => {
+    vi.useFakeTimers()
+    try {
+      let resolved = false
+      const pending = sleep(Number.NaN).then(() => { resolved = true })
+      await vi.advanceTimersByTimeAsync(0)
+      await pending
+      expect(resolved).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

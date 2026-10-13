@@ -75,7 +75,7 @@ function toJson(body: unknown, contentType: string): string {
 }
 
 function toForm(body: unknown): URLSearchParams {
-  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+  if (body === null || typeof body !== 'object' || Array.isArray(body) || tagOf(body) !== 'Object') {
     throw new VtexUsageError('A form-urlencoded body must be a string, URLSearchParams or a flat object')
   }
   const params = new URLSearchParams()

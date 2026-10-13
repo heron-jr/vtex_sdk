@@ -20,7 +20,7 @@ describe('normalizeAccount', () => {
     'evil.com#', 'evil.com/', 'evil.com?', 'a.evil.com?', 'evil.com\\', 'evil.com:8443#',
     'lojax.evil.com#', 'x@evil.com', ' lojax', '-lojax', '',
     'a.b', 'lojax.evil.com', 'acme.', '.acme', 'a'.repeat(64), 'acme\n', 'acme\t', 'acme-', 'a_b',
-    'Kacme',
+    '\u212Aacme',
   ])('rejects %j', (account) => {
     expect(() => normalizeAccount(account)).toThrow(VtexUsageError)
   })
@@ -55,6 +55,9 @@ describe('isAllowlistedHost', () => {
     'evil.com/.vtex.com',
   ])('blocks %j', (host) => {
     expect(isAllowlistedHost(host)).toBe(false)
+  })
+  it('checks the raw hostname shape before lowercasing', () => {
+    expect(isAllowlistedHost(String.fromCharCode(0x212a) + 'acme.vtex.com')).toBe(false)
   })
   it('cannot be widened at runtime', () => {
     expect(Object.isFrozen(VTEX_DOMAIN_ALLOWLIST)).toBe(true)
@@ -94,7 +97,7 @@ describe('resolveServer', () => {
     `https://evil.com${BACKSLASH}@api.vtex.com`,
     'https://evil.com#@api.vtex.com',
     'https://api.vtex.com\t.evil.com',
-    'https://vtеx.com',
+    'https://vt\u0435x.com',
     'https://127.0.0.1',
     'https://[::1]',
     'https://acme.vtexcommercestable.com.br.',
@@ -110,6 +113,11 @@ describe('resolveServer', () => {
     expect(() => resolveServer('https://api.vtex.com/{accountName}', '../../x', 'vtexcommercestable')).toThrow(VtexUsageError)
     expect(() => resolveServer('https://api.vtex.com/{accountName}', 'evil.com#', 'vtexcommercestable')).toThrow(VtexUsageError)
     expect(() => resolveServer(DEFAULT_SERVER, 'acme', 'evil.com#' as never)).toThrow(VtexUsageError)
+    // Without environment validation this would resolve to the allowlisted acme.myvtex.com.
+    expect(() => resolveServer('https://{accountName}.{environment}.com', 'acme', 'myvtex' as never)).toThrow(VtexUsageError)
+  })
+  it('rejects a non-string template', () => {
+    expect(() => resolveServer(undefined as never, 'acme', 'vtexcommercestable')).toThrow(VtexUsageError)
   })
 })
 
@@ -152,12 +160,17 @@ describe('buildRequestUrl', () => {
   })
   it.each([
     'giftcards', '/a/../b', '/a/./b', '/a/%2e%2e/b', '/a?b', '/a#b', '/a\\b', '/a b',
-    '/a\tb', '/a\n../b', '/a/.\t./b', '/a/%2E%2E/b', '/a/%2e/b', '/café',
+    '/a\tb', '/a\n../b', '/a/.\t./b', '/a/%2E%2E/b', '/a/%2e/b', '/caf\u00E9',
   ])('rejects %j', (path) => {
     expect(() => buildRequestUrl(server, path)).toThrow(VtexUsageError)
   })
   it('rejects a non-string path', () => {
     expect(() => buildRequestUrl(server, undefined as never)).toThrow(VtexUsageError)
+    expect(() => buildRequestUrl(server, 1n as never)).toThrow(VtexUsageError)
+  })
+  it('rejects an unparsable server origin and one with a port', () => {
+    expect(() => buildRequestUrl({ origin: 'not a url', basePath: '' }, '/x')).toThrow(VtexUsageError)
+    expect(() => buildRequestUrl({ origin: 'https://acme.vtexcommercestable.com.br:8443', basePath: '' }, '/x')).toThrow(VtexUsageError)
   })
   it('rejects a base path that would change the origin', () => {
     expect(() => buildRequestUrl({ ...server, basePath: '@evil.com' }, '/x')).toThrow(VtexUsageError)
