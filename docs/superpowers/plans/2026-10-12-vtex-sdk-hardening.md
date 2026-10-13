@@ -1481,9 +1481,9 @@ EOF
 ## Task 6: Transport rewrite (spec §3.1–§3.6, §3.9, S1–S7)
 
 **Files:**
-- Modify: `src/core/types.ts`, `src/core/http.ts`, `src/core/retry.ts`, `src/core/url.ts`, `src/core/body.ts`
-- Create: `src/core/call.ts`
-- Test: `test/core/http.test.ts`, `test/core/call.test.ts`, `test/core/url.test.ts`, `test/core/retry.test.ts`, `test/core/body.test.ts`
+- Modify: `src/core/types.ts`, `src/core/http.ts`, `src/core/retry.ts`, `src/core/url.ts`, `src/core/body.ts`, `src/core/auth.ts`
+- Create: `src/core/call.ts`, `src/core/headers.ts`
+- Test: `test/core/http.test.ts`, `test/core/call.test.ts`, `test/core/url.test.ts`, `test/core/retry.test.ts`, `test/core/body.test.ts`, `test/core/auth.test.ts`
 
 - [ ] **Step 1: Write the failing tests.** Replace `test/core/http.test.ts` with
 
@@ -1657,10 +1657,27 @@ describe('VtexHttpClient.request', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('honors a caller AbortSignal immediately instead of retrying a rejected fetch', async () => {
+  it('does not send at all when the caller signal is already aborted', async () => {
     const controller = new AbortController()
     controller.abort()
-    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    const onRequest = vi.fn()
+    const http = new VtexHttpClient({
+      account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 3, hooks: { onRequest },
+    })
+
+    const err = await http.request({ method: 'POST', path: '/x', body: {}, signal: controller.signal }).catch((e: unknown) => e)
+    expect((err as Error).name).toBe('AbortError')
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(onRequest).not.toHaveBeenCalled()
+  })
+
+  it('honors a caller abort during fetch instead of retrying', async () => {
+    const controller = new AbortController()
+    const fetchMock = vi.fn().mockImplementation(() => {
+      controller.abort()
+      return Promise.reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+    })
     const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 3 })
 
     await expect(http.request({ method: 'GET', path: '/x', signal: controller.signal })).rejects.toThrow()
@@ -1938,12 +1955,153 @@ describe('redirects', () => {
   })
 })
 
+describe('redirect origin rules', () => {
+  const ORIGIN = 'https://lojax.vtexcommercestable.com.br'
+
+  it.each([
+    ['a scheme downgrade', 'http://lojax.vtexcommercestable.com.br/x'],
+    ['a sibling VTEX account host', 'https://other.vtexcommercestable.com.br/x'],
+    ['a protocol-relative URL', '//evil.com/x'],
+    ['backslashes', 'https:\\\\evil.com/x'],
+    ['a slash-backslash path', '/\\evil.com'],
+    ['a non-default port', 'https://lojax.vtexcommercestable.com.br:8443/x'],
+    ['userinfo on the same origin', 'https://u:p@lojax.vtexcommercestable.com.br/x'],
+  ])('blocks a redirect to %s without a second request', async (_name, location) => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(null, { status: 307, headers: { location } }))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    const err = await http.request({ method: 'GET', path: '/x' }).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(VtexRequestError)
+    expect((err as Error).message).toMatch(/redirect blocked/i)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('follows a same-origin 303 for a GET', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 303, headers: { location: '/y' } }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x' })).resolves.toEqual({ ok: true })
+    expect(fetchMock.mock.calls[1][0]).toBe(`${ORIGIN}/y`)
+    expect(fetchMock.mock.calls[1][1].method).toBe('GET')
+  })
+
+  it('treats a 3xx without Location as a plain error response', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(null, { status: 304 }))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock, maxRetries: 3 })
+    const err = await http.request({ method: 'GET', path: '/x' }).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(VtexRequestError)
+    expect((err as VtexRequestError).status).toBe(304)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('body read interruptions', () => {
+  /** A 200 whose body never finishes until the request signal aborts. */
+  function stalledBodyFetch() {
+    return vi.fn((_input: string | URL | Request, init?: RequestInit) => {
+      const res = new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } })
+      Object.defineProperty(res, 'text', {
+        value: () =>
+          new Promise<string>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => reject(new DOMException('This operation was aborted', 'AbortError')))
+          }),
+      })
+      return Promise.resolve(res)
+    })
+  }
+
+  it('rethrows the caller abort reason when it happens during the body read', async () => {
+    const controller = new AbortController()
+    const reason = new Error('caller gave up')
+    const http = new VtexHttpClient({ ...BASE, fetch: stalledBodyFetch() })
+    const pending = http.request({ method: 'GET', path: '/x', signal: controller.signal }).catch((e: unknown) => e)
+    setTimeout(() => controller.abort(reason), 20)
+    expect(await pending).toBe(reason)
+  })
+
+  it('reports a body-read timeout as VtexTimeoutError', async () => {
+    const http = new VtexHttpClient({ ...BASE, fetch: stalledBodyFetch(), timeoutMs: 20 })
+    await expect(http.request({ method: 'GET', path: '/x' })).rejects.toBeInstanceOf(VtexTimeoutError)
+  })
+})
+
+describe('header and request validation', () => {
+  it.each([
+    ['a CRLF in a caller header value', { 'X-A': 'a\r\nX-Injected: 1' }],
+    ['a NUL in a caller header value', { 'X-A': 'a\0b' }],
+    ['an invalid header name', { 'Bad Name': 'v' }],
+  ])('rejects %s before sending', async (_name, headers) => {
+    const fetchMock = vi.fn()
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x', headers })).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects a malformed credential at construction without echoing it', () => {
+    let caught: unknown
+    try {
+      new VtexHttpClient({ ...BASE, appToken: 'SUPER-SECRET-TOKEN\nX' })
+    } catch (err) {
+      caught = err
+    }
+    expect(caught).toBeInstanceOf(VtexUsageError)
+    expect(inspect(caught)).not.toContain('SUPER-SECRET-TOKEN')
+  })
+
+  it('rejects a body on GET and HEAD', async () => {
+    const fetchMock = vi.fn()
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x', body: { a: 1 } })).rejects.toBeInstanceOf(VtexUsageError)
+    await expect(http.request({ method: 'HEAD', path: '/x', body: 'x' })).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it.each(['GE T', '', 'GET\r\n'])('rejects the HTTP method %j', async (method) => {
+    const http = new VtexHttpClient({ ...BASE, fetch: vi.fn() })
+    await expect(http.request({ method, path: '/x' })).rejects.toBeInstanceOf(VtexUsageError)
+  })
+
+  it('skips null header values instead of sending "null"', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await http.request({ method: 'GET', path: '/x', headers: { 'X-Opt': null as never } })
+    expect('X-Opt' in fetchMock.mock.calls[0][1].headers).toBe(false)
+  })
+})
+
 describe('credential confidentiality', () => {
   it('never prints or serializes credentials', () => {
     const http = new VtexHttpClient({ ...BASE })
     expect(inspect(http)).not.toContain('T-SECRET')
     expect(JSON.stringify(http)).toBe('{"account":"lojax","environment":"vtexcommercestable"}')
     expect(Object.keys(http)).toEqual(['account', 'environment'])
+  })
+
+  it('cannot be re-pointed at another account at runtime', () => {
+    const http = new VtexHttpClient({ ...BASE })
+    expect(Object.isFrozen(http)).toBe(true)
+    expect(() => {
+      ;(http as unknown as { account: string }).account = 'otherstore'
+    }).toThrow(TypeError)
+    expect(http.account).toBe('lojax')
+  })
+})
+
+describe('hooks', () => {
+  it('releases the response body when onResponse throws', async () => {
+    const cancel = vi.fn(() => Promise.resolve())
+    const res = jsonResponse({ ok: true })
+    const realBody = res.body
+    Object.defineProperty(res, 'body', {
+      get: () => (realBody ? new Proxy(realBody, { get: (t, p, r) => (p === 'cancel' ? cancel : Reflect.get(t, p, r)) }) : realBody),
+    })
+    const http = new VtexHttpClient({
+      ...BASE,
+      fetch: vi.fn().mockResolvedValue(res),
+      hooks: { onResponse: () => { throw new Error('hook failed') } },
+    })
+    await expect(http.request({ method: 'GET', path: '/x' })).rejects.toThrow('hook failed')
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -2584,6 +2742,52 @@ describe('withCall', () => {
 })
 ```
 
+Replace `test/core/auth.test.ts` with this version. Credential errors become `VtexUsageError`, and malformed credentials are rejected without being echoed.
+
+```ts
+import { describe, it, expect } from 'vitest'
+import { buildAuthHeaders } from '../../src/core/auth.js'
+import { VtexUsageError } from '../../src/core/errors.js'
+
+describe('buildAuthHeaders', () => {
+  it('builds appKey/appToken headers', () => {
+    const h = buildAuthHeaders({ account: 'x', appKey: 'K', appToken: 'T' })
+    expect(h['X-VTEX-API-AppKey']).toBe('K')
+    expect(h['X-VTEX-API-AppToken']).toBe('T')
+  })
+  it('builds the cookie header', () => {
+    const h = buildAuthHeaders({ account: 'x', authCookie: 'C' })
+    expect(h['VtexIdclientAutCookie']).toBe('C')
+  })
+  it('throws a usage error when no credentials are provided', () => {
+    expect(() => buildAuthHeaders({ account: 'x' })).toThrow(VtexUsageError)
+    expect(() => buildAuthHeaders({ account: 'x' })).toThrow(/credential/i)
+  })
+  it('throws a usage error when only appKey is provided', () => {
+    expect(() => buildAuthHeaders({ account: 'x', appKey: 'K' })).toThrow(VtexUsageError)
+    expect(() => buildAuthHeaders({ account: 'x', appKey: 'K' })).toThrow(/appToken/i)
+  })
+  it.each(['SUPER-SECRET\nX', 'SUPER-SECRET\r\nX-Injected: 1', 'SUPER\0SECRET', ''])(
+    'rejects an invalid appToken without echoing it (%j)',
+    (appToken) => {
+      let caught: unknown
+      try {
+        buildAuthHeaders({ account: 'x', appKey: 'K', appToken })
+      } catch (err) {
+        caught = err
+      }
+      expect(caught).toBeInstanceOf(VtexUsageError)
+      expect(String((caught as Error).message)).not.toContain('SECRET')
+      expect((caught as Error).cause).toBeUndefined()
+    },
+  )
+  it('rejects a non-string or control-character cookie', () => {
+    expect(() => buildAuthHeaders({ account: 'x', authCookie: 'a\nb' })).toThrow(VtexUsageError)
+    expect(() => buildAuthHeaders({ account: 'x', authCookie: 123 as never })).toThrow(VtexUsageError)
+  })
+})
+```
+
 - [ ] **Step 2: Run them to verify they fail**
 
 Run: `npx vitest run test/core/http.test.ts test/core/call.test.ts`
@@ -2645,6 +2849,74 @@ export interface RequestOptions extends Omit<CallOptions, 'headers'> {
 }
 ```
 
+- [ ] **Step 3b: Create `src/core/headers.ts`**
+
+This is header-name/value validation that never echoes a value, plus the case-insensitive `setHeader`.
+
+```ts
+import { VtexUsageError } from './errors.js'
+
+/** RFC 9110 token characters. */
+const HEADER_NAME_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/
+/** Field values: tab, visible ASCII and Latin-1; never CR, LF or NUL. */
+const HEADER_VALUE_RE = /^[\t\x20-\x7E\x80-\xFF]*$/
+
+export function isValidHeaderName(name: string): boolean {
+  return HEADER_NAME_RE.test(name)
+}
+
+export function isValidHeaderValue(value: string): boolean {
+  return HEADER_VALUE_RE.test(value)
+}
+
+/** Throws VtexUsageError for an invalid header, naming the header but never echoing its value. */
+export function assertHeader(name: string, value: string): void {
+  if (!isValidHeaderName(name)) throw new VtexUsageError(`Invalid header name ${JSON.stringify(name)}`)
+  if (!isValidHeaderValue(value)) throw new VtexUsageError(`Invalid value for header ${JSON.stringify(name)}`)
+}
+
+/** Sets a header, replacing any existing header with the same name in a different case. */
+export function setHeader(headers: Record<string, string>, name: string, value: string): void {
+  const lower = name.toLowerCase()
+  for (const key of Object.keys(headers)) {
+    if (key.toLowerCase() === lower) delete headers[key]
+  }
+  headers[name] = value
+}
+```
+
+- [ ] **Step 3c: Replace `src/core/auth.ts` with**
+
+```ts
+import { VtexUsageError } from './errors.js'
+import { isValidHeaderValue } from './headers.js'
+import type { VtexClientConfig } from './types.js'
+
+/** Validates a credential without ever echoing it. */
+function credential(name: string, value: unknown): string {
+  if (typeof value !== 'string' || value === '' || !isValidHeaderValue(value)) {
+    throw new VtexUsageError(`${name} must be a non-empty string without control characters`)
+  }
+  return value
+}
+
+export function buildAuthHeaders(config: VtexClientConfig): Record<string, string> {
+  if (config.appKey !== undefined || config.appToken !== undefined) {
+    if (!config.appKey || !config.appToken) {
+      throw new VtexUsageError('Both appKey and appToken are required for app-key authentication')
+    }
+    return {
+      'X-VTEX-API-AppKey': credential('appKey', config.appKey),
+      'X-VTEX-API-AppToken': credential('appToken', config.appToken),
+    }
+  }
+  if (config.authCookie !== undefined) {
+    return { VtexIdclientAutCookie: credential('authCookie', config.authCookie) }
+  }
+  throw new VtexUsageError('No VTEX credentials provided: supply appKey/appToken or authCookie')
+}
+```
+
 - [ ] **Step 4: Create `src/core/call.ts`**
 
 ```ts
@@ -2669,12 +2941,12 @@ export function withCall(base: RequestOptions, opts?: CallOptions): RequestOptio
 - [ ] **Step 5: Replace `src/core/http.ts` with**
 
 ```ts
-import { inspect } from 'node:util'
 import type { RequestOptions, VtexClientConfig, VtexEnvironment, VtexHooks } from './types.js'
 import {
   DEFAULT_SERVER, buildRequestUrl, normalizeAccount, resolveServer, validateEnvironment, type ResolvedServer,
 } from './url.js'
 import { buildAuthHeaders } from './auth.js'
+import { assertHeader, setHeader } from './headers.js'
 import { VtexNetworkError, VtexRequestError, VtexTimeoutError, VtexUsageError, mapResponseToError } from './errors.js'
 import {
   MAX_TIMER_MS, backoffDelay, isConnectPhaseError, parseRetryAfterMs, shouldRetryFailure, sleep, type Failure,
@@ -2682,6 +2954,9 @@ import {
 import { isJsonContentType, serializeBody } from './body.js'
 
 const MAX_REDIRECTS = 3
+const METHOD_RE = /^[A-Za-z]+$/
+/** Same symbol as util.inspect.custom, without importing node:util. */
+const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
 
 /** Rejects NaN, Infinity, negatives and (optionally) fractions in numeric options. */
 function checkedNumber(name: string, value: unknown, min: number, integer = false): number {
@@ -2739,15 +3014,6 @@ async function parseBody(res: Response): Promise<unknown> {
   return text
 }
 
-/** Sets a header, replacing any existing header with the same name in a different case. */
-function setHeader(headers: Record<string, string>, name: string, value: string): void {
-  const lower = name.toLowerCase()
-  for (const key of Object.keys(headers)) {
-    if (key.toLowerCase() === lower) delete headers[key]
-  }
-  headers[name] = value
-}
-
 /** Next URL for a redirect the SDK may follow, or undefined when it must be blocked. */
 function redirectTarget(currentUrl: string, res: Response, method: string): string | undefined {
   const location = res.headers.get('location')
@@ -2758,7 +3024,7 @@ function redirectTarget(currentUrl: string, res: Response, method: string): stri
   } catch {
     return undefined
   }
-  if (next.origin !== new URL(currentUrl).origin) return undefined
+  if (next.origin !== new URL(currentUrl).origin || next.username || next.password) return undefined
   if (res.status === 307 || res.status === 308) return next.href
   if ((res.status === 301 || res.status === 302 || res.status === 303) && (method === 'GET' || method === 'HEAD')) {
     return next.href
@@ -2787,13 +3053,15 @@ export class VtexHttpClient {
     this.#fetch = config.fetch ?? fetch
     this.#hooks = config.hooks ?? {}
     this.#server(DEFAULT_SERVER)
+    // account/environment pick the host credentials go to: make them immutable at runtime too.
+    Object.freeze(this)
   }
 
   toJSON(): { account: string; environment: VtexEnvironment } {
     return { account: this.account, environment: this.environment }
   }
 
-  [inspect.custom](): string {
+  [INSPECT](): string {
     return `VtexHttpClient ${JSON.stringify(this.toJSON())}`
   }
 
@@ -2811,17 +3079,25 @@ export class VtexHttpClient {
   }
 
   async requestRaw<T>(opts: RequestOptions): Promise<{ data: T; headers: Headers; status: number }> {
+    if (typeof opts.method !== 'string' || !METHOD_RE.test(opts.method)) {
+      throw new VtexUsageError(`Invalid HTTP method ${JSON.stringify(opts.method)}`)
+    }
     const method = opts.method.toUpperCase()
     const server = this.#server(opts.server ?? DEFAULT_SERVER)
     let url = buildRequestUrl(server, opts.path, opts.query)
     const route = server.basePath + opts.path
     const { body, contentType } = serializeBody(opts.body, opts.contentType)
+    if (body !== undefined && (method === 'GET' || method === 'HEAD')) {
+      throw new VtexUsageError(`A ${method} request cannot have a body`)
+    }
 
     const headers: Record<string, string> = { Accept: 'application/json', ...this.#authHeaders }
     if (contentType) setHeader(headers, 'Content-Type', contentType)
     for (const [name, value] of Object.entries(opts.headers ?? {})) {
-      if (value !== undefined) setHeader(headers, name, String(value))
+      if (value !== undefined && value !== null) setHeader(headers, name, String(value))
     }
+    // Validate here: fetch would reject inside the retry loop, echoing the value (maybe a credential).
+    for (const [name, value] of Object.entries(headers)) assertHeader(name, value)
 
     const maxRetries =
       opts.retry === false ? 0 : checkedNumber('retry.maxRetries', opts.retry?.maxRetries ?? this.#maxRetries, 0, true)
@@ -2831,6 +3107,7 @@ export class VtexHttpClient {
     let redirects = 0
 
     for (;;) {
+      opts.signal?.throwIfAborted()
       const controller = new AbortController()
       let timedOut = false
       const timer = setTimeout(() => {
@@ -2860,7 +3137,12 @@ export class VtexHttpClient {
           throw this.#networkError(err, timedOut, method, route, attempt + 1)
         }
 
-        this.#hooks.onResponse?.({ method, url, status: res.status, attempt })
+        try {
+          this.#hooks.onResponse?.({ method, url, status: res.status, attempt })
+        } catch (err) {
+          await res.body?.cancel().catch(() => {})
+          throw err
+        }
 
         if (res.status >= 300 && res.status < 400 && res.headers.has('location')) {
           await res.body?.cancel().catch(() => {})
@@ -3396,7 +3678,6 @@ Expected: FAIL. `c.environment` is undefined, `inspect(c)` shows the token, and 
 - [ ] **Step 3: Replace `src/client.ts` with**
 
 ```ts
-import { inspect } from 'node:util'
 import type { RequestOptions, VtexClientConfig, VtexEnvironment } from './core/types.js'
 import { VtexHttpClient } from './core/http.js'
 import { RawNamespaces } from './generated/index.js'
@@ -3406,6 +3687,9 @@ import { MasterDataFacade } from './facades/master-data.js'
 import { PricingFacade } from './facades/pricing.js'
 import { LogisticsFacade } from './facades/logistics.js'
 import { CheckoutFacade } from './facades/checkout.js'
+
+/** Same symbol as util.inspect.custom, without importing node:util. */
+const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
 
 export class VtexClient {
   readonly account: string
@@ -3447,7 +3731,7 @@ export class VtexClient {
     return { account: this.account, environment: this.environment }
   }
 
-  [inspect.custom](): string {
+  [INSPECT](): string {
     return `VtexClient ${JSON.stringify(this.toJSON())}`
   }
 }
@@ -6721,7 +7005,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  402 passed (402)`;
+- `Test Files  25 passed (25)` and `Tests  430 passed (430)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.

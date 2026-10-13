@@ -93,17 +93,24 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
   - Capped by the new config `maxRetryAfterMs`, default `30000`.
   - If the server asks for longer than the cap, the SDK does not wait. It throws `VtexRateLimitError` (with `retryAfter`) immediately, so job runners can reschedule.
 - **Backoff without `Retry-After`:** exponential with full jitter, base 200 ms, capped at `maxRetryAfterMs`.
-- **Abortable waits:** every backoff sleep listens to the caller's `signal`. Aborting rejects promptly with the caller's abort reason.
+- **Abortable waits:** every backoff sleep listens to the caller's `signal`. Aborting rejects promptly with the caller's abort reason. An already-aborted signal stops the request before anything is sent.
+- **Body reads:** a failure or timeout while reading a response body is reported (`VtexNetworkError` / `VtexTimeoutError`) and not retried, even for retry-safe methods.
+- **Cap scope:** `maxRetryAfterMs` caps both `Retry-After` waits and computed backoff, so `0` means "never wait" (immediate retries, still bounded by `maxRetries`).
 
 ### 3.4 Redirects (S5)
 - **fetch setting:** every fetch uses `redirect: 'manual'`.
 - **Same-origin redirects:** followed for at most 3 hops, and only:
   - 307 and 308, preserving method and body;
   - 301, 302 and 303 for `GET` and `HEAD` only.
-- **Everything else:** cross-origin, or a 301/302/303 on another method, throws `VtexRequestError`. Its `status` is the 3xx code and its message says "redirect blocked". Headers are never re-sent to the new location.
+- **Everything else:** cross-origin (including an http downgrade, another port, or another account's VTEX host), a `Location` carrying userinfo, or a 301/302/303 on another method, throws `VtexRequestError`. Its `status` is the 3xx code and its message says "redirect blocked". Headers are never re-sent to the new location.
 
 ### 3.5 Credential confidentiality (S4)
-- **Private storage:** `VtexHttpClient` keeps auth headers in a `#private` field.
+- **Private storage:** `VtexHttpClient` keeps auth headers in a `#private` field. The instance is frozen, so `account`/`environment` cannot be re-pointed at runtime.
+- **Header validation before sending:**
+  - Credentials must be non-empty strings with no CR, LF or NUL. Header names must be RFC 9110 tokens, and values must contain no CR, LF or NUL.
+  - A violation throws `VtexUsageError`, naming the header but never echoing its value. Otherwise `fetch` would reject inside the retry loop with an error message containing the value, which may be a credential.
+  - A body on GET/HEAD and an invalid HTTP method are rejected the same way.
+  - `null` header values are skipped like `undefined`.
 - **Redacted output:** `VtexHttpClient` and `VtexClient` implement `toJSON()` and `[Symbol.for('nodejs.util.inspect.custom')]`, both returning `{ account, environment }` only.
 - **Coverage:** facades and generated namespaces reference the client only through these classes, so logging any of them is safe.
 - **Error bodies:** `VtexRequestError.body` stays readable but becomes non-enumerable. Default serializers (`JSON.stringify`, most loggers) therefore omit response bodies, which can contain customer data.
