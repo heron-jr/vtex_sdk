@@ -37,10 +37,17 @@ export function validateEnvironment(environment: unknown = 'vtexcommercestable')
   return environment as VtexEnvironment
 }
 
+/**
+ * VTEX IO app routes (app.io.vtex.com/{app}/...) run third-party app code, such as carriers'
+ * apps; the merchant's credentials are never sent there, even though they sit under vtex.com.
+ */
+const IO_APP_DOMAIN = 'io.vtex.com'
+
 /** True when a parsed URL hostname is an allowlisted VTEX domain or a subdomain of one. */
 export function isAllowlistedHost(hostname: string): boolean {
   if (typeof hostname !== 'string' || !HOSTNAME_RE.test(hostname)) return false
   const host = hostname.toLowerCase()
+  if (host === IO_APP_DOMAIN || host.endsWith(`.${IO_APP_DOMAIN}`)) return false
   return VTEX_DOMAIN_ALLOWLIST.some((domain) => host === domain || host.endsWith(`.${domain}`))
 }
 

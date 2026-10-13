@@ -53,8 +53,15 @@ describe('isAllowlistedHost', () => {
     'evil.com', 'vtex.com.evil.com', 'evilvtex.com', 'acme.vtexcommercestable.com.br.evil.com',
     'acme.vtexcommercestable.com.br.', '127.0.0.1', '[::1]', '', 'a..vtex.com', ' api.vtex.com',
     'evil.com/.vtex.com',
+    // VTEX IO app routes run third-party code
+    'app.io.vtex.com', 'io.vtex.com', 'APP.IO.VTEX.COM',
   ])('blocks %j', (host) => {
     expect(isAllowlistedHost(host)).toBe(false)
+  })
+  it('refuses a request() server on a VTEX IO app host', () => {
+    expect(() => resolveServer('https://app.io.vtex.com/vtex.carrier/v1/{accountName}', 'acme', 'vtexcommercestable')).toThrow(
+      VtexUsageError,
+    )
   })
   it('checks the raw hostname shape before lowercasing', () => {
     expect(isAllowlistedHost(String.fromCharCode(0x212a) + 'acme.vtex.com')).toBe(false)
