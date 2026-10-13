@@ -97,16 +97,17 @@ describe('createVtexFactory', () => {
 
   it('passes environment and maxRetryAfterMs through to the client', async () => {
     const fetchMock = vi.fn().mockImplementation(() =>
-      Promise.resolve(new Response('{}', { status: 429, headers: { 'retry-after': '120' } })),
+      Promise.resolve(new Response('{}', { status: 429, headers: { 'retry-after': '2' } })),
     )
     const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
     const factory = createVtexFactory({
-      credentials, fetch: fetchMock, environment: 'vtexcommercebeta', maxRetryAfterMs: 1000,
+      credentials, fetch: fetchMock, environment: 'vtexcommercebeta', maxRetryAfterMs: 1000, maxRetries: 1,
     })
     const client = await factory.forAccount('x')
     expect(client.environment).toBe('vtexcommercebeta')
     await expect(client.orders.get('1')).rejects.toBeInstanceOf(VtexRateLimitError)
-    expect(fetchMock).toHaveBeenCalledOnce() // Retry-After above the cap: no retry
+    // 2 s is above the 1 s cap but below the 30 s default: only a passed-through cap stops the retry.
+    expect(fetchMock).toHaveBeenCalledOnce()
   })
 
   it('keeps prototype hook methods (class instances) and their this', async () => {
@@ -142,19 +143,19 @@ describe('createVtexFactory', () => {
   })
 
   it('reports a non-string credential without echoing it', async () => {
-    const credentials = vi.fn().mockResolvedValue({ appKey: 123, appToken: 'T-SECRET' })
+    const credentials = vi.fn().mockResolvedValue({ appKey: { toString: () => 'K-SECRET' }, appToken: 'T' })
     const factory = createVtexFactory({ credentials })
     const err = await factory.forAccount('x').catch((e: unknown) => e)
     expect(err).toBeInstanceOf(VtexUsageError)
     expect((err as Error).message).toMatch(/appKey must be/)
-    expect((err as Error).message).not.toContain('T-SECRET')
+    expect((err as Error).message).not.toContain('K-SECRET')
   })
 
   it('clear(undefined) is a no-op; clear() drops every client', async () => {
     const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
     const factory = createVtexFactory({ credentials })
     const a = await factory.forAccount('a')
-    factory.clear(undefined)
+    factory.clear(undefined as unknown as string) // what a JS caller with a missing param would do
     expect(await factory.forAccount('a')).toBe(a)
     factory.clear()
     expect(await factory.forAccount('a')).not.toBe(a)

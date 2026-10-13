@@ -25,8 +25,10 @@ export interface VtexFactoryConfig {
 export interface VtexFactory {
   /** Cached client for the account (normalized to lowercase). Rejects with VtexUsageError for an invalid name. */
   forAccount(account: string): Promise<VtexClient>
-  /** Drops one account's client, or every client when called with no argument. */
-  clear(account?: string): void
+  /** Drops every cached client. */
+  clear(): void
+  /** Drops one account's client. `clear(undefined)` (e.g. a missing request param) does nothing. */
+  clear(account: string): void
 }
 
 type Credentials = Pick<VtexClientConfig, 'appKey' | 'appToken' | 'authCookie'>
