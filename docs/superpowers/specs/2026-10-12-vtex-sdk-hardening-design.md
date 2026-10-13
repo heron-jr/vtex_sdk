@@ -1,6 +1,6 @@
 # vtex-sdk 0.2.0 — Security Hardening & Correctness — Design Spec
 
-**Status:** Approved in brainstorming — pending user review of this document before implementation planning
+**Status:** Approved; implementation in progress on branch `fix/hardening-0.2.0`
 **Date:** 2026-10-12
 **Author:** Heron Jr + Claude
 **Supersedes:** nothing. It amends `2026-07-17-vtex-sdk-design.md`, whose architecture (core + generated `raw.*` + hand-written facades) stays.
@@ -64,7 +64,7 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
   1. substitutes only `{accountName}` and `{environment}` with the validated values;
   2. parses the result with `new URL()`;
   3. requires `https:` (`http:` templates are upgraded);
-  4. requires the hostname to equal, or end with `.` plus, a domain in the **VTEX domain allowlist**. Initially: `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com`, `vtexpayments.com.br`. More domains are added only with evidence of VTEX ownership (see §10).
+  4. requires the hostname to equal, or end with `.` plus, a domain in the **VTEX domain allowlist**. Initially: `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com`, `vtexpayments.com.br`. More domains are added only with evidence of VTEX ownership (see §10). Hosts under `io.vtex.com` (VTEX IO app routes, which run third-party app code) are refused even though they are under `vtex.com`.
 - **Credentials never go to a non-allowlisted origin.** Allowlist failure throws `VtexUsageError` before any network call.
 
 ### 3.2 Path safety (S2, defense in depth)
@@ -179,7 +179,7 @@ Nothing is removed.
   - **`account`** is a spelling used by some Pricing servers and is treated as an alias of `accountName`.
   - **Any other variable** makes that entry unresolvable. Examples: `providerApiEndpoint`, `storeDomain`, `storeHost`, `middlewareEndpoint`, `fulfillmentEndpoint`, `workspace`.
 - **Canonical templates only.** A template must be exactly `https://` + a host of letters, digits, dots, dashes and placeholders + plain path segments. The URL parser must not rewrite it: no case or IDNA changes, no trailing dot, no dot segments, no `%`/`\`/`@`/`?`/`#`/`:`. The account checks below therefore read the same host and path that are used at runtime. Stray braces and non-string or non-array `servers` entries are unresolvable.
-- **No hard-coded accounts.** Every allowlisted domain except `vtex.com` is account-scoped (fail-closed for domains added later). On those domains the host's first label must be `{accountName}`. On the commerce domains (`vtexcommercestable.com.br`, `vtexcommercebeta.com.br`) only, it may also be a shared VTEX service label: `api`, `logistics`, `portal`, `prchub` or `rnb`. Otherwise the entry is unresolvable. This stops a schema example host such as `entelperu.vtexcommercestable.com.br` from receiving our credentials.
+- **No hard-coded accounts.** Every allowlisted domain except `vtex.com` is account-scoped (fail-closed for domains added later). On those domains the host's first label must be `{accountName}`. On the commerce domains (`vtexcommercestable.com.br`, `vtexcommercebeta.com.br`) only, it may also be a shared VTEX service label: `api`, `logistics`, `portal`, `prchub` or `rnb`. Otherwise the entry is unresolvable. This stops a schema example host that names another store's account (`otherstore.vtexcommercestable.com.br`) from receiving our credentials.
 - **No VTEX IO app routes.** Hosts under `io.vtex.com` (`app.io.vtex.com/{app}/...`) run third-party app code, so they are unresolvable.
 - **Reviewed host list.** `test/generated-hosts.test.ts` pins the exact set of generated templates, so a re-pin that introduces a host fails until it is reviewed.
 - **Base-path overlap.** When the server's last base-path segment equals the operation path's first segment, the duplicate is dropped. A templated segment such as `{accountName}` is never dropped. The 7 Pricing operations whose server ends in `/pricing` and whose paths start with `/pricing/` resolve to `api.vtex.com/{account}/pricing/...`, matching the API reference. Without the rule they would get `/pricing/pricing/...`.
@@ -267,7 +267,7 @@ Nothing is removed.
   - Orders API `components/schemas/Headers`: from `{ key: string }` to `Record<string, string>` (order-hook headers).
   - Orders API `POST /api/orders/hook/config` 200 schema: from the notification payload to `unknown`.
   - Promotions & Taxes API coupon usage `profileUsages`: from a literal `profileId` property to a map keyed by profile id.
-  - Search API `GET .../crossselling/showtogether/{productId}` and `GET .../crossselling/accessories/{productId}`: their operation-level `servers` were copied from another store (`entelperu`) and are removed. Both fall back to the account host.
+  - Search API `GET .../crossselling/showtogether/{productId}` and `GET .../crossselling/accessories/{productId}`: their operation-level `servers` were copied from another store's account host and are removed. The matcher recognizes any literal first label on `.{environment}.com.br`, so the store name is not hard-coded. Both fall back to the account host.
 
 ### 4.6 Generator hardening (S9)
 - **Paths:** schema paths must match `^/[A-Za-z0-9\-._~!&'()*+,;=:@%/{}]*$`, and placeholder names must match `^[A-Za-z0-9_.-]+$`. Empty or dot segments (including `%2e`), stray braces and malformed `%` escapes are refused too. Anything else, such as a backtick, `$`, `\` or whitespace, fails generation loudly.
@@ -398,10 +398,11 @@ Nothing is removed.
   - `new VtexClient({ account, environment: 'vtexcommercestable', appKey, appToken, maxRetries: 4, timeoutMs: 30_000 })`;
   - `orders.get(id)`;
   - `instanceof VtexNotFoundError` / `VtexAuthError`.
-- **Optional live check:** `scripts/live-check.ts` is read-only and never runs in CI. It runs only when `VTEX_ACCOUNT`/`VTEX_APP_KEY`/`VTEX_APP_TOKEN` are set in the environment. It makes these calls:
+- **Optional live check:** `scripts/live-check.ts` sends only GET requests, prints only statuses and counts, and never runs in CI. It runs only when `VTEX_ACCOUNT`/`VTEX_APP_KEY`/`VTEX_APP_TOKEN` are set (for example via `--env-file`). A 403 counts as "route exists, key lacks the role"; a 401 or an unexpected 404 is a failure. It makes these calls:
   - list orders with `per_page=1`;
-  - get a random non-existent coupon, expecting 404;
-  - gift-card `_search` with `REST-Range`.
+  - get a made-up coupon, expecting 404;
+  - get a made-up gift card on `/api`, expecting 404;
+  - `GET /pricing/config` on `api.vtex.com/{account}`.
 
 **Definition of done:** `typecheck`, `test`, `build`, `npm audit` and `npm pack --dry-run` are clean, with output attached to the hand-off. CI is green on the branch.
 
@@ -427,7 +428,7 @@ Nothing is removed.
 4. Non-VTEX-hosted APIs and operations are removed from `raw` (§4.2); their types remain.
 5. Network and timeout failures throw `VtexNetworkError` / `VtexTimeoutError` instead of `TypeError` / `AbortError`.
 6. `VtexRequestError.body` is non-enumerable, so it is omitted by `JSON.stringify(err)`.
-7. `orders.list` throws `VtexPaginationLimitError` instead of requesting page 31+.
+7. `orders.list` throws `VtexPaginationLimitError` instead of requesting page 31+. It throws `VtexUnexpectedResponseError` on malformed, empty-mid-run or unpaged full pages instead of ending early, and it rejects `page`/`per_page` filters (use `perPage`). `masterData.scroll` throws instead of restarting when VTEX returns rows without a token.
 8. A `Retry-After` beyond `maxRetryAfterMs` throws immediately instead of sleeping.
 9. Node ≥ 20.
 
