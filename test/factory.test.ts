@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createVtexFactory } from '../src/factory.js'
+import { VtexAuthError, VtexUsageError } from '../src/core/errors.js'
 
 describe('createVtexFactory', () => {
   it('creates and caches one client per account', async () => {
@@ -28,37 +29,95 @@ describe('createVtexFactory', () => {
     const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
     const factory = createVtexFactory({ credentials })
     const [a, b] = await Promise.all([factory.forAccount('x'), factory.forAccount('x')])
-    expect(a).toBe(b) // same instance
-    expect(credentials).toHaveBeenCalledTimes(1) // called exactly once
+    expect(a).toBe(b)
+    expect(credentials).toHaveBeenCalledTimes(1)
   })
 
   it('evicts failed entries on build rejection', async () => {
     let callCount = 0
     const credentials = vi.fn().mockImplementation(() => {
       callCount++
-      if (callCount === 1) {
-        throw new Error('First call fails')
-      }
+      if (callCount === 1) throw new Error('First call fails')
       return { appKey: 'K', appToken: 'T' }
     })
     const factory = createVtexFactory({ credentials })
-
-    // First call rejects
     await expect(factory.forAccount('bad')).rejects.toThrow('First call fails')
-    // Entry should be evicted, second call succeeds
     const client = await factory.forAccount('bad')
     expect(client).toBeDefined()
     expect(credentials).toHaveBeenCalledTimes(2)
   })
 
-  it('passes through config fetch to VtexClient', async () => {
-    const fetchSpy = vi.fn()
+  it('passes the configured fetch through to the client', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }),
+    )
     const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
     const factory = createVtexFactory({ credentials, fetch: fetchSpy })
     const client = await factory.forAccount('x')
-    expect(client).toBeDefined()
-    expect(client.account).toBe('x')
-    // Verify fetch was passed to client (via config)
-    expect(fetchSpy).toBeDefined()
+    await client.orders.get('1')
+    expect(fetchSpy).toHaveBeenCalledOnce()
+  })
+
+  it('normalizes the account used as cache key', async () => {
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials })
+    const a = await factory.forAccount('LojaX')
+    const b = await factory.forAccount('lojax')
+    expect(a).toBe(b)
+    expect(credentials).toHaveBeenCalledWith('lojax')
+  })
+
+  it('rejects an invalid account without calling the resolver', async () => {
+    const credentials = vi.fn()
+    const factory = createVtexFactory({ credentials })
+    await expect(factory.forAccount('attacker.example#')).rejects.toBeInstanceOf(VtexUsageError)
+    expect(credentials).not.toHaveBeenCalled()
+  })
+
+  it('takes only credentials from the resolver, never the account', async () => {
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T', account: 'other-tenant' })
+    const factory = createVtexFactory({ credentials })
+    const client = await factory.forAccount('tenant-a')
+    expect(client.account).toBe('tenant-a')
+  })
+
+  it('bounds the cache, dropping the least recently used client', async () => {
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials, maxCachedClients: 2 })
+    await factory.forAccount('a')
+    await factory.forAccount('b')
+    await factory.forAccount('a') // a is now the most recently used
+    await factory.forAccount('c') // evicts b
+    await factory.forAccount('a') // still cached
+    expect(credentials).toHaveBeenCalledTimes(3)
+    await factory.forAccount('b') // rebuilt
+    expect(credentials).toHaveBeenCalledTimes(4)
+  })
+
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '10' as never])(
+    'rejects maxCachedClients %j',
+    (maxCachedClients) => {
+      expect(() => createVtexFactory({ credentials: vi.fn(), maxCachedClients })).toThrow(VtexUsageError)
+    },
+  )
+
+  it('rejects a resolver that returns a non-object and does not cache the failure', async () => {
+    const credentials = vi.fn().mockResolvedValueOnce(null).mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials })
+    await expect(factory.forAccount('x')).rejects.toBeInstanceOf(VtexUsageError)
+    await expect(factory.forAccount('x')).resolves.toBeDefined()
+  })
+
+  it('evicts a client after an auth failure so rotated credentials are picked up', async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response('{}', { status: 401, headers: { 'content-type': 'application/json' } })),
+    )
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials, fetch: fetchMock, maxRetries: 0 })
+    const first = await factory.forAccount('x')
+    await expect(first.orders.get('1')).rejects.toBeInstanceOf(VtexAuthError)
+    const second = await factory.forAccount('x')
+    expect(second).not.toBe(first)
+    expect(credentials).toHaveBeenCalledTimes(2)
   })
 })
