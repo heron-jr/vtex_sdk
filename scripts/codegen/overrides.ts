@@ -21,10 +21,11 @@ export interface SchemaOverride {
 const sameKeys = (obj: unknown, keys: string[]): boolean =>
   typeof obj === 'object' && obj !== null && JSON.stringify(Object.keys(obj).sort()) === JSON.stringify([...keys].sort())
 
-const isEntelperuServers = (node: unknown): boolean =>
+const isOtherStoreServers = (node: unknown): boolean =>
   Array.isArray(node) &&
   node.length > 0 &&
-  node.every((s) => typeof s?.url === 'string' && s.url.startsWith('https://entelperu.'))
+  // Another store's account baked in as the host's first label, instead of {accountName}.
+  node.every((s) => typeof s?.url === 'string' && /^https:\/\/[a-z0-9-]+\.\{environment\}\.com\.br\//i.test(s.url))
 
 export const OVERRIDES: readonly SchemaOverride[] = [
   {
@@ -58,18 +59,18 @@ export const OVERRIDES: readonly SchemaOverride[] = [
   {
     file: 'VTEX - Search API.json',
     pointer: '/paths/~1api~1catalog_system~1pub~1products~1crossselling~1showtogether~1{productId}/get/servers',
-    matches: isEntelperuServers,
+    matches: isOtherStoreServers,
     transform: () => undefined,
     reason:
-      'The operation-level server was copied from another store (entelperu) and even hard-codes the ' +
+      'The operation-level server was copied from a different store account host and even hard-codes the ' +
       '/crossselling/accessories path; use the account host.',
   },
   {
     file: 'VTEX - Search API.json',
     pointer: '/paths/~1api~1catalog_system~1pub~1products~1crossselling~1accessories~1{productId}/get/servers',
-    matches: isEntelperuServers,
+    matches: isOtherStoreServers,
     transform: () => undefined,
-    reason: 'The operation-level server was copied from another store (entelperu); use the account host.',
+    reason: 'The operation-level server was copied from a different store account host; use the account host.',
   },
 ]
 

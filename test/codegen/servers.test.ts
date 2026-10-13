@@ -29,7 +29,7 @@ describe('normalizeServer', () => {
     'https://{workspace}--{accountName}.myvtex.com',
     'https://api-retail-media.newtail.com.br',
     'https://auth.pickingnpacking.com/prod',
-    'https://entelperu.{environment}.com.br/api/catalog_system',
+    'https://otherstore.{environment}.com.br/api/catalog_system',
     'http://example.com/.{environment}.com.br/api/rnb',
   ])('rejects %s', (url) => {
     expect(normalizeServer({ url, variables: stable })).toBeUndefined()
@@ -63,8 +63,8 @@ describe('normalizeServer', () => {
     'https:xx{accountName}.myvtex.com',
     'https:/e{accountName}.vtexcommercestable.com.br',
     // dot segments and escapes that rewrite the path
-    'https://api.vtex.com/{accountName}/%2e%2e/entelperu/pricing',
-    'https://api.vtex.com/{accountName}/../entelperu/pricing',
+    'https://api.vtex.com/{accountName}/%2e%2e/otherstore/pricing',
+    'https://api.vtex.com/{accountName}/../otherstore/pricing',
     'https://{accountName}.myvtex.com\\@evil.com',
     'https://api.vtex.com/a b',
     // stray braces
@@ -72,8 +72,8 @@ describe('normalizeServer', () => {
     'https://{accountName.myvtex.com',
     'https://x}.myvtex.com',
     // hard-coded accounts and shared labels outside the commerce domains
-    'https://entelperu.myvtex.com',
-    'https://entelperu.vtexpayments.com.br',
+    'https://otherstore.myvtex.com',
+    'https://otherstore.vtexpayments.com.br',
     'https://x{accountName}.myvtex.com',
     'https://api.myvtex.com',
     'https://rnb.myvtex.com',
@@ -88,7 +88,7 @@ describe('normalizeServer', () => {
     expect(
       normalizeServer({
         url: 'https://{accountName}.{environment}.com.br',
-        variables: { accountName: { default: 'entelperu', enum: ['evil.com'] }, environment: { default: 'evil.com#' } },
+        variables: { accountName: { default: 'otherstore', enum: ['evil.com'] }, environment: { default: 'evil.com#' } },
       }),
     ).toBe('https://{accountName}.{environment}.com.br')
   })

@@ -23,9 +23,9 @@ const sampleDoc = (): any => ({
   paths: { '/x/{id}': { get: { servers: [{ url: 'https://other.example' }] } } },
 })
 
-const entelperuServers = () => [
+const otherStoreServers = () => [
   {
-    url: 'https://entelperu.{environment}.com.br/api/catalog_system/pub/products/crossselling/accessories',
+    url: 'https://otherstore.{environment}.com.br/api/catalog_system/pub/products/crossselling/accessories',
     variables: { environment: { default: 'DefaultParameterValue' } },
   },
 ]
@@ -84,8 +84,8 @@ const fixtures = (): Record<string, any> => ({
   },
   'VTEX - Search API.json': {
     paths: {
-      '/api/catalog_system/pub/products/crossselling/showtogether/{productId}': { get: { servers: entelperuServers() } },
-      '/api/catalog_system/pub/products/crossselling/accessories/{productId}': { get: { servers: entelperuServers() } },
+      '/api/catalog_system/pub/products/crossselling/showtogether/{productId}': { get: { servers: otherStoreServers() } },
+      '/api/catalog_system/pub/products/crossselling/accessories/{productId}': { get: { servers: otherStoreServers() } },
     },
   },
 })
