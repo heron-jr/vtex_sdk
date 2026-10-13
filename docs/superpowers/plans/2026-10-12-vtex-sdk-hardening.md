@@ -1220,6 +1220,7 @@ EOF
 - [ ] **Step 1: Write the failing test.** Create `test/core/body.test.ts` with
 
 ```ts
+import { Readable } from 'node:stream'
 import { describe, it, expect } from 'vitest'
 import { isJsonContentType, mediaType, serializeBody } from '../../src/core/body.js'
 import { VtexUsageError } from '../../src/core/errors.js'
@@ -1331,8 +1332,10 @@ describe('serializeBody', () => {
     const bytes = new Uint8Array([1, 2, 3])
     expect(serializeBody(bytes)).toStrictEqual({ body: bytes, contentType: 'application/octet-stream' })
   })
-  it('refuses streaming bodies', () => {
+  it('refuses streaming bodies, web or Node', () => {
     expect(() => serializeBody(new ReadableStream())).toThrow(VtexUsageError)
+    expect(() => serializeBody(Readable.from(['a']))).toThrow(VtexUsageError)
+    expect(() => serializeBody({ async *[Symbol.asyncIterator]() { yield 'a' } })).toThrow(VtexUsageError)
   })
 })
 ```
@@ -1366,6 +1369,13 @@ export interface SerializedBody {
   contentType: string | undefined
 }
 
+/** Node streams and other async iterables, which JSON.stringify would otherwise turn into internal state. */
+function isNodeStreamLike(value: unknown): boolean {
+  if (value === null || typeof value !== 'object') return false
+  const candidate = value as { pipe?: unknown; [Symbol.asyncIterator]?: unknown }
+  return typeof candidate.pipe === 'function' || typeof candidate[Symbol.asyncIterator] === 'function'
+}
+
 /** Object.prototype.toString tag, so FormData/Blob/... from another realm or library are recognized too. */
 function tagOf(value: unknown): string {
   return Object.prototype.toString.call(value).slice(8, -1)
@@ -1391,7 +1401,9 @@ export function serializeBody(body: unknown, contentType?: string): SerializedBo
   if (tag === 'ArrayBuffer' || ArrayBuffer.isView(body)) {
     return { body: body as ArrayBuffer, contentType: contentType || 'application/octet-stream' }
   }
-  if (tag === 'ReadableStream') throw new VtexUsageError('Streaming request bodies are not supported')
+  if (tag === 'ReadableStream' || isNodeStreamLike(body)) {
+    throw new VtexUsageError('Streaming request bodies are not supported')
+  }
   const declared = contentType || DEFAULT_CONTENT_TYPE
   if (isJsonContentType(declared)) return { body: toJson(body, declared), contentType: declared }
   if (mediaType(declared) === FORM_URLENCODED) {
