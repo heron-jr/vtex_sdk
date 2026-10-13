@@ -28,7 +28,7 @@
  */
 import { existsSync } from 'node:fs'
 import { readdir, readFile, mkdir, writeFile, rm } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { methodName, dedupe, tagToNamespace } from './codegen/naming.js'
 import { schemaToType } from './codegen/types.js'
 import { generateMethod } from './codegen/operation.js'
@@ -39,8 +39,15 @@ import { gitBlobSha, parseSchemaLock } from './codegen/integrity.js'
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const
 type HttpMethod = (typeof HTTP_METHODS)[number]
 
-/** Identifiers imported by every generated index.ts; schema types must not shadow them. */
-const RESERVED_TYPE_NAMES = ['VtexHttpClient', 'CallOptions']
+/**
+ * Names schema types must not take: identifiers imported by every generated index.ts, and
+ * globals used in generated signatures (a schema type named `FormData` would silently retype
+ * multipart bodies). The API's own class name is reserved per file.
+ */
+const RESERVED_TYPE_NAMES = [
+  'VtexHttpClient', 'CallOptions',
+  'Promise', 'Record', 'FormData', 'URLSearchParams', 'Blob', 'ArrayBuffer', 'Uint8Array',
+]
 
 // ---------------------------------------------------------------------------
 // Identifier helpers
@@ -114,8 +121,8 @@ function apiClassName(slug: string): string {
  * that doesn't match a declared key is treated as dangling and assigned a name lazily,
  * on first sight, from the same collision-free pool.
  */
-function makeRefResolver(schemas: Record<string, unknown>) {
-  const used = new Set<string>(RESERVED_TYPE_NAMES)
+function makeRefResolver(schemas: Record<string, unknown>, extraReserved: string[]) {
+  const used = new Set<string>([...RESERVED_TYPE_NAMES, ...extraReserved])
   const declared = new Map<string, string>() // raw schema key -> final type name
   for (const raw of Object.keys(schemas)) {
     declared.set(raw, uniqueName([sanitizeTypeName(raw)], used))
@@ -155,10 +162,22 @@ async function main() {
   }
   const files = (await readdir(dir)).filter((f) => f.endsWith('.json')).sort()
   // Generate only from exactly the reviewed, locked schemas: no stale, extra or edited files.
-  const lock = parseSchemaLock(JSON.parse(await readFile('scripts/schemas.lock.json', 'utf8')))
+  let lockJson: unknown
+  try {
+    lockJson = JSON.parse(await readFile('scripts/schemas.lock.json', 'utf8'))
+  } catch (err) {
+    throw new Error(`scripts/schemas.lock.json is unreadable: ${err instanceof Error ? err.message : String(err)}`)
+  }
+  const lock = parseSchemaLock(lockJson)
   const locked = Object.keys(lock.files).sort()
   if (files.join('\n') !== locked.join('\n')) {
     throw new Error('schemas/ does not match scripts/schemas.lock.json: run `npm run fetch-schemas`.')
+  }
+  const orphanOverrides = OVERRIDES.filter((o) => !(o.file in lock.files))
+  if (orphanOverrides.length > 0) {
+    throw new Error(
+      `Schema overrides target files that are not in the lock: ${orphanOverrides.map((o) => `${o.file} ${o.pointer}`).join('; ')}`,
+    )
   }
   const contents = new Map<string, Buffer>()
   for (const file of files) {
@@ -168,12 +187,12 @@ async function main() {
     }
     contents.set(file, bytes)
   }
-  await rm('src/generated', { recursive: true, force: true })
-  await mkdir('src/generated', { recursive: true })
+  // Everything is built in memory; src/generated is only replaced once every check has passed.
+  const outputs = new Map<string, string>() // path relative to src/generated -> content
 
   const usedSlugs = new Set<string>()
   const usedApiClasses = new Set<string>()
-  const usedTopNamespaces = new Set<string>()
+  const usedTopNamespaces = new Set<string>(['constructor'])
 
   const rawImports: string[] = []
   const rawFields: { ns: string; cls: string }[] = []
@@ -202,7 +221,7 @@ async function main() {
 
       const schemas: Record<string, any> = doc.components?.schemas ?? {}
       const parameters: Record<string, any> = doc.components?.parameters ?? {}
-      const { refName, declared, dangling } = makeRefResolver(schemas)
+      const { refName, declared, dangling } = makeRefResolver(schemas, [apiClass])
       const resolveRef = (ref: string) => {
         const name = ref.split('/').pop()!
         return parameters[name]
@@ -224,6 +243,8 @@ async function main() {
           }
           const tag = (op.tags && op.tags[0]) || title
           const ns = tagToNamespace(tag)
+          // A `constructor` field would be emitted as `readonly constructor: ...`, which doesn't compile.
+          if (ns === 'constructor') throw new Error(`Refusing the namespace name "constructor" (tag ${JSON.stringify(tag)})`)
           if (!groups.has(ns)) groups.set(ns, [])
           groups.get(ns)!.push({ httpMethod, path, op, server })
         }
@@ -272,8 +293,7 @@ async function main() {
       for (const [, finalName] of dangling) {
         typeLines.push(`export type ${finalName} = unknown\n`)
       }
-      await mkdir(join('src/generated', slug), { recursive: true })
-      await writeFile(join('src/generated', slug, 'types.ts'), typeLines.join('\n') || 'export {}\n')
+      outputs.set(`${slug}/types.ts`, typeLines.join('\n') || 'export {}\n')
       typeExports.push(`export type * as ${apiClass}Types from './${slug}/types.js'`)
 
       if (nsClasses.length === 0) {
@@ -307,7 +327,7 @@ async function main() {
         .filter((line): line is string => line !== undefined)
         .join('\n')
 
-      await writeFile(join('src/generated', slug, 'index.ts'), indexSource)
+      outputs.set(`${slug}/index.ts`, indexSource)
 
       rawImports.push(`import { ${apiClass} } from './${slug}/index.js'`)
       rawFields.push({ ns: topNs, cls: apiClass })
@@ -334,15 +354,26 @@ async function main() {
     `}`,
     ``,
   ].join('\n')
-  await writeFile('src/generated/index.ts', aggregator)
-  await writeFile('src/generated/types-index.ts', `${typeExports.join('\n')}\n`)
+  outputs.set('index.ts', aggregator)
+  outputs.set('types-index.ts', `${typeExports.join('\n')}\n`)
+
+  await rm('src/generated', { recursive: true, force: true })
+  for (const [path, content] of outputs) {
+    const target = join('src/generated', path)
+    await mkdir(dirname(target), { recursive: true })
+    await writeFile(target, content)
+  }
+
+  // Operations dropped from APIs that are otherwise generated; a re-pin that changes this shows up here.
+  const partial = excludedOps.filter((op) => !excludedApis.some((api) => op.startsWith(`${api}: `)))
 
   console.log(
     `Generated ${rawFields.length} raw APIs (${totalNamespaces} namespaces, ${totalMethods} methods) ` +
       `and ${files.length} type modules into src/generated/.\n` +
       `Excluded ${excludedOps.length} operations served by non-VTEX or variable hosts ` +
       `(${excludedApis.length} APIs in full: ${excludedApis.join(', ')}).\n` +
-      `Applied ${overridesApplied} schema overrides; trimmed ${basePathsTrimmed} overlapping base paths.`,
+      `Applied ${overridesApplied} schema overrides; trimmed ${basePathsTrimmed} overlapping base paths.\n` +
+      `Excluded from included APIs: ${partial.join('; ') || 'none'}.`,
   )
 }
 

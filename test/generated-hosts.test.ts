@@ -12,10 +12,34 @@ function generatedServerTemplates(): string[] {
   for (const entry of readdirSync(GENERATED_DIR, { withFileTypes: true })) {
     const index = join(GENERATED_DIR, entry.name, 'index.ts')
     if (!entry.isDirectory() || !existsSync(index)) continue
-    for (const match of readFileSync(index, 'utf8').matchAll(/server: '([^']+)'/g)) templates.add(match[1])
+    const source = readFileSync(index, 'utf8')
+    const literals = [...source.matchAll(/server: (['"`])(.+?)\1/g)]
+    // Every `server:` must be a plain literal this regex sees, or the pin below could be bypassed.
+    expect(literals.length).toBe(source.split('server:').length - 1)
+    for (const match of literals) templates.add(match[2])
   }
   return [...templates]
 }
+
+/** The `raw.*` namespaces. Renaming one is a breaking change; a re-pin that changes this needs review. */
+const EXPECTED_RAW_NAMESPACES = [
+  'audienceAPI', 'b2bAddressesAPI', 'b2bBuyerDataAPI', 'b2bContractsAPI', 'budgetsAPI', 'bulkPricingAPI',
+  'buyerOrganizationsB2BSuite', 'buyingPoliciesAPI', 'cardTokenVaultAPI', 'catalogAPISellerPortal', 'catalogAPI',
+  'checkoutAPI', 'checkoutCustomCardPaymentAPI', 'customFieldsAPI', 'customerCreditAPI',
+  'dataSubjectRightsAPIPIIDataArchitecture', 'defaultValuesAPI', 'deliveryPromiseNotificationAPI',
+  'deliveryPromiseSuggestionsAPI', 'giftcardHubAPI', 'giftcardAPI', 'vtexHeadlessCMS', 'intelligentSearchAPIV1',
+  'intelligentSearchAPILegacy', 'vtexIntelligentSearchEventsAPIHeadless', 'legacyCMSPortalAPI', 'licenseManagerAPI',
+  'logisticsAPI', 'sentOffers', 'suggestions', 'marketplaceAPI', 'marketplaceProtocol',
+  'marketplaceProtocolExternalMarketplaceOrders', 'masterDataAPIV2', 'masterDataAPIV1', 'messageCenterAPI',
+  'operationalCapacityAPI', 'ordersAPIPIIDataArchitecture', 'ordersAPI', 'organizationUnitsAPI', 'paymentPoliciesAPI',
+  'paymentsGatewayAPI', 'pickAndPackOrderChangesAPI', 'policiesSystemAPI', 'pricingAPI', 'pricingHubDEPRECATED',
+  'profileSystemPIIDataArchitecture', 'promotionsTaxesAPIV2', 'promotionsTaxesAPI', 'recommendationsBFFAPI',
+  'reviewsAndRatingsAPI', 'skuBindingsAPI', 'sslCertificatesAPI', 'legacySearchAPI', 'sessionManagerAPI',
+  'vtexShopeeIntegrationAPI', 'storefrontRolesAPI', 'subscriptionsAPIV3', 'userRightsAPI', 'vtexDOAPI', 'vtexID', 'mTLSAPI',
+]
+
+/** Hosts that are not the account's own: shared VTEX services on the commerce domain and vtex.com APIs. */
+const SHARED_HOST = /^(?:api|logistics|portal|prchub|rnb)\.vtexcommerce(?:stable|beta)\.com\.br$|^(?:api|sp)\.vtex\.com$/
 
 function client() {
   const fetchMock = vi.fn().mockImplementation(() =>
@@ -54,12 +78,25 @@ describe('generated hosts', () => {
     expect(generatedServerTemplates().sort()).toEqual(EXPECTED_TEMPLATES)
   })
 
-  it('every generated server template resolves to an allowlisted https VTEX origin', () => {
+  it('every generated server template resolves to the account host or a shared VTEX service', () => {
     const templates = generatedServerTemplates()
     expect(templates.length).toBeGreaterThan(10)
     for (const template of templates) {
-      expect(resolveServer(template, 'acme', 'vtexcommercestable').origin).toMatch(/^https:\/\//)
+      for (const environment of ['vtexcommercestable', 'vtexcommercebeta'] as const) {
+        const url = new URL(resolveServer(template, 'acme', environment).origin)
+        expect(url.protocol).toBe('https:')
+        expect(url.hostname.startsWith('acme.') || SHARED_HOST.test(url.hostname)).toBe(true)
+      }
     }
+  })
+
+  it('exposes exactly the reviewed raw namespaces and none of the excluded operations', () => {
+    const { vtex } = client()
+    expect(Object.keys(vtex.raw)).toEqual(EXPECTED_RAW_NAMESPACES)
+    expect('paymentProviderProtocol' in vtex.raw).toBe(false)
+    expect('vtexShippingNetworkAPI' in vtex.raw).toBe(false)
+    const gateway = vtex.raw.paymentsGatewayAPI as unknown as Record<string, Record<string, unknown>>
+    for (const ns of Object.values(gateway)) expect(ns['_2SendPaymentsPublic']).toBeUndefined()
   })
 
   it('creates gift cards on /api with the vendor content type and the body', async () => {
