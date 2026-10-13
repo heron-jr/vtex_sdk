@@ -199,16 +199,21 @@ Nothing is removed.
 | Declared content type | Body type in TS | How it is sent |
 |---|---|---|
 | `application/json` and `application/*+json` | typed JSON | JSON with that exact `Content-Type`, e.g. `application/vnd.vtex.giftcard.v1+json`. This fixes `createGiftCard` and the Hub writes. |
-| `multipart/form-data` and `form-data` | `FormData` | `Content-Type` left for `fetch` to set, so the boundary is included. |
+| `multipart/form-data` and `form-data` | `FormData` | `Content-Type` left for `fetch` to set, so the boundary is included. The generated call still declares `multipart/form-data`, so a non-FormData body is rejected rather than sent as JSON. |
 | `application/x-www-form-urlencoded` | `URLSearchParams \| Record<string, string>` | form-encoded |
 | `text/csv` and `text/plain` | `string` | as-is |
 
 **Plumbing**
 - `RequestOptions` gains `contentType?`.
 - The core serializes by `contentType`:
-  - JSON types (the default): plain objects and arrays go through `JSON.stringify`.
-  - `application/x-www-form-urlencoded`: plain objects are converted to `URLSearchParams`.
-  - `FormData`, `URLSearchParams`, `string` and `Blob` always pass through untouched.
+  - **Sent as is:** `FormData`, `URLSearchParams`, `Blob`/`File` and binary buffers.
+    - They are recognized by their `toString` tag, so instances from another realm or library also work.
+    - A declared content type wins over the body's own type.
+    - `FormData` never sets `Content-Type`.
+  - **JSON types (the default):** `JSON.stringify`. A string therefore becomes a JSON string value, which matches the VTEX operations whose JSON body is a bare string.
+  - **`application/x-www-form-urlencoded`:** strings pass through untouched. A flat object of primitives becomes `URLSearchParams` (`undefined` fields are skipped).
+  - **Any other content type:** only strings are accepted.
+  - **Rejected:** everything else (streams, nested form values, values JSON cannot represent) throws `VtexUsageError`, and nothing is sent.
 
 **Response parsing:** `parseBody` treats `application/json` and `application/*+json` as JSON.
 

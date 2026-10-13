@@ -1221,58 +1221,118 @@ EOF
 
 ```ts
 import { describe, it, expect } from 'vitest'
-import { isJsonContentType, serializeBody } from '../../src/core/body.js'
+import { isJsonContentType, mediaType, serializeBody } from '../../src/core/body.js'
+import { VtexUsageError } from '../../src/core/errors.js'
+
+describe('mediaType', () => {
+  it('drops parameters, trims and lowercases', () => {
+    expect(mediaType(' Application/JSON ; charset=UTF-8')).toBe('application/json')
+  })
+})
 
 describe('isJsonContentType', () => {
   it.each([
-    'application/json', 'application/json; charset=utf-8', 'APPLICATION/JSON',
-    'application/vnd.vtex.giftcard.v1+json', 'application/problem+json',
-  ])('accepts %s', (ct) => {
+    'application/json', 'application/json; charset=utf-8', 'APPLICATION/JSON', ' application/json ',
+    'application/json ;charset=utf-8', 'application/vnd.vtex.giftcard.v1+json', 'application/problem+json',
+    'application/json-patch+json',
+  ])('accepts %j', (ct) => {
     expect(isJsonContentType(ct)).toBe(true)
   })
-  it.each(['text/plain', 'application/jsonp', 'multipart/form-data', 'application/x-www-form-urlencoded', ''])(
-    'rejects %j',
-    (ct) => {
-      expect(isJsonContentType(ct)).toBe(false)
-    },
-  )
+  it.each([
+    'text/plain', 'application/jsonp', 'multipart/form-data', 'application/x-www-form-urlencoded', '',
+    'application/json-seq', 'application/jsonl', 'text/json', 'xapplication/json', 'application/json, application/xml',
+  ])('rejects %j', (ct) => {
+    expect(isJsonContentType(ct)).toBe(false)
+  })
 })
 
 describe('serializeBody', () => {
   it('returns no body for undefined', () => {
-    expect(serializeBody(undefined)).toEqual({ body: undefined, contentType: undefined })
+    expect(serializeBody(undefined)).toStrictEqual({ body: undefined, contentType: undefined })
   })
   it('JSON-encodes objects with the default content type', () => {
-    expect(serializeBody({ a: 1 })).toEqual({ body: '{"a":1}', contentType: 'application/json' })
+    expect(serializeBody({ a: 1 })).toStrictEqual({ body: '{"a":1}', contentType: 'application/json' })
   })
   it('JSON-encodes with a vendor JSON content type', () => {
-    expect(serializeBody({ a: 1 }, 'application/vnd.vtex.giftcard.v1+json')).toEqual({
+    expect(serializeBody({ a: 1 }, 'application/vnd.vtex.giftcard.v1+json')).toStrictEqual({
       body: '{"a":1}', contentType: 'application/vnd.vtex.giftcard.v1+json',
     })
   })
-  it('JSON-encodes a string when the content type is JSON', () => {
-    expect(serializeBody('abc')).toEqual({ body: '"abc"', contentType: 'application/json' })
+  it('JSON-encodes a string when the content type is JSON (VTEX has bare-string JSON bodies)', () => {
+    expect(serializeBody('2025-12-09T08:00:00')).toStrictEqual({ body: '"2025-12-09T08:00:00"', contentType: 'application/json' })
+  })
+  it('JSON-encodes falsy values and null instead of dropping them', () => {
+    expect(serializeBody(0).body).toBe('0')
+    expect(serializeBody(false).body).toBe('false')
+    expect(serializeBody('').body).toBe('""')
+    expect(serializeBody(null).body).toBe('null')
+  })
+  it('rejects values JSON cannot represent', () => {
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+    expect(() => serializeBody(circular)).toThrow(VtexUsageError)
+    expect(() => serializeBody(1n)).toThrow(VtexUsageError)
+    expect(() => serializeBody(() => 1)).toThrow(VtexUsageError)
   })
   it('passes strings through for text content types', () => {
-    expect(serializeBody('a,b', 'text/csv')).toEqual({ body: 'a,b', contentType: 'text/csv' })
+    expect(serializeBody('a,b', 'text/csv')).toStrictEqual({ body: 'a,b', contentType: 'text/csv' })
   })
-  it('form-encodes plain objects for x-www-form-urlencoded', () => {
-    const out = serializeBody({ a: '1', b: 'x y' }, 'application/x-www-form-urlencoded')
-    expect(out.contentType).toBe('application/x-www-form-urlencoded')
-    expect(String(out.body)).toBe('a=1&b=x+y')
+  it('rejects non-string bodies for text and other non-JSON content types', () => {
+    expect(() => serializeBody({ a: 1 }, 'text/csv')).toThrow(VtexUsageError)
+    expect(() => serializeBody({ f: 'v' }, 'multipart/form-data')).toThrow(VtexUsageError)
+  })
+  it('form-encodes flat objects for x-www-form-urlencoded, in any case and with parameters', () => {
+    const out = serializeBody({ a: '1', b: 'x y', c: 2, d: true, skip: undefined }, 'Application/X-WWW-Form-Urlencoded; charset=UTF-8')
+    expect(out.contentType).toBe('Application/X-WWW-Form-Urlencoded; charset=UTF-8')
+    expect(String(out.body)).toBe('a=1&b=x+y&c=2&d=true')
+  })
+  it('passes a pre-encoded string form body through untouched', () => {
+    expect(serializeBody('a=%ff&b=c%20d', 'application/x-www-form-urlencoded')).toStrictEqual({
+      body: 'a=%ff&b=c%20d', contentType: 'application/x-www-form-urlencoded',
+    })
+  })
+  it('rejects form bodies that are not flat objects of primitives', () => {
+    expect(() => serializeBody({ a: { nested: 1 } }, 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
+    expect(() => serializeBody({ a: null }, 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
+    expect(() => serializeBody(['a'], 'application/x-www-form-urlencoded')).toThrow(VtexUsageError)
   })
   it('passes URLSearchParams through as a form', () => {
     const params = new URLSearchParams({ a: '1' })
-    expect(serializeBody(params)).toEqual({ body: params, contentType: 'application/x-www-form-urlencoded' })
+    const out = serializeBody(params)
+    expect(out.body).toBe(params)
+    expect(out.contentType).toBe('application/x-www-form-urlencoded')
   })
   it('leaves the FormData content type to fetch (multipart boundary)', () => {
     const form = new FormData()
     form.append('f', 'v')
-    expect(serializeBody(form, 'multipart/form-data')).toEqual({ body: form, contentType: undefined })
+    const out = serializeBody(form, 'multipart/form-data')
+    expect(out.body).toBe(form)
+    expect(out.contentType).toBeUndefined()
   })
-  it('passes Blobs through with their own type', () => {
+  it('recognizes a FormData from another realm or library by its tag', () => {
+    class ForeignFormData {
+      get [Symbol.toStringTag]() {
+        return 'FormData'
+      }
+    }
+    const foreign = new ForeignFormData()
+    const out = serializeBody(foreign, 'multipart/form-data')
+    expect(out.body).toBe(foreign)
+    expect(out.contentType).toBeUndefined()
+  })
+  it('sends Blobs as is; a declared content type wins over the Blob type', () => {
     const blob = new Blob(['x'], { type: 'text/plain' })
-    expect(serializeBody(blob)).toEqual({ body: blob, contentType: 'text/plain' })
+    expect(serializeBody(blob).body).toBe(blob)
+    expect(serializeBody(blob).contentType).toBe('text/plain')
+    expect(serializeBody(blob, 'text/csv').contentType).toBe('text/csv')
+    expect(serializeBody(new Blob(['x'])).contentType).toBe('application/octet-stream')
+  })
+  it('sends binary buffers as is', () => {
+    const bytes = new Uint8Array([1, 2, 3])
+    expect(serializeBody(bytes)).toStrictEqual({ body: bytes, contentType: 'application/octet-stream' })
+  })
+  it('refuses streaming bodies', () => {
+    expect(() => serializeBody(new ReadableStream())).toThrow(VtexUsageError)
   })
 })
 ```
@@ -1285,11 +1345,19 @@ Expected: FAIL (cannot resolve `../../src/core/body.js`).
 - [ ] **Step 3: Create `src/core/body.ts`**
 
 ```ts
-const FORM_URLENCODED = 'application/x-www-form-urlencoded'
+import { VtexUsageError } from './errors.js'
 
-/** application/json, application/problem+json, application/vnd.vtex.giftcard.v1+json, … */
+const FORM_URLENCODED = 'application/x-www-form-urlencoded'
+const DEFAULT_CONTENT_TYPE = 'application/json'
+
+/** "Application/JSON; charset=utf-8" -> "application/json" */
+export function mediaType(contentType: string): string {
+  return contentType.split(';', 1)[0].trim().toLowerCase()
+}
+
+/** application/json, application/problem+json, application/vnd.vtex.giftcard.v1+json, ... */
 export function isJsonContentType(contentType: string): boolean {
-  return /^application\/(?:[a-z0-9.!#$&^_-]+\+)?json(?:\s*;|\s*$)/i.test(contentType.trim())
+  return /^application\/(?:[a-z0-9.!#$&^_-]+\+)?json$/.test(mediaType(contentType))
 }
 
 export interface SerializedBody {
@@ -1298,16 +1366,65 @@ export interface SerializedBody {
   contentType: string | undefined
 }
 
-export function serializeBody(body: unknown, contentType = 'application/json'): SerializedBody {
+/** Object.prototype.toString tag, so FormData/Blob/... from another realm or library are recognized too. */
+function tagOf(value: unknown): string {
+  return Object.prototype.toString.call(value).slice(8, -1)
+}
+
+/**
+ * Serializes a request body for fetch. Precedence:
+ * - FormData is sent as is with no Content-Type, so fetch adds the multipart boundary.
+ * - URLSearchParams, Blob/File and binary buffers are sent as is; a declared content type wins.
+ * - JSON content types (the default): JSON.stringify, so a string becomes a JSON string value.
+ * - application/x-www-form-urlencoded: strings pass through; flat objects of primitives become fields.
+ * - Any other content type: only strings are accepted.
+ * Anything that cannot be sent faithfully throws VtexUsageError before a request is made.
+ */
+export function serializeBody(body: unknown, contentType?: string): SerializedBody {
   if (body === undefined) return { body: undefined, contentType: undefined }
-  if (body instanceof FormData) return { body, contentType: undefined }
-  if (body instanceof URLSearchParams) return { body, contentType: FORM_URLENCODED }
-  if (body instanceof Blob) return { body, contentType: body.type || contentType }
-  if (isJsonContentType(contentType)) return { body: JSON.stringify(body), contentType }
-  if (contentType.toLowerCase().startsWith(FORM_URLENCODED)) {
-    return { body: new URLSearchParams(body as Record<string, string>), contentType }
+  const tag = tagOf(body)
+  if (tag === 'FormData') return { body: body as FormData, contentType: undefined }
+  if (tag === 'URLSearchParams') return { body: body as URLSearchParams, contentType: contentType || FORM_URLENCODED }
+  if (tag === 'Blob' || tag === 'File') {
+    return { body: body as Blob, contentType: contentType || (body as Blob).type || 'application/octet-stream' }
   }
-  return { body: typeof body === 'string' ? body : String(body), contentType }
+  if (tag === 'ArrayBuffer' || ArrayBuffer.isView(body)) {
+    return { body: body as ArrayBuffer, contentType: contentType || 'application/octet-stream' }
+  }
+  if (tag === 'ReadableStream') throw new VtexUsageError('Streaming request bodies are not supported')
+  const declared = contentType || DEFAULT_CONTENT_TYPE
+  if (isJsonContentType(declared)) return { body: toJson(body, declared), contentType: declared }
+  if (mediaType(declared) === FORM_URLENCODED) {
+    return { body: typeof body === 'string' ? body : toForm(body), contentType: declared }
+  }
+  if (typeof body === 'string') return { body, contentType: declared }
+  throw new VtexUsageError(`Cannot send a ${tag} body as ${declared}`)
+}
+
+function toJson(body: unknown, contentType: string): string {
+  let text: string | undefined
+  try {
+    text = JSON.stringify(body)
+  } catch (cause) {
+    throw new VtexUsageError(`Request body cannot be serialized as ${contentType}`, { cause })
+  }
+  if (text === undefined) throw new VtexUsageError(`Request body cannot be serialized as ${contentType}`)
+  return text
+}
+
+function toForm(body: unknown): URLSearchParams {
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    throw new VtexUsageError('A form-urlencoded body must be a string, URLSearchParams or a flat object')
+  }
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(body)) {
+    if (value === undefined) continue
+    if (value === null || typeof value === 'object' || typeof value === 'function' || typeof value === 'symbol') {
+      throw new VtexUsageError(`Form field ${JSON.stringify(key)} must be a string, number or boolean`)
+    }
+    params.append(key, String(value))
+  }
+  return params
 }
 ```
 
@@ -4114,7 +4231,8 @@ describe('generateMethod', () => {
         refName,
       })
     expect(gen('multipart/form-data')).toContain('body: FormData')
-    expect(gen('multipart/form-data')).not.toContain('contentType:')
+    expect(gen('multipart/form-data')).toContain("contentType: 'multipart/form-data'")
+    expect(gen('form-data')).toContain("contentType: 'multipart/form-data'")
     expect(gen('application/x-www-form-urlencoded')).toContain('body: URLSearchParams | Record<string, string>')
     expect(gen('text/csv')).toContain('body: string')
     expect(gen('text/csv')).toContain("contentType: 'text/csv'")
@@ -4216,7 +4334,8 @@ function requestBodyInfo(requestBody: any, refName: (ref: string) => string): Bo
   if (plainJson) return { type: schemaToType(content[plainJson].schema ?? {}, refName) }
   const vendorJson = types.find(isJsonMediaType)
   if (vendorJson) return { type: schemaToType(content[vendorJson].schema ?? {}, refName), contentType: vendorJson }
-  if (types.some((t) => /^(multipart\/)?form-data$/i.test(t))) return { type: 'FormData' }
+  // Declared so that a non-FormData body is rejected instead of being sent as JSON.
+  if (types.some((t) => /^(multipart\/)?form-data$/i.test(t))) return { type: 'FormData', contentType: 'multipart/form-data' }
   const form = types.find((t) => /^application\/x-www-form-urlencoded/i.test(t))
   if (form) return { type: 'URLSearchParams | Record<string, string>', contentType: form }
   const text = types.find((t) => /^text\//i.test(t))
@@ -6340,7 +6459,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  382 passed (382)`;
+- `Test Files  25 passed (25)` and `Tests  399 passed (399)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
