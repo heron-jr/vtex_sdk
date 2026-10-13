@@ -155,7 +155,10 @@ Nothing is removed.
     - `vtexcommercestable` or `vtexcommercebeta`: resolved at runtime from config.
     - `myvtex`: baked into the template at generation time, which yields `{accountName}.myvtex.com`.
     - Any other default (e.g. the junk `DefaultParameterValue`): resolved at runtime.
+  - **`account`** is a spelling used by some Pricing servers and is treated as an alias of `accountName`.
   - **Any other variable** makes that entry unresolvable. Examples: `providerApiEndpoint`, `storeDomain`, `storeHost`, `middlewareEndpoint`, `fulfillmentEndpoint`, `workspace`.
+- **No hard-coded accounts.** On account-scoped domains (`vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtexpayments.com.br`), the host's first label must be `{accountName}` or a shared VTEX service label (`api`, `logistics`, `portal`, `prchub`, `rnb`). Otherwise the entry is unresolvable. This stops a schema example host such as `entelperu.vtexcommercestable.com.br` from receiving our credentials.
+- **Base-path overlap.** When the server's last base-path segment equals the operation path's first segment, the duplicate is dropped. The 7 Pricing operations whose server ends in `/pricing` and whose paths start with `/pricing/` resolve to `api.vtex.com/{account}/pricing/...`, matching the API reference. Without the rule they would get `/pricing/pricing/...`.
 
 **How the result is emitted**
 - Each generated call passes `server: '<template>'`, for example `'https://{accountName}.{environment}.com.br/api'`.
@@ -170,13 +173,16 @@ Nothing is removed.
   - Ads (newtail);
   - Pick and Pack (pickingnpacking.com).
 - **Partial exclusion:** individual operations whose only servers are external are dropped from otherwise-included APIs.
+- **Expected numbers at the current pin:** 966 operations included and 95 excluded.
+  - 12 APIs are excluded in full: Ads, Antifraud Provider, B2B Password Migration, External Promotions, Giftcard Provider, the two Marketplace Protocol external-seller specs, Payment Provider, Pick and Pack, Pick and Pack Last Mile, Punchout, Tracking.
+  - Two operations are dropped from otherwise-included APIs: Payments Gateway `POST /api/payments/transactions/{transactionId}/payments` (`api.vtexvault.com`, see §10) and Promotions & Taxes `POST /pub/bundles` (placeholder host `example.com`).
 - **Types are kept:** excluded APIs still get their `types.ts`, and the types are exported (§4.7). Implementers of these protocols can use them.
 - **Visibility:** the generator prints the exclusion list.
 
 ### 4.3 Call shape (S2, C3)
 - **Path params:** emitted as `${encodePathParam(params.x)}`.
 - **Header params:** parameters with `in: 'header'` become typed fields on `params`, required when the schema says so.
-  - Except a case-insensitive denylist managed by the SDK: `accept`, `content-type`, `x-vtex-api-appkey`, `x-vtex-api-apptoken`, `vtexidclientautcookie`, `cookie`, `authorization`.
+  - Except a case-insensitive denylist managed by the SDK or by `fetch`: `accept`, `content-type`, `content-length`, `host`, `x-vtex-api-appkey`, `x-vtex-api-apptoken`, `vtexidclientautcookie`, `cookie`, `authorization`.
   - Values are sent in the request headers.
   - Name collisions with path, query or body keys keep the first, which is the existing rule.
 - **Per-call options:** every method gains `opts?: CallOptions = { headers?, signal?, timeoutMs?, retry?, idempotent? }`.
@@ -211,7 +217,12 @@ Nothing is removed.
   - `true` or `{}` adds `[key: string]: unknown`;
   - a schema adds `[key: string]: T`;
   - the index signature is merged with any declared properties.
-- **Placeholder keys:** property keys of the form `{name}`, such as `{fieldName}` or `{profileId}`, become an index signature `[key: string]: T` instead of a literal key.
+- **Placeholder keys:** property keys of the form `{name}` become an index signature `[key: string]: T` instead of a literal key. There are 24 such keys, e.g. `{fieldName}` in Master Data and `{ID}` in Checkout.
+- **Targeted schema overrides** (`scripts/codegen/overrides.ts`) fix quirks where a VTEX schema uses a *literal* key to mean "any key". The generic rules cannot detect these. Each override names its file, its JSON pointer, a transform and the reason. Codegen fails if a pointer no longer resolves, so a schema re-pin surfaces stale overrides. Initial set:
+  - Orders API `components/schemas/Headers`: from `{ key: string }` to `Record<string, string>` (order-hook headers).
+  - Orders API `POST /api/orders/hook/config` 200 schema: from the notification payload to `unknown`.
+  - Promotions & Taxes API coupon usage `profileUsages`: from a literal `profileId` property to a map keyed by profile id.
+  - Search API `GET .../crossselling/showtogether/{productId}` and `GET .../crossselling/accessories/{productId}`: their operation-level `servers` were copied from another store (`entelperu`) and are removed. Both fall back to the account host.
 
 ### 4.6 Generator hardening (S9)
 - **Paths:** schema paths must match `^/[A-Za-z0-9\-._~!&'()*+,;=:@%/{}]*$`, and placeholder names must match `^[A-Za-z0-9_.-]+$`. Anything else, such as a backtick, `$`, `\` or whitespace, fails generation loudly.
@@ -271,7 +282,7 @@ Nothing is removed.
 - `docs/vtex-notes.md` corrected.
 - `CHANGELOG.md` added.
 - `docs/superpowers/specs/2026-07-17-vtex-sdk-design.md`: the author line becomes "Heron Jr + Claude".
-- `docs/superpowers/plans/2026-07-17-vtex-sdk.md`: `vtex-sdk` becomes `vtex-sdk`.
+- `docs/superpowers/plans/2026-07-17-vtex-sdk.md`: the earlier scoped package name (`@<scope>/vtex-sdk`) becomes `vtex-sdk`.
 
 **CI** (`.github/workflows/ci.yml`)
 - Main job, on push and PR, Node 20/22/24:
@@ -343,9 +354,9 @@ Nothing is removed.
 **Definition of done:** `typecheck`, `test`, `build`, `npm audit` and `npm pack --dry-run` are clean, with output attached to the hand-off. CI is green on the branch.
 
 ## 8. Delivery
-- **Working copy:** `~/vtex-sdk`, branch `fix/hardening-0.2.0`.
+- **Working copy:** a local clone of the repository, branch `fix/hardening-0.2.0`.
 - **Commits:**
-  - author `Heron Jr <vasto.heron@gmail.com>`, set in the repo-local git config;
+  - authored with the owner's chosen personal git identity, set in the repo-local git config;
   - granular, in the existing conventional style (`fix(core): …`, `feat(codegen): …`, `docs: …`), with `Co-Authored-By` trailers as in the existing history.
 - **Order of steps:**
   1. Push the branch to `origin` (`github.com/heron-jr/vtex-sdk`).
@@ -387,7 +398,7 @@ Nothing is removed.
 ## 10. Accepted risks and open items
 - **History stays as is (owner decision).** If the repo is made public, old commits still show:
   - author emails;
-  - the earlier `vtex-sdk` name;
+  - the earlier scoped package name;
   - the formerly committed VTEX OpenAPI files. These include VTEX's own example credentials, which will raise GitHub secret-scanning alerts. They are false positives and can be dismissed.
 - **Upstream licensing.** `vtex/openapi-schemas` declares no license. Mitigations:
   - the schemas are no longer redistributed;
