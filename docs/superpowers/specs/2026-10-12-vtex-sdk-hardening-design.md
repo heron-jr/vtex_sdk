@@ -202,7 +202,14 @@ Nothing is removed.
   - 13 APIs are excluded in full: Ads, Antifraud Provider, B2B Password Migration, External Promotions, Giftcard Provider, the two Marketplace Protocol external-seller specs, Payment Provider, Pick and Pack, Pick and Pack Last Mile, Punchout, Tracking, VTEX Shipping Network.
   - Two operations are dropped from otherwise-included APIs: Payments Gateway `POST /api/payments/transactions/{transactionId}/payments` (`api.vtexvault.com`, see §10) and Promotions & Taxes `POST /pub/bundles` (placeholder host `example.com`).
 - **Types are kept:** excluded APIs still get their `types.ts`, and the types are exported (§4.7). Implementers of these protocols can use them.
-- **Visibility:** the generator prints the exclusion list.
+- **Visibility:** the generator prints the fully excluded APIs and every operation dropped from an otherwise-included API.
+- **Pinned surface:** `test/generated-hosts.test.ts` pins the exact `raw.*` namespace list, alongside the host templates.
+
+**Driver safety**
+- `src/generated` is built in memory and replaced only after every check passes (lock match, every override applied), so a failed run leaves the committed tree intact.
+- Schema type names never take a reserved identifier: the generated imports, the API's own class, or globals used in signatures (`Promise`, `Record`, `FormData`, `URLSearchParams`, `Blob`, `ArrayBuffer`, `Uint8Array`).
+- A tag or API namespace named `constructor` is refused or renamed.
+- Overrides whose file is not in the lock are named in the error.
 
 ### 4.3 Call shape (S2, C3)
 - **Path params:** emitted as `${encodePathParam(params.x)}`.

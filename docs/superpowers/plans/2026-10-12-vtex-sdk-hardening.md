@@ -6640,10 +6640,34 @@ function generatedServerTemplates(): string[] {
   for (const entry of readdirSync(GENERATED_DIR, { withFileTypes: true })) {
     const index = join(GENERATED_DIR, entry.name, 'index.ts')
     if (!entry.isDirectory() || !existsSync(index)) continue
-    for (const match of readFileSync(index, 'utf8').matchAll(/server: '([^']+)'/g)) templates.add(match[1])
+    const source = readFileSync(index, 'utf8')
+    const literals = [...source.matchAll(/server: (['"`])(.+?)\1/g)]
+    // Every `server:` must be a plain literal this regex sees, or the pin below could be bypassed.
+    expect(literals.length).toBe(source.split('server:').length - 1)
+    for (const match of literals) templates.add(match[2])
   }
   return [...templates]
 }
+
+/** The `raw.*` namespaces. Renaming one is a breaking change; a re-pin that changes this needs review. */
+const EXPECTED_RAW_NAMESPACES = [
+  'audienceAPI', 'b2bAddressesAPI', 'b2bBuyerDataAPI', 'b2bContractsAPI', 'budgetsAPI', 'bulkPricingAPI',
+  'buyerOrganizationsB2BSuite', 'buyingPoliciesAPI', 'cardTokenVaultAPI', 'catalogAPISellerPortal', 'catalogAPI',
+  'checkoutAPI', 'checkoutCustomCardPaymentAPI', 'customFieldsAPI', 'customerCreditAPI',
+  'dataSubjectRightsAPIPIIDataArchitecture', 'defaultValuesAPI', 'deliveryPromiseNotificationAPI',
+  'deliveryPromiseSuggestionsAPI', 'giftcardHubAPI', 'giftcardAPI', 'vtexHeadlessCMS', 'intelligentSearchAPIV1',
+  'intelligentSearchAPILegacy', 'vtexIntelligentSearchEventsAPIHeadless', 'legacyCMSPortalAPI', 'licenseManagerAPI',
+  'logisticsAPI', 'sentOffers', 'suggestions', 'marketplaceAPI', 'marketplaceProtocol',
+  'marketplaceProtocolExternalMarketplaceOrders', 'masterDataAPIV2', 'masterDataAPIV1', 'messageCenterAPI',
+  'operationalCapacityAPI', 'ordersAPIPIIDataArchitecture', 'ordersAPI', 'organizationUnitsAPI', 'paymentPoliciesAPI',
+  'paymentsGatewayAPI', 'pickAndPackOrderChangesAPI', 'policiesSystemAPI', 'pricingAPI', 'pricingHubDEPRECATED',
+  'profileSystemPIIDataArchitecture', 'promotionsTaxesAPIV2', 'promotionsTaxesAPI', 'recommendationsBFFAPI',
+  'reviewsAndRatingsAPI', 'skuBindingsAPI', 'sslCertificatesAPI', 'legacySearchAPI', 'sessionManagerAPI',
+  'vtexShopeeIntegrationAPI', 'storefrontRolesAPI', 'subscriptionsAPIV3', 'userRightsAPI', 'vtexDOAPI', 'vtexID', 'mTLSAPI',
+]
+
+/** Hosts that are not the account's own: shared VTEX services on the commerce domain and vtex.com APIs. */
+const SHARED_HOST = /^(?:api|logistics|portal|prchub|rnb)\.vtexcommerce(?:stable|beta)\.com\.br$|^(?:api|sp)\.vtex\.com$/
 
 function client() {
   const fetchMock = vi.fn().mockImplementation(() =>
@@ -6682,12 +6706,25 @@ describe('generated hosts', () => {
     expect(generatedServerTemplates().sort()).toEqual(EXPECTED_TEMPLATES)
   })
 
-  it('every generated server template resolves to an allowlisted https VTEX origin', () => {
+  it('every generated server template resolves to the account host or a shared VTEX service', () => {
     const templates = generatedServerTemplates()
     expect(templates.length).toBeGreaterThan(10)
     for (const template of templates) {
-      expect(resolveServer(template, 'acme', 'vtexcommercestable').origin).toMatch(/^https:\/\//)
+      for (const environment of ['vtexcommercestable', 'vtexcommercebeta'] as const) {
+        const url = new URL(resolveServer(template, 'acme', environment).origin)
+        expect(url.protocol).toBe('https:')
+        expect(url.hostname.startsWith('acme.') || SHARED_HOST.test(url.hostname)).toBe(true)
+      }
     }
+  })
+
+  it('exposes exactly the reviewed raw namespaces and none of the excluded operations', () => {
+    const { vtex } = client()
+    expect(Object.keys(vtex.raw)).toEqual(EXPECTED_RAW_NAMESPACES)
+    expect('paymentProviderProtocol' in vtex.raw).toBe(false)
+    expect('vtexShippingNetworkAPI' in vtex.raw).toBe(false)
+    const gateway = vtex.raw.paymentsGatewayAPI as unknown as Record<string, Record<string, unknown>>
+    for (const ns of Object.values(gateway)) expect(ns['_2SendPaymentsPublic']).toBeUndefined()
   })
 
   it('creates gift cards on /api with the vendor content type and the body', async () => {
@@ -6766,7 +6803,7 @@ Expected: FAIL:
  */
 import { existsSync } from 'node:fs'
 import { readdir, readFile, mkdir, writeFile, rm } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { methodName, dedupe, tagToNamespace } from './codegen/naming.js'
 import { schemaToType } from './codegen/types.js'
 import { generateMethod } from './codegen/operation.js'
@@ -6777,8 +6814,15 @@ import { gitBlobSha, parseSchemaLock } from './codegen/integrity.js'
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const
 type HttpMethod = (typeof HTTP_METHODS)[number]
 
-/** Identifiers imported by every generated index.ts; schema types must not shadow them. */
-const RESERVED_TYPE_NAMES = ['VtexHttpClient', 'CallOptions']
+/**
+ * Names schema types must not take: identifiers imported by every generated index.ts, and
+ * globals used in generated signatures (a schema type named `FormData` would silently retype
+ * multipart bodies). The API's own class name is reserved per file.
+ */
+const RESERVED_TYPE_NAMES = [
+  'VtexHttpClient', 'CallOptions',
+  'Promise', 'Record', 'FormData', 'URLSearchParams', 'Blob', 'ArrayBuffer', 'Uint8Array',
+]
 
 // ---------------------------------------------------------------------------
 // Identifier helpers
@@ -6852,8 +6896,8 @@ function apiClassName(slug: string): string {
  * that doesn't match a declared key is treated as dangling and assigned a name lazily,
  * on first sight, from the same collision-free pool.
  */
-function makeRefResolver(schemas: Record<string, unknown>) {
-  const used = new Set<string>(RESERVED_TYPE_NAMES)
+function makeRefResolver(schemas: Record<string, unknown>, extraReserved: string[]) {
+  const used = new Set<string>([...RESERVED_TYPE_NAMES, ...extraReserved])
   const declared = new Map<string, string>() // raw schema key -> final type name
   for (const raw of Object.keys(schemas)) {
     declared.set(raw, uniqueName([sanitizeTypeName(raw)], used))
@@ -6893,10 +6937,22 @@ async function main() {
   }
   const files = (await readdir(dir)).filter((f) => f.endsWith('.json')).sort()
   // Generate only from exactly the reviewed, locked schemas: no stale, extra or edited files.
-  const lock = parseSchemaLock(JSON.parse(await readFile('scripts/schemas.lock.json', 'utf8')))
+  let lockJson: unknown
+  try {
+    lockJson = JSON.parse(await readFile('scripts/schemas.lock.json', 'utf8'))
+  } catch (err) {
+    throw new Error(`scripts/schemas.lock.json is unreadable: ${err instanceof Error ? err.message : String(err)}`)
+  }
+  const lock = parseSchemaLock(lockJson)
   const locked = Object.keys(lock.files).sort()
   if (files.join('\n') !== locked.join('\n')) {
     throw new Error('schemas/ does not match scripts/schemas.lock.json: run `npm run fetch-schemas`.')
+  }
+  const orphanOverrides = OVERRIDES.filter((o) => !(o.file in lock.files))
+  if (orphanOverrides.length > 0) {
+    throw new Error(
+      `Schema overrides target files that are not in the lock: ${orphanOverrides.map((o) => `${o.file} ${o.pointer}`).join('; ')}`,
+    )
   }
   const contents = new Map<string, Buffer>()
   for (const file of files) {
@@ -6906,12 +6962,12 @@ async function main() {
     }
     contents.set(file, bytes)
   }
-  await rm('src/generated', { recursive: true, force: true })
-  await mkdir('src/generated', { recursive: true })
+  // Everything is built in memory; src/generated is only replaced once every check has passed.
+  const outputs = new Map<string, string>() // path relative to src/generated -> content
 
   const usedSlugs = new Set<string>()
   const usedApiClasses = new Set<string>()
-  const usedTopNamespaces = new Set<string>()
+  const usedTopNamespaces = new Set<string>(['constructor'])
 
   const rawImports: string[] = []
   const rawFields: { ns: string; cls: string }[] = []
@@ -6940,7 +6996,7 @@ async function main() {
 
       const schemas: Record<string, any> = doc.components?.schemas ?? {}
       const parameters: Record<string, any> = doc.components?.parameters ?? {}
-      const { refName, declared, dangling } = makeRefResolver(schemas)
+      const { refName, declared, dangling } = makeRefResolver(schemas, [apiClass])
       const resolveRef = (ref: string) => {
         const name = ref.split('/').pop()!
         return parameters[name]
@@ -6962,6 +7018,8 @@ async function main() {
           }
           const tag = (op.tags && op.tags[0]) || title
           const ns = tagToNamespace(tag)
+          // A `constructor` field would be emitted as `readonly constructor: ...`, which doesn't compile.
+          if (ns === 'constructor') throw new Error(`Refusing the namespace name "constructor" (tag ${JSON.stringify(tag)})`)
           if (!groups.has(ns)) groups.set(ns, [])
           groups.get(ns)!.push({ httpMethod, path, op, server })
         }
@@ -7010,8 +7068,7 @@ async function main() {
       for (const [, finalName] of dangling) {
         typeLines.push(`export type ${finalName} = unknown\n`)
       }
-      await mkdir(join('src/generated', slug), { recursive: true })
-      await writeFile(join('src/generated', slug, 'types.ts'), typeLines.join('\n') || 'export {}\n')
+      outputs.set(`${slug}/types.ts`, typeLines.join('\n') || 'export {}\n')
       typeExports.push(`export type * as ${apiClass}Types from './${slug}/types.js'`)
 
       if (nsClasses.length === 0) {
@@ -7045,7 +7102,7 @@ async function main() {
         .filter((line): line is string => line !== undefined)
         .join('\n')
 
-      await writeFile(join('src/generated', slug, 'index.ts'), indexSource)
+      outputs.set(`${slug}/index.ts`, indexSource)
 
       rawImports.push(`import { ${apiClass} } from './${slug}/index.js'`)
       rawFields.push({ ns: topNs, cls: apiClass })
@@ -7072,15 +7129,26 @@ async function main() {
     `}`,
     ``,
   ].join('\n')
-  await writeFile('src/generated/index.ts', aggregator)
-  await writeFile('src/generated/types-index.ts', `${typeExports.join('\n')}\n`)
+  outputs.set('index.ts', aggregator)
+  outputs.set('types-index.ts', `${typeExports.join('\n')}\n`)
+
+  await rm('src/generated', { recursive: true, force: true })
+  for (const [path, content] of outputs) {
+    const target = join('src/generated', path)
+    await mkdir(dirname(target), { recursive: true })
+    await writeFile(target, content)
+  }
+
+  // Operations dropped from APIs that are otherwise generated; a re-pin that changes this shows up here.
+  const partial = excludedOps.filter((op) => !excludedApis.some((api) => op.startsWith(`${api}: `)))
 
   console.log(
     `Generated ${rawFields.length} raw APIs (${totalNamespaces} namespaces, ${totalMethods} methods) ` +
       `and ${files.length} type modules into src/generated/.\n` +
       `Excluded ${excludedOps.length} operations served by non-VTEX or variable hosts ` +
       `(${excludedApis.length} APIs in full: ${excludedApis.join(', ')}).\n` +
-      `Applied ${overridesApplied} schema overrides; trimmed ${basePathsTrimmed} overlapping base paths.`,
+      `Applied ${overridesApplied} schema overrides; trimmed ${basePathsTrimmed} overlapping base paths.\n` +
+      `Excluded from included APIs: ${partial.join('; ') || 'none'}.`,
   )
 }
 
@@ -7099,6 +7167,7 @@ Expected output, exactly:
 Generated 62 raw APIs (233 namespaces, 964 methods) and 75 type modules into src/generated/.
 Excluded 97 operations served by non-VTEX or variable hosts (13 APIs in full: Ads API, Antifraud Provider API, B2B Password Migration Protocol, External Promotions Protocol API, Giftcard Provider Protocol, Marketplace Protocol - External Seller Fulfillment, Marketplace Protocol - External Seller Marketplace, Payment Provider Protocol, Pick and Pack API, Pick and Pack Last Mile Protocol API, Punchout API, Tracking, VTEX Shipping Network API).
 Applied 5 schema overrides; trimmed 7 overlapping base paths.
+Excluded from included APIs: Payments Gateway API: POST /api/payments/transactions/{transactionId}/payments; Promotions & Taxes API: POST /pub/bundles.
 ```
 
 - [ ] **Step 5: Verify that no generated method was renamed**
@@ -7178,7 +7247,7 @@ npm run codegen
 git status --short -- src/generated
 ```
 
-Expected: the same three summary lines as in Task 14, and no output from `git status`.
+Expected: the same four summary lines as in Task 14, and no output from `git status`.
 
 - [ ] **Step 4: Commit**
 
@@ -8707,7 +8776,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  26 passed (26)` and `Tests  582 passed (582)`;
+- `Test Files  26 passed (26)` and `Tests  583 passed (583)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
