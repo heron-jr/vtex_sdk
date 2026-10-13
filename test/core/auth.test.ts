@@ -38,4 +38,24 @@ describe('buildAuthHeaders', () => {
     expect(() => buildAuthHeaders({ account: 'x', authCookie: 'a\nb' })).toThrow(VtexUsageError)
     expect(() => buildAuthHeaders({ account: 'x', authCookie: 123 as never })).toThrow(VtexUsageError)
   })
+  it('strips leading/trailing whitespace such as a secret file newline', () => {
+    const h = buildAuthHeaders({ account: 'x', appKey: ' K\t', appToken: 'T\n' })
+    expect(h['X-VTEX-API-AppKey']).toBe('K')
+    expect(h['X-VTEX-API-AppToken']).toBe('T')
+    expect(buildAuthHeaders({ account: 'x', authCookie: 'C\r\n' })['VtexIdclientAutCookie']).toBe('C')
+  })
+  it('rejects a whitespace-only credential', () => {
+    expect(() => buildAuthHeaders({ account: 'x', appKey: 'K', appToken: ' \n' })).toThrow(VtexUsageError)
+  })
+  it('treats blank or null app keys as unset and falls back to the cookie', () => {
+    const blank = buildAuthHeaders({ account: 'x', appKey: '', appToken: '', authCookie: 'C' })
+    expect(blank).toEqual({ VtexIdclientAutCookie: 'C' })
+    const nulls = buildAuthHeaders({ account: 'x', appKey: null as never, appToken: null as never, authCookie: 'C' })
+    expect(nulls).toEqual({ VtexIdclientAutCookie: 'C' })
+  })
+  it('reports missing credentials when every value is blank', () => {
+    expect(() => buildAuthHeaders({ account: 'x', appKey: '', appToken: '', authCookie: '' })).toThrow(
+      /No VTEX credentials/,
+    )
+  })
 })

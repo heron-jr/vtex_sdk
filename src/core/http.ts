@@ -111,6 +111,7 @@ export class VtexHttpClient {
     this.#hooks = config.hooks ?? {}
     this.#server(DEFAULT_SERVER)
     // account/environment pick the host credentials go to: make them immutable at runtime too.
+    // This also makes the class unsuitable for subclassing; wrap it or use VtexClient.request().
     Object.freeze(this)
   }
 
