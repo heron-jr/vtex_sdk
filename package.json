@@ -34,7 +34,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fetch-schemas": "tsx scripts/fetch-schemas.ts",
-    "codegen": "tsx scripts/codegen.ts"
+    "codegen": "tsx scripts/codegen.ts",
+    "live-check": "tsx scripts/live-check.ts"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
