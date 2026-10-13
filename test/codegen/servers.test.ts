@@ -42,6 +42,71 @@ describe('normalizeServer', () => {
   ])('accepts VTEX service host %s', (url) => {
     expect(normalizeServer({ url, variables: stable })).toBe(url)
   })
+  it.each([
+    // hostile hosts
+    'https://vtexcommercestable.com.br.evil.com',
+    'https://evil-vtexcommercestable.com.br',
+    'https://{accountName}vtex.com',
+    'https://API.VTEX.COM',
+    'https://api.vtex.com.',
+    'https://ápi.vtex.com',
+    // userinfo, port, query, fragment, other schemes, relative
+    'https://user@api.vtex.com',
+    'https://api.vtex.com:443',
+    'https://api.vtex.com?',
+    'https://api.vtex.com#',
+    'ftp://api.vtex.com',
+    'HTTPS://api.vtex.com',
+    '/api/catalog',
+    // parser differentials: the raw first label is not the runtime one
+    'https:/xapi.myvtex.com',
+    'https:xx{accountName}.myvtex.com',
+    'https:/e{accountName}.vtexcommercestable.com.br',
+    // dot segments and escapes that rewrite the path
+    'https://api.vtex.com/{accountName}/%2e%2e/entelperu/pricing',
+    'https://api.vtex.com/{accountName}/../entelperu/pricing',
+    'https://{accountName}.myvtex.com\\@evil.com',
+    'https://api.vtex.com/a b',
+    // stray braces
+    'https://{}.myvtex.com',
+    'https://{accountName.myvtex.com',
+    'https://x}.myvtex.com',
+    // hard-coded accounts and shared labels outside the commerce domains
+    'https://entelperu.myvtex.com',
+    'https://entelperu.vtexpayments.com.br',
+    'https://x{accountName}.myvtex.com',
+    'https://api.myvtex.com',
+    'https://rnb.myvtex.com',
+    'https://portal.vtexpayments.com.br',
+    // VTEX IO app routes run third-party code
+    'https://app.io.vtex.com',
+    'https://app.io.vtex.com/{accountName}',
+  ])('rejects unsafe template %s', (url) => {
+    expect(normalizeServer({ url, variables: stable })).toBeUndefined()
+  })
+  it('ignores enum and default values that point elsewhere', () => {
+    expect(
+      normalizeServer({
+        url: 'https://{accountName}.{environment}.com.br',
+        variables: { accountName: { default: 'entelperu', enum: ['evil.com'] }, environment: { default: 'evil.com#' } },
+      }),
+    ).toBe('https://{accountName}.{environment}.com.br')
+  })
+  it.each(['exampleParameterValue', 'DefaultParameterValue'])('keeps {environment} for a junk default (%s)', (d) => {
+    expect(normalizeServer({ url: 'https://rnb.{environment}.com.br/api/pricing/pvt', variables: { environment: { default: d } } })).toBe(
+      'https://rnb.{environment}.com.br/api/pricing/pvt',
+    )
+  })
+  it('rejects a myvtex default on a .com.br template', () => {
+    expect(
+      normalizeServer({ url: 'https://{accountName}.{environment}.com.br', variables: { environment: { default: 'myvtex' } } }),
+    ).toBeUndefined()
+  })
+  it('returns undefined for malformed entries', () => {
+    expect(normalizeServer({ url: 123 } as never)).toBeUndefined()
+    expect(normalizeServer(null as never)).toBeUndefined()
+    expect(normalizeServer({} as never)).toBeUndefined()
+  })
 })
 
 describe('pickServer', () => {
@@ -65,6 +130,12 @@ describe('pickServer', () => {
   it('defaults to the account host when nothing declares servers', () => {
     expect(pickServer([undefined, undefined, undefined])).toBe(DEFAULT_SERVER)
   })
+  it('lets an empty servers list fall through to the next level', () => {
+    expect(pickServer([[], undefined, doc])).toBe('https://{accountName}.{environment}.com.br')
+  })
+  it('treats a non-array servers value as declared and unresolvable', () => {
+    expect(pickServer([{ url: 'https://evil.com' } as never, undefined, doc])).toBeUndefined()
+  })
 })
 
 describe('trimBasePathOverlap', () => {
@@ -79,6 +150,16 @@ describe('trimBasePathOverlap', () => {
     )
     expect(trimBasePathOverlap('https://{accountName}.{environment}.com.br', '/api/x')).toBe(
       'https://{accountName}.{environment}.com.br',
+    )
+  })
+  it('never drops a templated segment', () => {
+    expect(trimBasePathOverlap('https://api.vtex.com/{accountName}', '/{accountName}/x')).toBe(
+      'https://api.vtex.com/{accountName}',
+    )
+  })
+  it('drops the only base segment when it overlaps', () => {
+    expect(trimBasePathOverlap('https://rnb.{environment}.com.br/pricing', '/pricing/x')).toBe(
+      'https://rnb.{environment}.com.br',
     )
   })
 })
