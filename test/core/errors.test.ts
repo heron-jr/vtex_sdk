@@ -1,7 +1,10 @@
+import { inspect } from 'node:util'
 import { describe, it, expect } from 'vitest'
 import {
   mapResponseToError, VtexAuthError, VtexNotFoundError,
   VtexValidationError, VtexRateLimitError, VtexServerError, VtexRequestError,
+  VtexError, VtexNetworkError, VtexTimeoutError, VtexUsageError,
+  VtexPaginationLimitError, VtexUnexpectedResponseError,
 } from '../../src/core/errors.js'
 
 const h = (init: Record<string, string> = {}) => new Headers(init)
@@ -48,6 +51,12 @@ describe('mapResponseToError', () => {
     expect(err).toBeInstanceOf(VtexRateLimitError)
     expect(err.retryAfter).toBeUndefined()
   })
+  it('parses an HTTP-date Retry-After into seconds', () => {
+    const inTenSeconds = new Date(Date.now() + 10_000).toUTCString()
+    const err = mapResponseToError(429, {}, h({ 'Retry-After': inTenSeconds })) as VtexRateLimitError
+    expect(err.retryAfter).toBeGreaterThanOrEqual(8)
+    expect(err.retryAfter).toBeLessThanOrEqual(11)
+  })
   it('unmapped status code (405) maps to plain VtexRequestError, not a subclass', () => {
     const err = mapResponseToError(405, {}, h())
     expect(err).toBeInstanceOf(VtexRequestError)
@@ -65,5 +74,42 @@ describe('mapResponseToError', () => {
     expect(mapResponseToError(429, {}, h()).name).toBe('VtexRateLimitError')
     expect(mapResponseToError(500, {}, h()).name).toBe('VtexServerError')
     expect(mapResponseToError(405, {}, h()).name).toBe('VtexRequestError')
+  })
+})
+
+describe('error hierarchy', () => {
+  it('every SDK error extends VtexError', () => {
+    const net = { cause: new Error('c'), method: 'GET', route: '/r', attempts: 1 }
+    expect(mapResponseToError(404, {}, h())).toBeInstanceOf(VtexError)
+    expect(new VtexNetworkError('x', net)).toBeInstanceOf(VtexError)
+    expect(new VtexTimeoutError('x', net)).toBeInstanceOf(VtexNetworkError)
+    expect(new VtexUsageError('x')).toBeInstanceOf(VtexError)
+    expect(new VtexPaginationLimitError('x')).toBeInstanceOf(VtexError)
+    expect(new VtexUnexpectedResponseError('x', [])).toBeInstanceOf(VtexError)
+  })
+
+  it('network errors carry cause, method, route and attempts', () => {
+    const cause = new Error('socket hang up')
+    const err = new VtexNetworkError('failed', { cause, method: 'POST', route: '/api/x', attempts: 3 })
+    expect(err.cause).toBe(cause)
+    expect(err.method).toBe('POST')
+    expect(err.route).toBe('/api/x')
+    expect(err.attempts).toBe(3)
+    expect(err.name).toBe('VtexNetworkError')
+    expect(new VtexTimeoutError('t', { cause, method: 'GET', route: '/r', attempts: 1 }).name).toBe('VtexTimeoutError')
+  })
+
+  it('keeps the response body readable but out of default serialization', () => {
+    const err = mapResponseToError(400, { email: 'shopper@example.com' }, h())
+    expect(err.body).toEqual({ email: 'shopper@example.com' })
+    expect(Object.keys(err)).not.toContain('body')
+    expect(JSON.stringify(err)).not.toContain('shopper@example.com')
+    expect(inspect(err)).not.toContain('shopper@example.com')
+  })
+
+  it('VtexUnexpectedResponseError hides its body the same way', () => {
+    const err = new VtexUnexpectedResponseError('bad', { email: 'shopper@example.com' })
+    expect(err.body).toEqual({ email: 'shopper@example.com' })
+    expect(JSON.stringify(err)).not.toContain('shopper@example.com')
   })
 })
