@@ -1,13 +1,20 @@
 import type { VtexHttpClient } from '../core/http.js'
+import type { CallOptions } from '../core/types.js'
+import { encodePathParam, withCall } from '../core/call.js'
 
 export class CheckoutFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  getCart(orderFormId: string): Promise<unknown> {
-    return this.http.request({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodeURIComponent(orderFormId)}` })
+  getCart(orderFormId: string, opts?: CallOptions): Promise<unknown> {
+    return this.http.request(
+      withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(orderFormId)}` }, opts),
+    )
   }
 
-  simulate(body: unknown): Promise<unknown> {
-    return this.http.request({ method: 'POST', path: '/api/checkout/pub/orderForms/simulation', body })
+  /** A read-like POST, so it is retried like a GET unless the caller overrides `idempotent`. */
+  simulate(body: unknown, opts?: CallOptions): Promise<unknown> {
+    return this.http.request(
+      withCall({ method: 'POST', path: '/api/checkout/pub/orderForms/simulation', body, idempotent: true }, opts),
+    )
   }
 }
