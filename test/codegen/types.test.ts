@@ -30,30 +30,59 @@ describe('schemaToType', () => {
     expect(schemaToType({}, ref)).toBe('unknown')
   })
   it('handles edge cases without throwing', () => {
-    // Empty enum array falls through to type
     expect(schemaToType({ type: 'string', enum: [] }, ref)).toBe('string')
-    // Empty allOf falls through
     expect(schemaToType({ allOf: [] }, ref)).toBe('unknown')
-    // Missing items on array
     expect(schemaToType({ type: 'array' }, ref)).toBe('unknown[]')
-    // Object without properties
     expect(schemaToType({ type: 'object' }, ref)).toBe('Record<string, unknown>')
-    // Null schema
     expect(schemaToType(null, ref)).toBe('unknown')
   })
   it('handles non-array required field without throwing', () => {
-    // required as object (not array)
-    const t1 = schemaToType(
-      { type: 'object', properties: { id: { type: 'string' } }, required: {} },
-      ref,
-    )
+    const t1 = schemaToType({ type: 'object', properties: { id: { type: 'string' } }, required: {} }, ref)
     expect(t1).toContain('id?: string')
-    // required as string (not array)
     const t2 = schemaToType(
       { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } }, required: 'id' },
       ref,
     )
     expect(t2).toContain('id?: string')
     expect(t2).toContain('name?: string')
+  })
+
+  it('models nullable', () => {
+    expect(schemaToType({ type: 'string', nullable: true }, ref)).toBe('string | null')
+    expect(schemaToType({ $ref: '#/components/schemas/Order', nullable: true }, ref)).toBe('Order | null')
+  })
+  it('models OpenAPI 3.1 type arrays', () => {
+    expect(schemaToType({ type: ['string', 'null'] }, ref)).toBe('string | null')
+  })
+  it('parenthesizes union item types in arrays', () => {
+    expect(schemaToType({ type: 'array', items: { type: 'string', enum: ['a', 'b'] } }, ref)).toBe('("a" | "b")[]')
+    expect(schemaToType({ type: 'array', items: { type: 'string', nullable: true } }, ref)).toBe('(string | null)[]')
+  })
+  it('parenthesizes unions inside intersections', () => {
+    const schema = {
+      allOf: [
+        { $ref: '#/components/schemas/A' },
+        { oneOf: [{ $ref: '#/components/schemas/B' }, { $ref: '#/components/schemas/C' }] },
+      ],
+    }
+    expect(schemaToType(schema, ref)).toBe('A & (B | C)')
+  })
+  it('turns additionalProperties into an index signature', () => {
+    expect(schemaToType({ type: 'object', additionalProperties: { type: 'string' } }, ref)).toBe(
+      '{\n  [key: string]: string\n}',
+    )
+    expect(schemaToType({ type: 'object', additionalProperties: true }, ref)).toBe('{\n  [key: string]: unknown\n}')
+  })
+  it('widens the index signature to unknown when named properties are present', () => {
+    const t = schemaToType(
+      { type: 'object', properties: { id: { type: 'string' } }, additionalProperties: { type: 'number' } },
+      ref,
+    )
+    expect(t).toBe('{\n  id?: string\n  [key: string]: unknown\n}')
+  })
+  it('maps placeholder keys like {fieldName} to an index signature', () => {
+    expect(schemaToType({ type: 'object', properties: { '{fieldName}': { type: 'string' } } }, ref)).toBe(
+      '{\n  [key: string]: string\n}',
+    )
   })
 })
