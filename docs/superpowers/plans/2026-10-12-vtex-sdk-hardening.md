@@ -8966,7 +8966,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  26 passed (26)` and `Tests  593 passed (593)`;
+- `Test Files  26 passed (26)` and `Tests  594 passed (594)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
