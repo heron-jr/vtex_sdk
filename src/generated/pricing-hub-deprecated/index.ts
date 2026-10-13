@@ -6,14 +6,14 @@ import type { GetPricesRequestObject, Items, Response2, Item1, ConfigExternalPri
 class PricingHubDeprecatedApi_pricingHubPrices {
   constructor(private http: VtexHttpClient) {}
 
-  postApiPricingHubPrices(params: {
+  async postApiPricingHubPrices(params: {
   an: string
   body: GetPricesRequestObject
 }, opts?: CallOptions): Promise<Response2> {
     return this.http.request<Response2>(withCall({ method: 'POST', path: `/api/pricing-hub/prices`, query: { 'an': params.an }, body: params.body, server: 'https://prchub.{environment}.com.br' }, opts))
   }
 
-  configExternalPriceSource(params: {
+  async configExternalPriceSource(params: {
   an?: string
   body: ConfigExternalPriceSourceRequest
 }, opts?: CallOptions): Promise<unknown> {

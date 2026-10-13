@@ -27,7 +27,7 @@ function entitySegment(dataEntity: string): string {
 export class MasterDataFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  get(dataEntity: string, id: string, opts?: MasterDataGetOptions): Promise<unknown> {
+  async get(dataEntity: string, id: string, opts?: MasterDataGetOptions): Promise<unknown> {
     const { fields, ...call } = opts ?? {}
     const query = fields?.length ? { _fields: fields.join(',') } : undefined
     const path = `/api/dataentities/${entitySegment(dataEntity)}/documents/${encodePathParam(id)}`

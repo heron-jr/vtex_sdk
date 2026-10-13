@@ -6,7 +6,7 @@ import type { ResponseError, Pagination, TransactionResponse, ReservationRespons
 class BudgetsApi_statements {
   constructor(private http: VtexHttpClient) {}
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdStatements(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdStatements(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -40,7 +40,7 @@ class BudgetsApi_statements {
 }>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/statements`, query: { 'page': params.page, 'pageSize': params.pageSize }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdStatements(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdStatements(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -78,7 +78,7 @@ class BudgetsApi_statements {
 class BudgetsApi_transactions {
   constructor(private http: VtexHttpClient) {}
 
-  postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactions(params: {
+  async postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactions(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -94,7 +94,7 @@ class BudgetsApi_transactions {
     return this.http.request<TransactionResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/transactions`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactionsByTransactionIdRefund(params: {
+  async postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactionsByTransactionIdRefund(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -117,7 +117,7 @@ class BudgetsApi_transactions {
 }>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/transactions/${encodePathParam(params.transactionId)}/refund`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactionsByTransactionId(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdTransactionsByTransactionId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -130,7 +130,7 @@ class BudgetsApi_transactions {
 class BudgetsApi_reservations {
   constructor(private http: VtexHttpClient) {}
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservations(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservations(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -170,7 +170,7 @@ class BudgetsApi_reservations {
 }>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations`, query: { 'page': params.page, 'pageSize': params.pageSize, 'status': params.status }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservations(params: {
+  async postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservations(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -187,7 +187,7 @@ class BudgetsApi_reservations {
     return this.http.request<ReservationResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationId(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -197,7 +197,7 @@ class BudgetsApi_reservations {
     return this.http.request<ReservationResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations/${encodePathParam(params.reservationId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationId(params: {
+  async deleteApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -210,7 +210,7 @@ class BudgetsApi_reservations {
     return this.http.request<ReservationResponse>(withCall({ method: 'DELETE', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/reservations/${encodePathParam(params.reservationId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationIdConfirmation(params: {
+  async postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdReservationsByReservationIdConfirmation(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -226,7 +226,7 @@ class BudgetsApi_reservations {
 class BudgetsApi_allocations {
   constructor(private http: VtexHttpClient) {}
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdAllocations(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdAllocations(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -275,7 +275,7 @@ class BudgetsApi_allocations {
 }>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations`, query: { 'type': params.type, 'page': params.page, 'pageSize': params.pageSize, 'status': params.status, 'referenceId': params.referenceId }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextIdByBudgetIdAllocations(params: {
+  async postApiBudgetsByContextTypeByContextIdByBudgetIdAllocations(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -292,7 +292,7 @@ class BudgetsApi_allocations {
     return this.http.request<AllocationResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsBatch(params: {
+  async postApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsBatch(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -354,7 +354,7 @@ class BudgetsApi_allocations {
 }>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/batch`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -363,7 +363,7 @@ class BudgetsApi_allocations {
     return this.http.request<AllocationResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
+  async putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -392,7 +392,7 @@ class BudgetsApi_allocations {
     return this.http.request<AllocationResponse>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
+  async deleteApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -401,7 +401,7 @@ class BudgetsApi_allocations {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdLinkedEntity(params: {
+  async putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdLinkedEntity(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -414,7 +414,7 @@ class BudgetsApi_allocations {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/linked-entity`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdStatus(params: {
+  async putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdStatus(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -430,7 +430,7 @@ class BudgetsApi_allocations {
 }>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/status`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdUsage(params: {
+  async putApiBudgetsByContextTypeByContextIdByBudgetIdAllocationsByAllocationIdUsage(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -446,7 +446,7 @@ class BudgetsApi_allocations {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}/allocations/${encodePathParam(params.allocationId)}/usage`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextIdAllocationsQuery(params: {
+  async postApiBudgetsByContextTypeByContextIdAllocationsQuery(params: {
   contextType: string
   contextId: string
   body: {
@@ -502,7 +502,7 @@ class BudgetsApi_allocations {
 class BudgetsApi_budgets {
   constructor(private http: VtexHttpClient) {}
 
-  getApiBudgetsByContextTypeByContextId(params: {
+  async getApiBudgetsByContextTypeByContextId(params: {
   contextType: string
   contextId: string
   page?: number
@@ -547,7 +547,7 @@ class BudgetsApi_budgets {
 }>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}`, query: { 'page': params.page, 'pageSize': params.pageSize, 'minAmount': params.minAmount, 'maxAmount': params.maxAmount, 'status': params.status, 'name': params.name }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiBudgetsByContextTypeByContextId(params: {
+  async postApiBudgetsByContextTypeByContextId(params: {
   contextType: string
   contextId: string
   body: {
@@ -570,7 +570,7 @@ class BudgetsApi_budgets {
     return this.http.request<BudgetResponse>(withCall({ method: 'POST', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiBudgetsByContextTypeByContextIdByBudgetId(params: {
+  async getApiBudgetsByContextTypeByContextIdByBudgetId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -578,7 +578,7 @@ class BudgetsApi_budgets {
     return this.http.request<BudgetResponse>(withCall({ method: 'GET', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  putApiBudgetsByContextTypeByContextIdByBudgetId(params: {
+  async putApiBudgetsByContextTypeByContextIdByBudgetId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -593,7 +593,7 @@ class BudgetsApi_budgets {
     return this.http.request<BudgetResponse>(withCall({ method: 'PUT', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteApiBudgetsByContextTypeByContextIdByBudgetId(params: {
+  async deleteApiBudgetsByContextTypeByContextIdByBudgetId(params: {
   contextType: string
   contextId: string
   budgetId: string
@@ -601,7 +601,7 @@ class BudgetsApi_budgets {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/budgets/${encodePathParam(params.contextType)}/${encodePathParam(params.contextId)}/${encodePathParam(params.budgetId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  putApiBudgetsByContextTypeByContextIdByBudgetIdStatus(params: {
+  async putApiBudgetsByContextTypeByContextIdByBudgetIdStatus(params: {
   contextType: string
   contextId: string
   budgetId: string

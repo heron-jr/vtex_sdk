@@ -6,20 +6,20 @@ import type { AutocompleteSearchSuggestions, TopSearches, Correction, Banners, S
 class IntelligentSearchApiV1Api_autocomplete {
   constructor(private http: VtexHttpClient) {}
 
-  getTopSearches(params: {
+  async getTopSearches(params: {
   locale?: string | null
 } = {}, opts?: CallOptions): Promise<TopSearches> {
     return this.http.request<TopSearches>(withCall({ method: 'GET', path: `/top-searches`, query: { 'locale': params.locale }, server: 'https://{accountName}.{environment}.com.br/api/intelligent-search/v1' }, opts))
   }
 
-  getAutocompleteSuggestions(params: {
+  async getAutocompleteSuggestions(params: {
   query?: string
   locale?: string | null
 } = {}, opts?: CallOptions): Promise<AutocompleteSearchSuggestions> {
     return this.http.request<AutocompleteSearchSuggestions>(withCall({ method: 'GET', path: `/autocomplete-suggestions`, query: { 'query': params.query, 'locale': params.locale }, server: 'https://{accountName}.{environment}.com.br/api/intelligent-search/v1' }, opts))
   }
 
-  getSearchSuggestions(params: {
+  async getSearchSuggestions(params: {
   query?: string
   locale?: string | null
 } = {}, opts?: CallOptions): Promise<SearchSuggestions> {
@@ -29,14 +29,14 @@ class IntelligentSearchApiV1Api_autocomplete {
 class IntelligentSearchApiV1Api_productListPage {
   constructor(private http: VtexHttpClient) {}
 
-  getCorrectionSearch(params: {
+  async getCorrectionSearch(params: {
   query?: string
   locale?: string | null
 } = {}, opts?: CallOptions): Promise<Correction> {
     return this.http.request<Correction>(withCall({ method: 'GET', path: `/correction-search`, query: { 'query': params.query, 'locale': params.locale }, server: 'https://{accountName}.{environment}.com.br/api/intelligent-search/v1' }, opts))
   }
 
-  getBannersByFacets(params: {
+  async getBannersByFacets(params: {
   facets: string
   query?: string
   locale?: string | null
@@ -44,7 +44,7 @@ class IntelligentSearchApiV1Api_productListPage {
     return this.http.request<Banners>(withCall({ method: 'GET', path: `/banners/${encodePathParam(params.facets)}`, query: { 'query': params.query, 'locale': params.locale }, server: 'https://{accountName}.{environment}.com.br/api/intelligent-search/v1' }, opts))
   }
 
-  getProductSearchByFacets(params: {
+  async getProductSearchByFacets(params: {
   facets: string
   query?: string
   count?: number | null
@@ -74,7 +74,7 @@ class IntelligentSearchApiV1Api_productListPage {
     return this.http.request<ProductSearch>(withCall({ method: 'GET', path: `/product-search/${encodePathParam(params.facets)}`, query: { 'query': params.query, 'count': params.count, 'page': params.page, 'sort': params.sort, 'locale': params.locale, 'hideUnavailableItems': params.hideUnavailableItems, 'simulationBehavior': params.simulationBehavior, 'sc': params.sc, 'regionId': params.regionId, 'country': params.country, 'zip-code': params['zip-code'], 'coordinates': params.coordinates, 'pickupPoint': params.pickupPoint, 'deliveryZonesHash': params.deliveryZonesHash, 'pickupPointsHash': params.pickupPointsHash, 'utmSource': params.utmSource, 'utmCampaign': params.utmCampaign, 'utmiCampaign': params.utmiCampaign, 'campaigns': params.campaigns, 'priceTables': params.priceTables, 'showSponsored': params.showSponsored, 'sponsoredCount': params.sponsoredCount, 'advertisementPlacement': params.advertisementPlacement, 'repeatSponsoredProducts': params.repeatSponsoredProducts }, server: 'https://{accountName}.{environment}.com.br/api/intelligent-search/v1' }, opts))
   }
 
-  getFacetsByFacets(params: {
+  async getFacetsByFacets(params: {
   facets: string
   query?: string
   locale?: string | null
@@ -95,7 +95,7 @@ class IntelligentSearchApiV1Api_productListPage {
 class IntelligentSearchApiV1Api_productDetailsPagePDP {
   constructor(private http: VtexHttpClient) {}
 
-  getProducts(params: {
+  async getProducts(params: {
   sc: string
   value: string
   field?: "id" | "slug" | "ean" | "sku" | "reference"
@@ -124,7 +124,7 @@ class IntelligentSearchApiV1Api_productDetailsPagePDP {
 class IntelligentSearchApiV1Api_deliveryPromise {
   constructor(private http: VtexHttpClient) {}
 
-  getPickupPointAvailabilityByFacets(params: {
+  async getPickupPointAvailabilityByFacets(params: {
   facets: string
   query?: string
   locale?: string | null

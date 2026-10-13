@@ -6,7 +6,7 @@ import type { SpecificationValuesSubcollectionIdResponse, SkuFileResponse, SKUFi
 class CatalogApi_product {
   constructor(private http: VtexHttpClient) {}
 
-  productAndSkuIds(params: {
+  async productAndSkuIds(params: {
   categoryId?: number
   _from?: number
   _to?: number
@@ -32,7 +32,7 @@ class CatalogApi_product {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/products/GetProductAndSkuIds`, query: { 'categoryId': params.categoryId, '_from': params._from, '_to': params._to } }, opts))
   }
 
-  getProductbyid(params: {
+  async getProductbyid(params: {
   productId: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -82,7 +82,7 @@ class CatalogApi_product {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}` }, opts))
   }
 
-  putApiCatalogPvtProductByProductId(params: {
+  async putApiCatalogPvtProductByProductId(params: {
   productId: number
   body: {
   Name: string
@@ -154,7 +154,7 @@ class CatalogApi_product {
 }>(withCall({ method: 'PUT', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}`, body: params.body }, opts))
   }
 
-  productandTradePolicy(params: {
+  async productandTradePolicy(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -204,7 +204,7 @@ class CatalogApi_product {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/products/productget/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productbyRefId(params: {
+  async productbyRefId(params: {
   refId: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -254,7 +254,7 @@ class CatalogApi_product {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/products/productgetbyrefid/${encodePathParam(params.refId)}` }, opts))
   }
 
-  productVariations(params: {
+  async productVariations(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   productId?: number
@@ -336,13 +336,13 @@ class CatalogApi_product {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/variations/${encodePathParam(params.productId)}` }, opts))
   }
 
-  getApiAddonPvtReviewGetProductRateByProductId(params: {
+  async getApiAddonPvtReviewGetProductRateByProductId(params: {
   productId: number
 }, opts?: CallOptions): Promise<number> {
     return this.http.request<number>(withCall({ method: 'GET', path: `/api/addon/pvt/review/GetProductRate/${encodePathParam(params.productId)}` }, opts))
   }
 
-  postApiCatalogPvtProduct(params: {
+  async postApiCatalogPvtProduct(params: {
   body: {
   Id?: number
   Name: string
@@ -435,7 +435,7 @@ class CatalogApi_product {
 class CatalogApi_productSpecification {
   constructor(private http: VtexHttpClient) {}
 
-  getProductSpecification(params: {
+  async getProductSpecification(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   Value: string[]
@@ -449,14 +449,14 @@ class CatalogApi_productSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/products/${encodePathParam(params.productId)}/specification` }, opts))
   }
 
-  updateProductSpecification(params: {
+  async updateProductSpecification(params: {
   productId: number
   body: GetorUpdateProductSpecification[]
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/products/${encodePathParam(params.productId)}/specification`, body: params.body }, opts))
   }
 
-  getProductSpecificationbyProductID(params: {
+  async getProductSpecificationbyProductID(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -474,7 +474,7 @@ class CatalogApi_productSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/specification` }, opts))
   }
 
-  postApiCatalogPvtProductByProductIdSpecification(params: {
+  async postApiCatalogPvtProductByProductIdSpecification(params: {
   productId: number
   body: {
   FieldId: number
@@ -497,20 +497,20 @@ class CatalogApi_productSpecification {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/specification`, body: params.body }, opts))
   }
 
-  deleteAllProductSpecifications(params: {
+  async deleteAllProductSpecifications(params: {
   productId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/specification` }, opts))
   }
 
-  deleteaProductSpecification(params: {
+  async deleteaProductSpecification(params: {
   productId: number
   specificationId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/specification/${encodePathParam(params.specificationId)}` }, opts))
   }
 
-  putApiCatalogPvtProductByProductIdSpecificationvalue(params: {
+  async putApiCatalogPvtProductByProductIdSpecificationvalue(params: {
   productId: number
   body: {
   FieldName: string
@@ -537,21 +537,21 @@ class CatalogApi_productSpecification {
 class CatalogApi_sku {
   constructor(private http: VtexHttpClient) {}
 
-  listallSKUIDs(params: {
+  async listallSKUIDs(params: {
   page: number
   pagesize: number
 }, opts?: CallOptions): Promise<number[]> {
     return this.http.request<number[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/stockkeepingunitids`, query: { 'page': params.page, 'pagesize': params.pagesize } }, opts))
   }
 
-  skuContext(params: {
+  async skuContext(params: {
   skuId: number
   sc?: number
 }, opts?: CallOptions): Promise<GetSKUandContext> {
     return this.http.request<GetSKUandContext>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/stockkeepingunitbyid/${encodePathParam(params.skuId)}`, query: { 'sc': params.sc } }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunit(params: {
+  async getApiCatalogPvtStockkeepingunit(params: {
   RefId: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -613,7 +613,7 @@ class CatalogApi_sku {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit`, query: { 'RefId': params.RefId } }, opts))
   }
 
-  postApiCatalogPvtStockkeepingunit(params: {
+  async postApiCatalogPvtStockkeepingunit(params: {
   body: {
   Id?: number
   ProductId: number
@@ -700,25 +700,25 @@ class CatalogApi_sku {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/stockkeepingunit`, body: params.body }, opts))
   }
 
-  skuIdbyRefId(params: {
+  async skuIdbyRefId(params: {
   refId: string
 }, opts?: CallOptions): Promise<string> {
     return this.http.request<string>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/${encodePathParam(params.refId)}` }, opts))
   }
 
-  skubyAlternateId(params: {
+  async skubyAlternateId(params: {
   alternateId: number
 }, opts?: CallOptions): Promise<GetSKUAltID> {
     return this.http.request<GetSKUAltID>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/stockkeepingunitbyalternateId/${encodePathParam(params.alternateId)}` }, opts))
   }
 
-  skulistbyProductId(params: {
+  async skulistbyProductId(params: {
   productId: number
 }, opts?: CallOptions): Promise<SkulistbyProductId[]> {
     return this.http.request<SkulistbyProductId[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/stockkeepingunitByProductId/${encodePathParam(params.productId)}` }, opts))
   }
 
-  skuIdlistbyRefIdlist(params: {
+  async skuIdlistbyRefIdlist(params: {
   body: string[]
 }, opts?: CallOptions): Promise<{
   [key: string]: string
@@ -728,7 +728,7 @@ class CatalogApi_sku {
 }>(withCall({ method: 'POST', path: `/api/catalog_system/pub/sku/stockkeepingunitidsbyrefids`, body: params.body }, opts))
   }
 
-  sku(params: {
+  async sku(params: {
   skuId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -788,7 +788,7 @@ class CatalogApi_sku {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}` }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuId(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuId(params: {
   skuId: number
   body: {
   ProductId: number
@@ -878,20 +878,20 @@ class CatalogApi_sku {
 class CatalogApi_skuComplement {
   constructor(private http: VtexHttpClient) {}
 
-  getSKUComplementbySKUID(params: {
+  async getSKUComplementbySKUID(params: {
   skuId: number
 }, opts?: CallOptions): Promise<SkuComplement> {
     return this.http.request<SkuComplement>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/complement` }, opts))
   }
 
-  getSKUComplementsbyComplementTypeID(params: {
+  async getSKUComplementsbyComplementTypeID(params: {
   skuId: number
   complementTypeId: number
 }, opts?: CallOptions): Promise<SkuComplement> {
     return this.http.request<SkuComplement>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/complement/${encodePathParam(params.complementTypeId)}` }, opts))
   }
 
-  getSKUcomplementsbytype(params: {
+  async getSKUcomplementsbytype(params: {
   parentSkuId: number
   type: number
 }, opts?: CallOptions): Promise<{
@@ -906,7 +906,7 @@ class CatalogApi_skuComplement {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/complements/${encodePathParam(params.parentSkuId)}/${encodePathParam(params.type)}` }, opts))
   }
 
-  createSKUComplement(params: {
+  async createSKUComplement(params: {
   body: {
   ParentSkuId: number
   SkuId: number
@@ -916,13 +916,13 @@ class CatalogApi_skuComplement {
     return this.http.request<SkuComplement>(withCall({ method: 'POST', path: `/api/catalog/pvt/skucomplement`, body: params.body }, opts))
   }
 
-  getSKUComplementbySKUComplementID(params: {
+  async getSKUComplementbySKUComplementID(params: {
   skuComplementId: number
 }, opts?: CallOptions): Promise<SkuComplement> {
     return this.http.request<SkuComplement>(withCall({ method: 'GET', path: `/api/catalog/pvt/skucomplement/${encodePathParam(params.skuComplementId)}` }, opts))
   }
 
-  deleteSKUComplementbySKUComplementID(params: {
+  async deleteSKUComplementbySKUComplementID(params: {
   skuComplementId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skucomplement/${encodePathParam(params.skuComplementId)}` }, opts))
@@ -931,32 +931,32 @@ class CatalogApi_skuComplement {
 class CatalogApi_skuEAN {
   constructor(private http: VtexHttpClient) {}
 
-  skubyEAN(params: {
+  async skubyEAN(params: {
   ean: string
 }, opts?: CallOptions): Promise<GetSKUAltID> {
     return this.http.request<GetSKUAltID>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/sku/stockkeepingunitbyean/${encodePathParam(params.ean)}` }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunitBySkuIdEan(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdEan(params: {
   skuId: number
 }, opts?: CallOptions): Promise<string[]> {
     return this.http.request<string[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/ean` }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdEan(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdEan(params: {
   skuId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/ean` }, opts))
   }
 
-  postApiCatalogPvtStockkeepingunitBySkuIdEanByEan(params: {
+  async postApiCatalogPvtStockkeepingunitBySkuIdEanByEan(params: {
   skuId: number
   ean: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/ean/${encodePathParam(params.ean)}` }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdEanByEan(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdEanByEan(params: {
   skuId: number
   ean: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -966,7 +966,7 @@ class CatalogApi_skuEAN {
 class CatalogApi_skuAttachment {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCatalogPvtSkuattachment(params: {
+  async postApiCatalogPvtSkuattachment(params: {
   body: {
   AttachmentId: number
   SkuId: number
@@ -983,14 +983,14 @@ class CatalogApi_skuAttachment {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/skuattachment`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSkuattachment(params: {
+  async deleteApiCatalogPvtSkuattachment(params: {
   skuId?: number
   attachmentId?: number
 } = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuattachment`, query: { 'skuId': params.skuId, 'attachmentId': params.attachmentId } }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunitBySkuIdAttachment(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdAttachment(params: {
   skuId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -1004,13 +1004,13 @@ class CatalogApi_skuAttachment {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attachment` }, opts))
   }
 
-  deleteApiCatalogPvtSkuattachmentBySkuAttachmentAssociationId(params: {
+  async deleteApiCatalogPvtSkuattachmentBySkuAttachmentAssociationId(params: {
   skuAttachmentAssociationId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuattachment/${encodePathParam(params.skuAttachmentAssociationId)}` }, opts))
   }
 
-  associateattachmentstoSKU(params: {
+  async associateattachmentstoSKU(params: {
   body: {
   SkuId: number
   AttachmentNames: string[]
@@ -1022,26 +1022,26 @@ class CatalogApi_skuAttachment {
 class CatalogApi_skuFile {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtStockkeepingunitBySkuIdFile(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdFile(params: {
   skuId: number
 }, opts?: CallOptions): Promise<SkuFileResponse> {
     return this.http.request<SkuFileResponse>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file` }, opts))
   }
 
-  postApiCatalogPvtStockkeepingunitBySkuIdFile(params: {
+  async postApiCatalogPvtStockkeepingunitBySkuIdFile(params: {
   skuId: number
   body: SKUFileURL
 }, opts?: CallOptions): Promise<SkuFileResponse> {
     return this.http.request<SkuFileResponse>(withCall({ method: 'POST', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdFile(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdFile(params: {
   skuId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file` }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileId(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileId(params: {
   skuId: number
   skuFileId: number
   body: SKUFileURL
@@ -1049,14 +1049,14 @@ class CatalogApi_skuFile {
     return this.http.request<SkuFileResponse>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file/${encodePathParam(params.skuFileId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileId(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileId(params: {
   skuId: number
   skuFileId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file/${encodePathParam(params.skuFileId)}` }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdFileReorder(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdFileReorder(params: {
   skuId: number
   body: {
   Id: number
@@ -1066,7 +1066,7 @@ class CatalogApi_skuFile {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file/reorder`, body: params.body }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitCopyBySkuIdfromBySkuIdtoFile(params: {
+  async putApiCatalogPvtStockkeepingunitCopyBySkuIdfromBySkuIdtoFile(params: {
   skuIdfrom: number
   skuIdto: number
 }, opts?: CallOptions): Promise<{
@@ -1085,7 +1085,7 @@ class CatalogApi_skuFile {
 }[]>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/copy/${encodePathParam(params.skuIdfrom)}/${encodePathParam(params.skuIdto)}/file` }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitDisassociateBySkuIdFileBySkuFileId(params: {
+  async deleteApiCatalogPvtStockkeepingunitDisassociateBySkuIdFileBySkuFileId(params: {
   skuId: number
   skuFileId: number
 }, opts?: CallOptions): Promise<unknown> {
@@ -1095,14 +1095,14 @@ class CatalogApi_skuFile {
 class CatalogApi_skuKit {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtStockkeepingunitkit(params: {
+  async getApiCatalogPvtStockkeepingunitkit(params: {
   skuId?: number
   parentSkuId?: number
 } = {}, opts?: CallOptions): Promise<SkuKit> {
     return this.http.request<SkuKit>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunitkit`, query: { 'skuId': params.skuId, 'parentSkuId': params.parentSkuId } }, opts))
   }
 
-  postApiCatalogPvtStockkeepingunitkit(params: {
+  async postApiCatalogPvtStockkeepingunitkit(params: {
   body: {
   StockKeepingUnitParent: number
   StockKeepingUnitId: number
@@ -1113,20 +1113,20 @@ class CatalogApi_skuKit {
     return this.http.request<SkuKit>(withCall({ method: 'POST', path: `/api/catalog/pvt/stockkeepingunitkit`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitkit(params: {
+  async deleteApiCatalogPvtStockkeepingunitkit(params: {
   skuId?: number
   parentSkuId?: number
 } = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunitkit`, query: { 'skuId': params.skuId, 'parentSkuId': params.parentSkuId } }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunitkitByKitId(params: {
+  async getApiCatalogPvtStockkeepingunitkitByKitId(params: {
   kitId: number
 }, opts?: CallOptions): Promise<SkuKit> {
     return this.http.request<SkuKit>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunitkit/${encodePathParam(params.kitId)}` }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitkitByKitId(params: {
+  async deleteApiCatalogPvtStockkeepingunitkitByKitId(params: {
   kitId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunitkit/${encodePathParam(params.kitId)}` }, opts))
@@ -1135,7 +1135,7 @@ class CatalogApi_skuKit {
 class CatalogApi_skuSeller {
   constructor(private http: VtexHttpClient) {}
 
-  getSKUseller(params: {
+  async getSKUseller(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<{
@@ -1162,21 +1162,21 @@ class CatalogApi_skuSeller {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/skuseller/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}` }, opts))
   }
 
-  deleteSKUsellerassociation(params: {
+  async deleteSKUsellerassociation(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/skuseller/remove/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}` }, opts))
   }
 
-  postApiCatalogSystemPvtSkusellerChangenotificationBySellerIdBySellerSkuId(params: {
+  async postApiCatalogSystemPvtSkusellerChangenotificationBySellerIdBySellerSkuId(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/skuseller/changenotification/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}` }, opts))
   }
 
-  changeNotification(params: {
+  async changeNotification(params: {
   skuId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/skuseller/changenotification/${encodePathParam(params.skuId)}` }, opts))
@@ -1185,7 +1185,7 @@ class CatalogApi_skuSeller {
 class CatalogApi_skuAttribute {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtStockkeepingunitBySkuIdAttribute(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdAttribute(params: {
   skuId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -1203,7 +1203,7 @@ class CatalogApi_skuAttribute {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute` }, opts))
   }
 
-  postApiCatalogPvtStockkeepingunitBySkuIdAttribute(params: {
+  async postApiCatalogPvtStockkeepingunitBySkuIdAttribute(params: {
   skuId: number
   body: {
   SpecificationName: string
@@ -1226,13 +1226,13 @@ class CatalogApi_skuAttribute {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdAttribute(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdAttribute(params: {
   skuId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute` }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeId(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeId(params: {
   skuId: number
   skuAttributeId: number
 }, opts?: CallOptions): Promise<{
@@ -1251,7 +1251,7 @@ class CatalogApi_skuAttribute {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute/${encodePathParam(params.skuAttributeId)}` }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeId(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeId(params: {
   skuId: number
   skuAttributeId: number
   body: {
@@ -1275,7 +1275,7 @@ class CatalogApi_skuAttribute {
 }>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute/${encodePathParam(params.skuAttributeId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeId(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeId(params: {
   skuId: number
   skuAttributeId: number
 }, opts?: CallOptions): Promise<unknown> {
@@ -1285,13 +1285,13 @@ class CatalogApi_skuAttribute {
 class CatalogApi_skuService {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtSkuserviceBySkuServiceId(params: {
+  async getApiCatalogPvtSkuserviceBySkuServiceId(params: {
   skuServiceId: number
 }, opts?: CallOptions): Promise<SKUService> {
     return this.http.request<SKUService>(withCall({ method: 'GET', path: `/api/catalog/pvt/skuservice/${encodePathParam(params.skuServiceId)}` }, opts))
   }
 
-  putApiCatalogPvtSkuserviceBySkuServiceId(params: {
+  async putApiCatalogPvtSkuserviceBySkuServiceId(params: {
   skuServiceId: number
   body: {
   SkuServiceTypeId: number
@@ -1305,13 +1305,13 @@ class CatalogApi_skuService {
     return this.http.request<SKUService>(withCall({ method: 'PUT', path: `/api/catalog/pvt/skuservice/${encodePathParam(params.skuServiceId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSkuserviceBySkuServiceId(params: {
+  async deleteApiCatalogPvtSkuserviceBySkuServiceId(params: {
   skuServiceId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuservice/${encodePathParam(params.skuServiceId)}` }, opts))
   }
 
-  postApiCatalogPvtSkuservice(params: {
+  async postApiCatalogPvtSkuservice(params: {
   body: {
   SkuServiceTypeId: number
   SkuServiceValueId: number
@@ -1327,7 +1327,7 @@ class CatalogApi_skuService {
 class CatalogApi_skuServiceAttachment {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCatalogPvtSkuservicetypeattachment(params: {
+  async postApiCatalogPvtSkuservicetypeattachment(params: {
   body: {
   AttachmentId: number
   SkuServiceTypeId: number
@@ -1344,14 +1344,14 @@ class CatalogApi_skuServiceAttachment {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/skuservicetypeattachment`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSkuservicetypeattachment(params: {
+  async deleteApiCatalogPvtSkuservicetypeattachment(params: {
   attachmentId?: number
   skuServiceTypeId?: number
 } = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuservicetypeattachment`, query: { 'attachmentId': params.attachmentId, 'skuServiceTypeId': params.skuServiceTypeId } }, opts))
   }
 
-  deleteApiCatalogPvtSkuservicetypeattachmentBySkuServiceTypeAttachmentId(params: {
+  async deleteApiCatalogPvtSkuservicetypeattachmentBySkuServiceTypeAttachmentId(params: {
   skuServiceTypeAttachmentId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuservicetypeattachment/${encodePathParam(params.skuServiceTypeAttachmentId)}` }, opts))
@@ -1360,26 +1360,26 @@ class CatalogApi_skuServiceAttachment {
 class CatalogApi_skuServiceType {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCatalogPvtSkuservicetype(params: {
+  async postApiCatalogPvtSkuservicetype(params: {
   body: SKUServiceTypeRequest
 }, opts?: CallOptions): Promise<SKUServiceTypeResponse> {
     return this.http.request<SKUServiceTypeResponse>(withCall({ method: 'POST', path: `/api/catalog/pvt/skuservicetype`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSkuservicetypeBySkuServiceTypeId(params: {
+  async getApiCatalogPvtSkuservicetypeBySkuServiceTypeId(params: {
   skuServiceTypeId: number
 }, opts?: CallOptions): Promise<SKUServiceTypeResponse> {
     return this.http.request<SKUServiceTypeResponse>(withCall({ method: 'GET', path: `/api/catalog/pvt/skuservicetype/${encodePathParam(params.skuServiceTypeId)}` }, opts))
   }
 
-  putApiCatalogPvtSkuservicetypeBySkuServiceTypeId(params: {
+  async putApiCatalogPvtSkuservicetypeBySkuServiceTypeId(params: {
   skuServiceTypeId: number
   body: SKUServiceTypeRequest
 }, opts?: CallOptions): Promise<SKUServiceTypeResponse> {
     return this.http.request<SKUServiceTypeResponse>(withCall({ method: 'PUT', path: `/api/catalog/pvt/skuservicetype/${encodePathParam(params.skuServiceTypeId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSkuservicetypeBySkuServiceTypeId(params: {
+  async deleteApiCatalogPvtSkuservicetypeBySkuServiceTypeId(params: {
   skuServiceTypeId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuservicetype/${encodePathParam(params.skuServiceTypeId)}` }, opts))
@@ -1388,26 +1388,26 @@ class CatalogApi_skuServiceType {
 class CatalogApi_skuServiceValue {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCatalogPvtSkuservicevalue(params: {
+  async postApiCatalogPvtSkuservicevalue(params: {
   body: SKUServiceValueRequest
 }, opts?: CallOptions): Promise<SKUServiceValueResponse> {
     return this.http.request<SKUServiceValueResponse>(withCall({ method: 'POST', path: `/api/catalog/pvt/skuservicevalue`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSkuservicevalueBySkuServiceValueId(params: {
+  async getApiCatalogPvtSkuservicevalueBySkuServiceValueId(params: {
   skuServiceValueId: number
 }, opts?: CallOptions): Promise<SKUServiceValueResponse> {
     return this.http.request<SKUServiceValueResponse>(withCall({ method: 'GET', path: `/api/catalog/pvt/skuservicevalue/${encodePathParam(params.skuServiceValueId)}` }, opts))
   }
 
-  putApiCatalogPvtSkuservicevalueBySkuServiceValueId(params: {
+  async putApiCatalogPvtSkuservicevalueBySkuServiceValueId(params: {
   skuServiceValueId: number
   body: SKUServiceValueRequest
 }, opts?: CallOptions): Promise<SKUServiceValueResponse> {
     return this.http.request<SKUServiceValueResponse>(withCall({ method: 'PUT', path: `/api/catalog/pvt/skuservicevalue/${encodePathParam(params.skuServiceValueId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSkuservicevalueBySkuServiceValueId(params: {
+  async deleteApiCatalogPvtSkuservicevalueBySkuServiceValueId(params: {
   skuServiceValueId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/skuservicevalue/${encodePathParam(params.skuServiceValueId)}` }, opts))
@@ -1416,13 +1416,13 @@ class CatalogApi_skuServiceValue {
 class CatalogApi_skuSpecification {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
   skuId: number
 }, opts?: CallOptions): Promise<SKUSpecificationResponse[]> {
     return this.http.request<SKUSpecificationResponse[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/specification` }, opts))
   }
 
-  postApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
+  async postApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
   skuId: number
   body: {
   FieldId: number
@@ -1432,7 +1432,7 @@ class CatalogApi_skuSpecification {
     return this.http.request<SKUSpecificationResponse>(withCall({ method: 'POST', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/specification`, body: params.body }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
   skuId: number
   body: {
   Id: number
@@ -1445,20 +1445,20 @@ class CatalogApi_skuSpecification {
     return this.http.request<SKUSpecificationResponse[]>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/specification`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdSpecification(params: {
   skuId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/specification` }, opts))
   }
 
-  deleteApiCatalogPvtStockkeepingunitBySkuIdSpecificationBySpecificationId(params: {
+  async deleteApiCatalogPvtStockkeepingunitBySkuIdSpecificationBySpecificationId(params: {
   skuId: number
   specificationId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/specification/${encodePathParam(params.specificationId)}` }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdSpecificationvalue(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdSpecificationvalue(params: {
   skuId: number
   body: {
   FieldName: string
@@ -1485,7 +1485,7 @@ class CatalogApi_skuSpecification {
 class CatalogApi_subcollection {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCatalogPvtSubcollectionBySubCollectionIdStockkeepingunit(params: {
+  async postApiCatalogPvtSubcollectionBySubCollectionIdStockkeepingunit(params: {
   subCollectionId: number
   body: {
   SkuId: number
@@ -1500,14 +1500,14 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/stockkeepingunit`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSubcollectionBySubCollectionIdStockkeepingunitBySkuId(params: {
+  async deleteApiCatalogPvtSubcollectionBySubCollectionIdStockkeepingunitBySkuId(params: {
   subCollectionId: number
   skuId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/stockkeepingunit/${encodePathParam(params.skuId)}` }, opts))
   }
 
-  postApiCatalogPvtSubcollectionBySubCollectionIdCategory(params: {
+  async postApiCatalogPvtSubcollectionBySubCollectionIdCategory(params: {
   subCollectionId: number
   body: {
   CategoryId: number
@@ -1522,14 +1522,14 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/category`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSubcollectionBySubCollectionIdCategoryByCategoryId(params: {
+  async deleteApiCatalogPvtSubcollectionBySubCollectionIdCategoryByCategoryId(params: {
   subCollectionId: number
   categoryId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/category/${encodePathParam(params.categoryId)}` }, opts))
   }
 
-  postApiCatalogPvtSubcollectionBySubCollectionIdBrand(params: {
+  async postApiCatalogPvtSubcollectionBySubCollectionIdBrand(params: {
   subCollectionId: number
   body: {
   BrandId: number
@@ -1544,14 +1544,14 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/brand`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSubcollectionBySubCollectionIdBrandByBrandId(params: {
+  async deleteApiCatalogPvtSubcollectionBySubCollectionIdBrandByBrandId(params: {
   subCollectionId: number
   brandId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/brand/${encodePathParam(params.brandId)}` }, opts))
   }
 
-  getApiCatalogPvtCollectionByCollectionIdSubcollection(params: {
+  async getApiCatalogPvtCollectionByCollectionIdSubcollection(params: {
   collectionId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -1571,7 +1571,7 @@ class CatalogApi_subcollection {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}/subcollection` }, opts))
   }
 
-  getApiCatalogPvtSubcollectionBySubCollectionId(params: {
+  async getApiCatalogPvtSubcollectionBySubCollectionId(params: {
   subCollectionId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -1591,7 +1591,7 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}` }, opts))
   }
 
-  putApiCatalogPvtSubcollectionBySubCollectionId(params: {
+  async putApiCatalogPvtSubcollectionBySubCollectionId(params: {
   subCollectionId: number
   body: {
   CollectionId: number
@@ -1618,13 +1618,13 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'PUT', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSubcollectionBySubCollectionId(params: {
+  async deleteApiCatalogPvtSubcollectionBySubCollectionId(params: {
   subCollectionId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}` }, opts))
   }
 
-  postApiCatalogPvtSubcollection(params: {
+  async postApiCatalogPvtSubcollection(params: {
   body: {
   CollectionId: number
   Name: string
@@ -1650,7 +1650,7 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/subcollection`, body: params.body }, opts))
   }
 
-  postApiCatalogPvtCollectionByCollectionIdPosition(params: {
+  async postApiCatalogPvtCollectionByCollectionIdPosition(params: {
   collectionId: number
   body: {
   skuId: number
@@ -1661,13 +1661,13 @@ class CatalogApi_subcollection {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}/position`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSubcollectionBySubCollectionIdSpecificationvalue(params: {
+  async getApiCatalogPvtSubcollectionBySubCollectionIdSpecificationvalue(params: {
   subCollectionId: number
 }, opts?: CallOptions): Promise<SpecificationValuesSubcollectionIdResponse> {
     return this.http.request<SpecificationValuesSubcollectionIdResponse>(withCall({ method: 'GET', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/specificationvalue` }, opts))
   }
 
-  postApiCatalogPvtSubcollectionBySubCollectionIdSpecificationvalue(params: {
+  async postApiCatalogPvtSubcollectionBySubCollectionIdSpecificationvalue(params: {
   subCollectionId: number
   body: {
   SubCollectionId: number
@@ -1683,7 +1683,7 @@ class CatalogApi_subcollection {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/specificationvalue`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSubcollectionBySubCollectionIdSpecificationvalue(params: {
+  async deleteApiCatalogPvtSubcollectionBySubCollectionIdSpecificationvalue(params: {
   subCollectionId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/subcollection/${encodePathParam(params.subCollectionId)}/specificationvalue` }, opts))
@@ -1692,20 +1692,20 @@ class CatalogApi_subcollection {
 class CatalogApi_category {
   constructor(private http: VtexHttpClient) {}
 
-  categoryTree(params: {
+  async categoryTree(params: {
   categoryLevels: string
 }, opts?: CallOptions): Promise<GetCategoryTree[]> {
     return this.http.request<GetCategoryTree[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/category/tree/${encodePathParam(params.categoryLevels)}` }, opts))
   }
 
-  getApiCatalogPvtCategoryByCategoryId(params: {
+  async getApiCatalogPvtCategoryByCategoryId(params: {
   categoryId: number
   includeTreePath?: boolean
 }, opts?: CallOptions): Promise<Category> {
     return this.http.request<Category>(withCall({ method: 'GET', path: `/api/catalog/pvt/category/${encodePathParam(params.categoryId)}`, query: { 'includeTreePath': params.includeTreePath } }, opts))
   }
 
-  putApiCatalogPvtCategoryByCategoryId(params: {
+  async putApiCatalogPvtCategoryByCategoryId(params: {
   categoryId: number
   body: {
   Name: string
@@ -1727,7 +1727,7 @@ class CatalogApi_category {
     return this.http.request<Category>(withCall({ method: 'PUT', path: `/api/catalog/pvt/category/${encodePathParam(params.categoryId)}`, body: params.body }, opts))
   }
 
-  postApiCatalogPvtCategory(params: {
+  async postApiCatalogPvtCategory(params: {
   body: CreateCategoryRequest
 }, opts?: CallOptions): Promise<Category> {
     return this.http.request<Category>(withCall({ method: 'POST', path: `/api/catalog/pvt/category`, body: params.body }, opts))
@@ -1736,7 +1736,7 @@ class CatalogApi_category {
 class CatalogApi_similarCategory {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtProductByProductIdSimilarcategory(params: {
+  async getApiCatalogPvtProductByProductIdSimilarcategory(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   ProductId?: number
@@ -1748,7 +1748,7 @@ class CatalogApi_similarCategory {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/similarcategory` }, opts))
   }
 
-  postApiCatalogPvtProductByProductIdSimilarcategoryByCategoryId(params: {
+  async postApiCatalogPvtProductByProductIdSimilarcategoryByCategoryId(params: {
   productId: number
   categoryId: number
 }, opts?: CallOptions): Promise<{
@@ -1761,7 +1761,7 @@ class CatalogApi_similarCategory {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/similarcategory/${encodePathParam(params.categoryId)}` }, opts))
   }
 
-  deleteApiCatalogPvtProductByProductIdSimilarcategoryByCategoryId(params: {
+  async deleteApiCatalogPvtProductByProductIdSimilarcategoryByCategoryId(params: {
   productId: number
   categoryId: number
 }, opts?: CallOptions): Promise<unknown> {
@@ -1771,13 +1771,13 @@ class CatalogApi_similarCategory {
 class CatalogApi_categorySpecification {
   constructor(private http: VtexHttpClient) {}
 
-  specificationsByCategoryId(params: {
+  async specificationsByCategoryId(params: {
   categoryId: number
 }, opts?: CallOptions): Promise<CategorySpecification> {
     return this.http.request<CategorySpecification>(withCall({ method: 'GET', path: `/api/catalog_system/pub/specification/field/listByCategoryId/${encodePathParam(params.categoryId)}` }, opts))
   }
 
-  specificationsTreeByCategoryId(params: {
+  async specificationsTreeByCategoryId(params: {
   categoryId: number
 }, opts?: CallOptions): Promise<CategorySpecification> {
     return this.http.request<CategorySpecification>(withCall({ method: 'GET', path: `/api/catalog_system/pub/specification/field/listTreeByCategoryId/${encodePathParam(params.categoryId)}` }, opts))
@@ -1786,11 +1786,11 @@ class CatalogApi_categorySpecification {
 class CatalogApi_brand {
   constructor(private http: VtexHttpClient) {}
 
-  brandList(params: Record<string, never> = {}, opts?: CallOptions): Promise<BrandGet[]> {
+  async brandList(params: Record<string, never> = {}, opts?: CallOptions): Promise<BrandGet[]> {
     return this.http.request<BrandGet[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/brand/list` }, opts))
   }
 
-  brandListPerPage(params: {
+  async brandListPerPage(params: {
   pageSize: number
   page: number
 }, opts?: CallOptions): Promise<{
@@ -1813,32 +1813,32 @@ class CatalogApi_brand {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/brand/pagedlist`, query: { 'pageSize': params.pageSize, 'page': params.page } }, opts))
   }
 
-  brand(params: {
+  async brand(params: {
   brandId: string
 }, opts?: CallOptions): Promise<BrandGet> {
     return this.http.request<BrandGet>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/brand/${encodePathParam(params.brandId)}` }, opts))
   }
 
-  postApiCatalogPvtBrand(params: {
+  async postApiCatalogPvtBrand(params: {
   body: BrandCreateUpdateRequest
 }, opts?: CallOptions): Promise<BrandCreateUpdate> {
     return this.http.request<BrandCreateUpdate>(withCall({ method: 'POST', path: `/api/catalog/pvt/brand`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtBrandByBrandId(params: {
+  async getApiCatalogPvtBrandByBrandId(params: {
   brandId: string
 }, opts?: CallOptions): Promise<BrandCreateUpdate> {
     return this.http.request<BrandCreateUpdate>(withCall({ method: 'GET', path: `/api/catalog/pvt/brand/${encodePathParam(params.brandId)}` }, opts))
   }
 
-  putApiCatalogPvtBrandByBrandId(params: {
+  async putApiCatalogPvtBrandByBrandId(params: {
   brandId: string
   body: BrandCreateUpdateRequest
 }, opts?: CallOptions): Promise<BrandCreateUpdate> {
     return this.http.request<BrandCreateUpdate>(withCall({ method: 'PUT', path: `/api/catalog/pvt/brand/${encodePathParam(params.brandId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtBrandByBrandId(params: {
+  async deleteApiCatalogPvtBrandByBrandId(params: {
   brandId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/brand/${encodePathParam(params.brandId)}` }, opts))
@@ -1847,32 +1847,32 @@ class CatalogApi_brand {
 class CatalogApi_attachment {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtAttachmentByAttachmentid(params: {
+  async getApiCatalogPvtAttachmentByAttachmentid(params: {
   attachmentid: string
 }, opts?: CallOptions): Promise<AttachmentResponse> {
     return this.http.request<AttachmentResponse>(withCall({ method: 'GET', path: `/api/catalog/pvt/attachment/${encodePathParam(params.attachmentid)}` }, opts))
   }
 
-  putApiCatalogPvtAttachmentByAttachmentid(params: {
+  async putApiCatalogPvtAttachmentByAttachmentid(params: {
   attachmentid: string
   body: AttachmentRequest
 }, opts?: CallOptions): Promise<AttachmentResponse> {
     return this.http.request<AttachmentResponse>(withCall({ method: 'PUT', path: `/api/catalog/pvt/attachment/${encodePathParam(params.attachmentid)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtAttachmentByAttachmentid(params: {
+  async deleteApiCatalogPvtAttachmentByAttachmentid(params: {
   attachmentid: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/attachment/${encodePathParam(params.attachmentid)}` }, opts))
   }
 
-  postApiCatalogPvtAttachment(params: {
+  async postApiCatalogPvtAttachment(params: {
   body: AttachmentRequest
 }, opts?: CallOptions): Promise<AttachmentResponse> {
     return this.http.request<AttachmentResponse>(withCall({ method: 'POST', path: `/api/catalog/pvt/attachment`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtAttachments(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getApiCatalogPvtAttachments(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   Page?: number
   Size?: number
   TotalRows?: number
@@ -1911,11 +1911,11 @@ class CatalogApi_attachment {
 class CatalogApi_collection {
   constructor(private http: VtexHttpClient) {}
 
-  getAllInactiveCollections(params: Record<string, never> = {}, opts?: CallOptions): Promise<number[]> {
+  async getAllInactiveCollections(params: Record<string, never> = {}, opts?: CallOptions): Promise<number[]> {
     return this.http.request<number[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/collection/inactive` }, opts))
   }
 
-  postCreateCollection(params: {
+  async postCreateCollection(params: {
   body: {
   Name: string
   Description: string
@@ -1948,25 +1948,25 @@ class CatalogApi_collection {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/collection`, body: params.body }, opts))
   }
 
-  getImportfileexample(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+  async getImportfileexample(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/catalog/pvt/collection/stockkeepingunit/importfileexample` }, opts))
   }
 
-  postAddproductsbyimportfile(params: {
+  async postAddproductsbyimportfile(params: {
   collectionId: number
   body: FormData
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}/stockkeepingunit/importinsert`, body: params.body, contentType: 'multipart/form-data' }, opts))
   }
 
-  postRemoveproductsbyimportfile(params: {
+  async postRemoveproductsbyimportfile(params: {
   collectionId: number
   body: FormData
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}/stockkeepingunit/importexclude`, body: params.body, contentType: 'multipart/form-data' }, opts))
   }
 
-  getProductsfromacollection(params: {
+  async getProductsfromacollection(params: {
   collectionId: number
   page?: number
   pageSize?: number
@@ -2011,7 +2011,7 @@ class CatalogApi_collection {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}/products`, query: { 'page': params.page, 'pageSize': params.pageSize, 'Filter': params.Filter, 'Active': params.Active, 'Visible': params.Visible, 'CategoryId': params.CategoryId, 'BrandId': params.BrandId, 'SupplierId': params.SupplierId, 'SalesChannelId': params.SalesChannelId, 'ReleaseFrom': params.ReleaseFrom, 'ReleaseTo': params.ReleaseTo, 'SpecificationProduct': params.SpecificationProduct, 'SpecificationFieldId': params.SpecificationFieldId } }, opts))
   }
 
-  getApiCatalogPvtCollectionByCollectionId(params: {
+  async getApiCatalogPvtCollectionByCollectionId(params: {
   collectionId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -2037,7 +2037,7 @@ class CatalogApi_collection {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}` }, opts))
   }
 
-  putApiCatalogPvtCollectionByCollectionId(params: {
+  async putApiCatalogPvtCollectionByCollectionId(params: {
   collectionId: number
   body: {
   Name: string
@@ -2070,7 +2070,7 @@ class CatalogApi_collection {
 }>(withCall({ method: 'PUT', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtCollectionByCollectionId(params: {
+  async deleteApiCatalogPvtCollectionByCollectionId(params: {
   collectionId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}` }, opts))
@@ -2079,7 +2079,7 @@ class CatalogApi_collection {
 class CatalogApi_specification {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtSpecificationBySpecificationId(params: {
+  async getApiCatalogPvtSpecificationBySpecificationId(params: {
   specificationId: number
 }, opts?: CallOptions): Promise<{
   Id: number
@@ -2119,7 +2119,7 @@ class CatalogApi_specification {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/specification/${encodePathParam(params.specificationId)}` }, opts))
   }
 
-  putApiCatalogPvtSpecificationBySpecificationId(params: {
+  async putApiCatalogPvtSpecificationBySpecificationId(params: {
   specificationId: number
   body: {
   FieldTypeId: 1 | 2 | 4 | 5 | 6 | 7 | 8 | 9
@@ -2176,7 +2176,7 @@ class CatalogApi_specification {
 }>(withCall({ method: 'PUT', path: `/api/catalog/pvt/specification/${encodePathParam(params.specificationId)}`, body: params.body }, opts))
   }
 
-  postApiCatalogPvtSpecification(params: {
+  async postApiCatalogPvtSpecification(params: {
   body: {
   FieldTypeId: 1 | 2 | 4 | 5 | 6 | 7 | 8 | 9
   CategoryId?: number
@@ -2235,7 +2235,7 @@ class CatalogApi_specification {
 class CatalogApi_specificationField {
   constructor(private http: VtexHttpClient) {}
 
-  specificationsField(params: {
+  async specificationsField(params: {
   fieldId: number
 }, opts?: CallOptions): Promise<{
   Name?: string
@@ -2279,7 +2279,7 @@ class CatalogApi_specificationField {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pub/specification/fieldGet/${encodePathParam(params.fieldId)}` }, opts))
   }
 
-  specificationsInsertField(params: {
+  async specificationsInsertField(params: {
   body: {
   Name: string
   CategoryId: number | null
@@ -2304,7 +2304,7 @@ class CatalogApi_specificationField {
     return this.http.request<number>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/specification/field`, body: params.body }, opts))
   }
 
-  specificationsInsertFieldUpdate(params: {
+  async specificationsInsertFieldUpdate(params: {
   body: {
   Name: string
   CategoryId: number | null
@@ -2332,7 +2332,7 @@ class CatalogApi_specificationField {
 class CatalogApi_specificationFieldValue {
   constructor(private http: VtexHttpClient) {}
 
-  specificationsGetFieldValue(params: {
+  async specificationsGetFieldValue(params: {
   fieldValueId: string
 }, opts?: CallOptions): Promise<{
   FieldValueId?: number
@@ -2352,7 +2352,7 @@ class CatalogApi_specificationFieldValue {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/specification/fieldValue/${encodePathParam(params.fieldValueId)}` }, opts))
   }
 
-  specificationsValuesByFieldId(params: {
+  async specificationsValuesByFieldId(params: {
   fieldId: number
 }, opts?: CallOptions): Promise<{
   FieldValueId: number
@@ -2368,7 +2368,7 @@ class CatalogApi_specificationFieldValue {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/specification/fieldvalue/${encodePathParam(params.fieldId)}` }, opts))
   }
 
-  specificationsInsertFieldValue(params: {
+  async specificationsInsertFieldValue(params: {
   body: {
   FieldId: number
   Name: string
@@ -2394,7 +2394,7 @@ class CatalogApi_specificationFieldValue {
 }>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/specification/fieldValue`, body: params.body }, opts))
   }
 
-  specificationsUpdateFieldValue(params: {
+  async specificationsUpdateFieldValue(params: {
   body: {
   FieldId: number | null
   Name: string
@@ -2409,7 +2409,7 @@ class CatalogApi_specificationFieldValue {
 class CatalogApi_specificationValue {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtSpecificationvalueBySpecificationValueId(params: {
+  async getApiCatalogPvtSpecificationvalueBySpecificationValueId(params: {
   specificationValueId: number
 }, opts?: CallOptions): Promise<{
   FieldValueId?: number
@@ -2429,7 +2429,7 @@ class CatalogApi_specificationValue {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/specificationvalue/${encodePathParam(params.specificationValueId)}` }, opts))
   }
 
-  putApiCatalogPvtSpecificationvalueBySpecificationValueId(params: {
+  async putApiCatalogPvtSpecificationvalueBySpecificationValueId(params: {
   specificationValueId: number
   body: {
   FieldId: number
@@ -2456,7 +2456,7 @@ class CatalogApi_specificationValue {
 }>(withCall({ method: 'PUT', path: `/api/catalog/pvt/specificationvalue/${encodePathParam(params.specificationValueId)}`, body: params.body }, opts))
   }
 
-  postApiCatalogPvtSpecificationvalue(params: {
+  async postApiCatalogPvtSpecificationvalue(params: {
   body: {
   FieldId: number
   Name: string
@@ -2485,19 +2485,19 @@ class CatalogApi_specificationValue {
 class CatalogApi_specificationGroup {
   constructor(private http: VtexHttpClient) {}
 
-  specificationsGroupListbyCategory(params: {
+  async specificationsGroupListbyCategory(params: {
   categoryId: string
 }, opts?: CallOptions): Promise<SpecificationsGroup[]> {
     return this.http.request<SpecificationsGroup[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/specification/groupbycategory/${encodePathParam(params.categoryId)}` }, opts))
   }
 
-  specificationsGroupGet(params: {
+  async specificationsGroupGet(params: {
   groupId: string
 }, opts?: CallOptions): Promise<SpecificationsGroup> {
     return this.http.request<SpecificationsGroup>(withCall({ method: 'GET', path: `/api/catalog_system/pub/specification/groupGet/${encodePathParam(params.groupId)}` }, opts))
   }
 
-  specificationGroupInsert2(params: {
+  async specificationGroupInsert2(params: {
   body: {
   CategoryId: number
   Name: string
@@ -2516,7 +2516,7 @@ class CatalogApi_specificationGroup {
 }>(withCall({ method: 'POST', path: `/api/catalog/pvt/specificationgroup`, body: params.body }, opts))
   }
 
-  putApiCatalogPvtSpecificationgroupByGroupId(params: {
+  async putApiCatalogPvtSpecificationgroupByGroupId(params: {
   groupId: number
   body: {
   CategoryId: number
@@ -2541,7 +2541,7 @@ class CatalogApi_specificationGroup {
 class CatalogApi_nonStructuredSpecification {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtSpecificationNonstructuredById(params: {
+  async getApiCatalogPvtSpecificationNonstructuredById(params: {
   Id: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -2557,13 +2557,13 @@ class CatalogApi_nonStructuredSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/specification/nonstructured/${encodePathParam(params.Id)}` }, opts))
   }
 
-  deleteApiCatalogPvtSpecificationNonstructuredById(params: {
+  async deleteApiCatalogPvtSpecificationNonstructuredById(params: {
   Id: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/specification/nonstructured/${encodePathParam(params.Id)}` }, opts))
   }
 
-  getApiCatalogPvtSpecificationNonstructured(params: {
+  async getApiCatalogPvtSpecificationNonstructured(params: {
   skuId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -2579,7 +2579,7 @@ class CatalogApi_nonStructuredSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/specification/nonstructured`, query: { 'skuId': params.skuId } }, opts))
   }
 
-  deleteApiCatalogPvtSpecificationNonstructured(params: {
+  async deleteApiCatalogPvtSpecificationNonstructured(params: {
   skuId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/specification/nonstructured`, query: { 'skuId': params.skuId } }, opts))
@@ -2588,7 +2588,7 @@ class CatalogApi_nonStructuredSpecification {
 class CatalogApi_salesChannel {
   constructor(private http: VtexHttpClient) {}
 
-  salesChannelList(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async salesChannelList(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   Id?: number
   Name?: string
   IsActive?: boolean
@@ -2636,7 +2636,7 @@ class CatalogApi_salesChannel {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/saleschannel/list` }, opts))
   }
 
-  salesChannelbyId(params: {
+  async salesChannelbyId(params: {
   salesChannelId: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -2686,7 +2686,7 @@ class CatalogApi_salesChannel {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pub/saleschannel/${encodePathParam(params.salesChannelId)}` }, opts))
   }
 
-  getApiCatalogPvtProductByProductIdSalespolicy(params: {
+  async getApiCatalogPvtProductByProductIdSalespolicy(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   ProductId?: number
@@ -2698,21 +2698,21 @@ class CatalogApi_salesChannel {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/salespolicy` }, opts))
   }
 
-  postApiCatalogPvtProductByProductIdSalespolicyByTradepolicyId(params: {
+  async postApiCatalogPvtProductByProductIdSalespolicyByTradepolicyId(params: {
   productId: number
   tradepolicyId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/salespolicy/${encodePathParam(params.tradepolicyId)}` }, opts))
   }
 
-  deleteApiCatalogPvtProductByProductIdSalespolicyByTradepolicyId(params: {
+  async deleteApiCatalogPvtProductByProductIdSalespolicyByTradepolicyId(params: {
   productId: number
   tradepolicyId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/salespolicy/${encodePathParam(params.tradepolicyId)}` }, opts))
   }
 
-  getApiCatalogSystemPvtSkuStockkeepingunitidsbysaleschannel(params: {
+  async getApiCatalogSystemPvtSkuStockkeepingunitidsbysaleschannel(params: {
   sc: number
   page?: number
   pageSize?: number
@@ -2724,7 +2724,7 @@ class CatalogApi_salesChannel {
 class CatalogApi_seller {
   constructor(private http: VtexHttpClient) {}
 
-  sellerList(params: {
+  async sellerList(params: {
   sc?: number
   sellerType?: number
   isBetterScope?: boolean
@@ -2784,7 +2784,7 @@ class CatalogApi_seller {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/seller/list`, query: { 'sc': params.sc, 'sellerType': params.sellerType, 'isBetterScope': params.isBetterScope } }, opts))
   }
 
-  getSellerbyId(params: {
+  async getSellerbyId(params: {
   sellerId: string
 }, opts?: CallOptions): Promise<{
   SellerId?: string
@@ -2842,7 +2842,7 @@ class CatalogApi_seller {
 }>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/seller/${encodePathParam(params.sellerId)}` }, opts))
   }
 
-  createSeller(params: {
+  async createSeller(params: {
   body: CreateSellerRequest
 }, opts?: CallOptions): Promise<{
   SellerId?: string
@@ -2900,7 +2900,7 @@ class CatalogApi_seller {
 }>(withCall({ method: 'POST', path: `/api/catalog_system/pvt/seller`, body: params.body }, opts))
   }
 
-  updateSeller(params: {
+  async updateSeller(params: {
   body: UpdateSellerRequest
 }, opts?: CallOptions): Promise<{
   SellerId?: string
@@ -2958,7 +2958,7 @@ class CatalogApi_seller {
 }>(withCall({ method: 'PUT', path: `/api/catalog_system/pvt/seller`, body: params.body }, opts))
   }
 
-  getSellersbyId(params: {
+  async getSellersbyId(params: {
   sellerId: string
 }, opts?: CallOptions): Promise<{
   SellerId?: string
@@ -3019,20 +3019,20 @@ class CatalogApi_seller {
 class CatalogApi_supplier {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCatalogPvtSupplier(params: {
+  async postApiCatalogPvtSupplier(params: {
   body: SupplierRequest
 }, opts?: CallOptions): Promise<SupplierResponse> {
     return this.http.request<SupplierResponse>(withCall({ method: 'POST', path: `/api/catalog/pvt/supplier`, body: params.body }, opts))
   }
 
-  putApiCatalogPvtSupplierBySupplierId(params: {
+  async putApiCatalogPvtSupplierBySupplierId(params: {
   supplierId: number
   body: SupplierRequest
 }, opts?: CallOptions): Promise<SupplierResponse> {
     return this.http.request<SupplierResponse>(withCall({ method: 'PUT', path: `/api/catalog/pvt/supplier/${encodePathParam(params.supplierId)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtSupplierBySupplierId(params: {
+  async deleteApiCatalogPvtSupplierBySupplierId(params: {
   supplierId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/supplier/${encodePathParam(params.supplierId)}` }, opts))
@@ -3041,7 +3041,7 @@ class CatalogApi_supplier {
 class CatalogApi_productIndexing {
   constructor(private http: VtexHttpClient) {}
 
-  indexedInfo(params: {
+  async indexedInfo(params: {
   productId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/products/GetIndexedInfo/${encodePathParam(params.productId)}` }, opts))
@@ -3050,7 +3050,7 @@ class CatalogApi_productIndexing {
 class CatalogApi_commercialConditions {
   constructor(private http: VtexHttpClient) {}
 
-  getAllCommercialConditions(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getAllCommercialConditions(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   Id?: number
   Name?: string
   IsDefault?: boolean
@@ -3062,7 +3062,7 @@ class CatalogApi_commercialConditions {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pvt/commercialcondition/list` }, opts))
   }
 
-  getCommercialConditions(params: {
+  async getCommercialConditions(params: {
   commercialConditionId: number
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -3079,7 +3079,7 @@ class CatalogApi_commercialConditions {
 class CatalogApi_giftList {
   constructor(private http: VtexHttpClient) {}
 
-  getGiftList(params: {
+  async getGiftList(params: {
   listId: number
 }, opts?: CallOptions): Promise<{
   giftListId?: number
@@ -3172,7 +3172,7 @@ class CatalogApi_giftList {
 class CatalogApi_multiLanguage {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtProductByProductIdLanguage(params: {
+  async getApiCatalogPvtProductByProductIdLanguage(params: {
   productId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3465,7 +3465,7 @@ class CatalogApi_multiLanguage {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtProductByProductIdLanguage(params: {
+  async putApiCatalogPvtProductByProductIdLanguage(params: {
   productId: number
   body: {
   Locale: string
@@ -3481,7 +3481,7 @@ class CatalogApi_multiLanguage {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/product/${encodePathParam(params.productId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtProductsByProductIdSpecificationBySpecificationIdLanguage(params: {
+  async getApiCatalogPvtProductsByProductIdSpecificationBySpecificationIdLanguage(params: {
   productId: number
   specificationId: number
   locale?: string
@@ -3505,7 +3505,7 @@ class CatalogApi_multiLanguage {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/products/${encodePathParam(params.productId)}/specification/${encodePathParam(params.specificationId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtProductsByProductIdSpecificationBySpecificationIdLanguage(params: {
+  async putApiCatalogPvtProductsByProductIdSpecificationBySpecificationIdLanguage(params: {
   productId: number
   specificationId: number
   body: {
@@ -3523,7 +3523,7 @@ class CatalogApi_multiLanguage {
 class CatalogApi_multiLanguageSKU {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtStockkeepingunitBySkuIdLanguage(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdLanguage(params: {
   skuId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3674,7 +3674,7 @@ class CatalogApi_multiLanguageSKU {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdLanguage(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdLanguage(params: {
   skuId: number
   body: {
   Locale: string
@@ -3685,7 +3685,7 @@ class CatalogApi_multiLanguageSKU {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeIdLanguage(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeIdLanguage(params: {
   skuId: number
   skuAttributeId: number
   locale?: string
@@ -3703,7 +3703,7 @@ class CatalogApi_multiLanguageSKU {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute/${encodePathParam(params.skuAttributeId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeIdLanguage(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdAttributeBySkuAttributeIdLanguage(params: {
   skuId: number
   skuAttributeId: number
   body: {
@@ -3716,7 +3716,7 @@ class CatalogApi_multiLanguageSKU {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/attribute/${encodePathParam(params.skuAttributeId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileIdLanguage(params: {
+  async getApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileIdLanguage(params: {
   skuId: number
   skuFileId: number
   locale?: string
@@ -3736,7 +3736,7 @@ class CatalogApi_multiLanguageSKU {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(params.skuId)}/file/${encodePathParam(params.skuFileId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileIdLanguage(params: {
+  async putApiCatalogPvtStockkeepingunitBySkuIdFileBySkuFileIdLanguage(params: {
   skuId: number
   skuFileId: number
   body: {
@@ -3752,7 +3752,7 @@ class CatalogApi_multiLanguageSKU {
 class CatalogApi_multiLanguageSpecification {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtSpecificationgroupBySpecificationGroupIdLanguage(params: {
+  async getApiCatalogPvtSpecificationgroupBySpecificationGroupIdLanguage(params: {
   specificationGroupId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3769,7 +3769,7 @@ class CatalogApi_multiLanguageSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/specificationgroup/${encodePathParam(params.specificationGroupId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtSpecificationgroupBySpecificationGroupIdLanguage(params: {
+  async putApiCatalogPvtSpecificationgroupBySpecificationGroupIdLanguage(params: {
   specificationGroupId: number
   body: {
   Locale: string
@@ -3779,7 +3779,7 @@ class CatalogApi_multiLanguageSpecification {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/specificationgroup/${encodePathParam(params.specificationGroupId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSpecificationBySpecificationIdLanguage(params: {
+  async getApiCatalogPvtSpecificationBySpecificationIdLanguage(params: {
   specificationId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3798,7 +3798,7 @@ class CatalogApi_multiLanguageSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/specification/${encodePathParam(params.specificationId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtSpecificationBySpecificationIdLanguage(params: {
+  async putApiCatalogPvtSpecificationBySpecificationIdLanguage(params: {
   specificationId: number
   body: {
   Locale: string
@@ -3809,7 +3809,7 @@ class CatalogApi_multiLanguageSpecification {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/specification/${encodePathParam(params.specificationId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSpecificationvalueByValueIdLanguage(params: {
+  async getApiCatalogPvtSpecificationvalueByValueIdLanguage(params: {
   valueId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3826,7 +3826,7 @@ class CatalogApi_multiLanguageSpecification {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/specificationvalue/${encodePathParam(params.valueId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtSpecificationvalueByValueIdLanguage(params: {
+  async putApiCatalogPvtSpecificationvalueByValueIdLanguage(params: {
   valueId: number
   body: {
   Locale: string
@@ -3839,7 +3839,7 @@ class CatalogApi_multiLanguageSpecification {
 class CatalogApi_multiLanguageCategory {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtCategoryByCategoryIdLanguage(params: {
+  async getApiCatalogPvtCategoryByCategoryIdLanguage(params: {
   categoryId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3862,7 +3862,7 @@ class CatalogApi_multiLanguageCategory {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/category/${encodePathParam(params.categoryId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtCategoryByCategoryIdLanguage(params: {
+  async putApiCatalogPvtCategoryByCategoryIdLanguage(params: {
   categoryId: number
   body: {
   Locale: string
@@ -3879,7 +3879,7 @@ class CatalogApi_multiLanguageCategory {
 class CatalogApi_multiLanguageBrand {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtBrandByBrandIdLanguage(params: {
+  async getApiCatalogPvtBrandByBrandIdLanguage(params: {
   brandId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3902,7 +3902,7 @@ class CatalogApi_multiLanguageBrand {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/brand/${encodePathParam(params.brandId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtBrandByBrandIdLanguage(params: {
+  async putApiCatalogPvtBrandByBrandIdLanguage(params: {
   brandId: number
   body: {
   Locale: string
@@ -3919,7 +3919,7 @@ class CatalogApi_multiLanguageBrand {
 class CatalogApi_multiLanguageAttachmentAndService {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtAttachmentByAttachmentIdLanguage(params: {
+  async getApiCatalogPvtAttachmentByAttachmentIdLanguage(params: {
   attachmentId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3936,7 +3936,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/attachment/${encodePathParam(params.attachmentId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtAttachmentByAttachmentIdLanguage(params: {
+  async putApiCatalogPvtAttachmentByAttachmentIdLanguage(params: {
   attachmentId: number
   body: {
   Locale: string
@@ -3946,7 +3946,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/attachment/${encodePathParam(params.attachmentId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSkuservicetypeBySkuServiceTypeIdLanguage(params: {
+  async getApiCatalogPvtSkuservicetypeBySkuServiceTypeIdLanguage(params: {
   skuServiceTypeId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3965,7 +3965,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/skuservicetype/${encodePathParam(params.skuServiceTypeId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtSkuservicetypeBySkuServiceTypeIdLanguage(params: {
+  async putApiCatalogPvtSkuservicetypeBySkuServiceTypeIdLanguage(params: {
   skuServiceTypeId: number
   body: {
   Locale: string
@@ -3975,7 +3975,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/skuservicetype/${encodePathParam(params.skuServiceTypeId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSkuserviceBySkuserviceIdLanguage(params: {
+  async getApiCatalogPvtSkuserviceBySkuserviceIdLanguage(params: {
   skuserviceId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -3992,7 +3992,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/skuservice/${encodePathParam(params.skuserviceId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtSkuserviceBySkuserviceIdLanguage(params: {
+  async putApiCatalogPvtSkuserviceBySkuserviceIdLanguage(params: {
   skuserviceId: number
   body: {
   Locale: string
@@ -4003,7 +4003,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/catalog/pvt/skuservice/${encodePathParam(params.skuserviceId)}/language`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtSkuservicevalueBySkuServiceValueIdLanguage(params: {
+  async getApiCatalogPvtSkuservicevalueBySkuServiceValueIdLanguage(params: {
   skuServiceValueId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -4018,7 +4018,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/skuservicevalue/${encodePathParam(params.skuServiceValueId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtSkuservicevalueBySkuServiceValueIdLanguage(params: {
+  async putApiCatalogPvtSkuservicevalueBySkuServiceValueIdLanguage(params: {
   skuServiceValueId: number
   body: {
   Locale: string
@@ -4031,7 +4031,7 @@ class CatalogApi_multiLanguageAttachmentAndService {
 class CatalogApi_multiLanguageCollection {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtCollectionByCollectionIdLanguage(params: {
+  async getApiCatalogPvtCollectionByCollectionIdLanguage(params: {
   collectionId: number
   locale?: string
 }, opts?: CallOptions): Promise<{
@@ -4050,7 +4050,7 @@ class CatalogApi_multiLanguageCollection {
 }[]>(withCall({ method: 'GET', path: `/api/catalog/pvt/collection/${encodePathParam(params.collectionId)}/language`, query: { 'locale': params.locale } }, opts))
   }
 
-  putApiCatalogPvtCollectionByCollectionIdLanguage(params: {
+  async putApiCatalogPvtCollectionByCollectionIdLanguage(params: {
   collectionId: number
   body: {
   Locale: string
@@ -4065,7 +4065,7 @@ class CatalogApi_multiLanguageCollection {
 class CatalogApi_assortment {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogPvtAssortment(params: {
+  async getApiCatalogPvtAssortment(params: {
   name?: string
   after?: number
   size?: number
@@ -4096,7 +4096,7 @@ class CatalogApi_assortment {
 }>(withCall({ method: 'GET', path: `/api/catalog/pvt/assortment`, query: { 'name': params.name, 'after': params.after, 'size': params.size, 'collectionId': params.collectionId } }, opts))
   }
 
-  postApiCatalogPvtAssortment(params: {
+  async postApiCatalogPvtAssortment(params: {
   body: {
   name: string
 }
@@ -4104,13 +4104,13 @@ class CatalogApi_assortment {
     return this.http.request<ProductAssortment>(withCall({ method: 'POST', path: `/api/catalog/pvt/assortment`, body: params.body }, opts))
   }
 
-  getApiCatalogPvtAssortmentByProductAssortmentID(params: {
+  async getApiCatalogPvtAssortmentByProductAssortmentID(params: {
   productAssortmentID: number
 }, opts?: CallOptions): Promise<ProductAssortment> {
     return this.http.request<ProductAssortment>(withCall({ method: 'GET', path: `/api/catalog/pvt/assortment/${encodePathParam(params.productAssortmentID)}` }, opts))
   }
 
-  putApiCatalogPvtAssortmentByProductAssortmentID(params: {
+  async putApiCatalogPvtAssortmentByProductAssortmentID(params: {
   productAssortmentID: number
   body: {
   name: string
@@ -4119,34 +4119,34 @@ class CatalogApi_assortment {
     return this.http.request<ProductAssortment>(withCall({ method: 'PUT', path: `/api/catalog/pvt/assortment/${encodePathParam(params.productAssortmentID)}`, body: params.body }, opts))
   }
 
-  deleteApiCatalogPvtAssortmentByProductAssortmentID(params: {
+  async deleteApiCatalogPvtAssortmentByProductAssortmentID(params: {
   productAssortmentID: number
 }, opts?: CallOptions): Promise<Record<string, unknown>> {
     return this.http.request<Record<string, unknown>>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/assortment/${encodePathParam(params.productAssortmentID)}` }, opts))
   }
 
-  postApiCatalogPvtAssortmentByProductAssortmentIDIncludedCollectionsByCollectionID(params: {
+  async postApiCatalogPvtAssortmentByProductAssortmentIDIncludedCollectionsByCollectionID(params: {
   productAssortmentID: number
   collectionID: number
 }, opts?: CallOptions): Promise<AssortmentCollectionAssociation> {
     return this.http.request<AssortmentCollectionAssociation>(withCall({ method: 'POST', path: `/api/catalog/pvt/assortment/${encodePathParam(params.productAssortmentID)}/included-collections/${encodePathParam(params.collectionID)}` }, opts))
   }
 
-  deleteApiCatalogPvtAssortmentByProductAssortmentIDIncludedCollectionsByCollectionID(params: {
+  async deleteApiCatalogPvtAssortmentByProductAssortmentIDIncludedCollectionsByCollectionID(params: {
   productAssortmentID: number
   collectionID: number
 }, opts?: CallOptions): Promise<Record<string, unknown>> {
     return this.http.request<Record<string, unknown>>(withCall({ method: 'DELETE', path: `/api/catalog/pvt/assortment/${encodePathParam(params.productAssortmentID)}/included-collections/${encodePathParam(params.collectionID)}` }, opts))
   }
 
-  postApiCatalogPvtAssortmentByProductAssortmentIDExcludedCollectionsByCollectionID(params: {
+  async postApiCatalogPvtAssortmentByProductAssortmentIDExcludedCollectionsByCollectionID(params: {
   productAssortmentID: number
   collectionID: number
 }, opts?: CallOptions): Promise<AssortmentCollectionAssociation> {
     return this.http.request<AssortmentCollectionAssociation>(withCall({ method: 'POST', path: `/api/catalog/pvt/assortment/${encodePathParam(params.productAssortmentID)}/excluded-collections/${encodePathParam(params.collectionID)}` }, opts))
   }
 
-  deleteApiCatalogPvtAssortmentByProductAssortmentIDExcludedCollectionsByCollectionID(params: {
+  async deleteApiCatalogPvtAssortmentByProductAssortmentIDExcludedCollectionsByCollectionID(params: {
   productAssortmentID: number
   collectionID: number
 }, opts?: CallOptions): Promise<Record<string, unknown>> {

@@ -6,30 +6,30 @@ import type { PolicyRuleInput, PolicyRule, JsonLogicExpression, PaymentPolicySea
 class PaymentPoliciesApi_paymentPolicyRules {
   constructor(private http: VtexHttpClient) {}
 
-  listPolicyRules(params: Record<string, never> = {}, opts?: CallOptions): Promise<PolicyRule[]> {
+  async listPolicyRules(params: Record<string, never> = {}, opts?: CallOptions): Promise<PolicyRule[]> {
     return this.http.request<PolicyRule[]>(withCall({ method: 'GET', path: `/api/payment-configuration-service/policy-rules`, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
-  createPolicyRule(params: {
+  async createPolicyRule(params: {
   body: PolicyRuleInput
 }, opts?: CallOptions): Promise<PolicyRule> {
     return this.http.request<PolicyRule>(withCall({ method: 'POST', path: `/api/payment-configuration-service/policy-rules`, body: params.body, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
-  getPolicyRuleById(params: {
+  async getPolicyRuleById(params: {
   id: string
 }, opts?: CallOptions): Promise<PolicyRule> {
     return this.http.request<PolicyRule>(withCall({ method: 'GET', path: `/api/payment-configuration-service/policy-rules/${encodePathParam(params.id)}`, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
-  updatePolicyRule(params: {
+  async updatePolicyRule(params: {
   id: string
   body: PolicyRuleInput
 }, opts?: CallOptions): Promise<PolicyRule> {
     return this.http.request<PolicyRule>(withCall({ method: 'PUT', path: `/api/payment-configuration-service/policy-rules/${encodePathParam(params.id)}`, body: params.body, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
   }
 
-  deletePolicyRule(params: {
+  async deletePolicyRule(params: {
   id: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/payment-configuration-service/policy-rules/${encodePathParam(params.id)}`, server: 'https://{accountName}.pcs.vtexcommercestable.com.br' }, opts))
@@ -38,7 +38,7 @@ class PaymentPoliciesApi_paymentPolicyRules {
 class PaymentPoliciesApi_paymentPolicyEvaluation {
   constructor(private http: VtexHttpClient) {}
 
-  evaluatePaymentPolicies(params: {
+  async evaluatePaymentPolicies(params: {
   body: PaymentPolicySearchRequest
 }, opts?: CallOptions): Promise<PaymentPolicySearchResponse> {
     return this.http.request<PaymentPolicySearchResponse>(withCall({ method: 'POST', path: `/api/pvt/payment-systems/search`, body: params.body, server: 'https://{accountName}.vtexpayments.com.br' }, opts))

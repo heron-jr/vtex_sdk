@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class CustomerCreditApi_invoices {
   constructor(private http: VtexHttpClient) {}
 
-  searchallinvoices(params: {
+  async searchallinvoices(params: {
   from?: string
   to?: string
   createdDateFrom?: string
@@ -75,7 +75,7 @@ class CustomerCreditApi_invoices {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/invoices`, query: { 'from': params.from, 'to': params.to, 'createdDateFrom': params.createdDateFrom, 'createdDateTo': params.createdDateTo, 'dueDateFrom': params.dueDateFrom, 'dueDateTo': params.dueDateTo, 'value': params.value, 'status': params.status, 'friendlyId': params.friendlyId, 'observation': params.observation, 'creditAccountId': params.creditAccountId } }, opts))
   }
 
-  retrieveInvoicebyId(params: {
+  async retrieveInvoicebyId(params: {
   creditAccountId: string
   invoiceId: string
 }, opts?: CallOptions): Promise<{
@@ -114,7 +114,7 @@ class CustomerCreditApi_invoices {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}` }, opts))
   }
 
-  changeInvoice(params: {
+  async changeInvoice(params: {
   creditAccountId: string
   invoiceId: string
   friendlyId?: string
@@ -127,14 +127,14 @@ class CustomerCreditApi_invoices {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}`, query: { 'friendlyId': params.friendlyId }, body: params.body }, opts))
   }
 
-  cancelInvoice(params: {
+  async cancelInvoice(params: {
   creditAccountId: string
   invoiceId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}` }, opts))
   }
 
-  searchallinvoicesofaAccount(params: {
+  async searchallinvoicesofaAccount(params: {
   creditAccountId: string
 }, opts?: CallOptions): Promise<{
   data: {
@@ -188,7 +188,7 @@ class CustomerCreditApi_invoices {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices` }, opts))
   }
 
-  markaninvoiceasPaid(params: {
+  async markaninvoiceasPaid(params: {
   creditAccountId: string
   invoiceId: string
 }, opts?: CallOptions): Promise<{
@@ -227,7 +227,7 @@ class CustomerCreditApi_invoices {
 }>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/invoices/${encodePathParam(params.invoiceId)}/payments` }, opts))
   }
 
-  postponeaninvoice(params: {
+  async postponeaninvoice(params: {
   creditAccountId: string
   invoiceId: string
   body: {
@@ -240,7 +240,7 @@ class CustomerCreditApi_invoices {
 class CustomerCreditApi_account {
   constructor(private http: VtexHttpClient) {}
 
-  searchallaccounts(params: {
+  async searchallaccounts(params: {
   from?: string
   to?: string
   status?: "Opened" | "Paid" | "Cancelled"
@@ -289,7 +289,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts`, query: { 'from': params.from, 'to': params.to, 'status': params.status, 'email': params.email } }, opts))
   }
 
-  openanAccount(params: {
+  async openanAccount(params: {
   body: {
   document: string
   documentType: "CPF" | "CNPJ" | "Other"
@@ -332,7 +332,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts`, body: params.body }, opts))
   }
 
-  retrieveaAccountbyId(params: {
+  async retrieveaAccountbyId(params: {
   creditAccountId: string
 }, opts?: CallOptions): Promise<{
   id: string
@@ -368,7 +368,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}` }, opts))
   }
 
-  updateemailanddescriptionofaaccount(params: {
+  async updateemailanddescriptionofaaccount(params: {
   creditAccountId: string
   body: {
   email: string
@@ -411,7 +411,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}`, body: params.body }, opts))
   }
 
-  closeanAccount(params: {
+  async closeanAccount(params: {
   creditAccountId: string
   body: {
   document?: string
@@ -452,7 +452,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}`, body: params.body }, opts))
   }
 
-  accountstatements(params: {
+  async accountstatements(params: {
   creditAccountId: string
 }, opts?: CallOptions): Promise<{
   statements: {
@@ -486,7 +486,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/statements` }, opts))
   }
 
-  changecreditlimitofanAccount(params: {
+  async changecreditlimitofanAccount(params: {
   creditAccountId: string
   body: {
   value: number
@@ -521,7 +521,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/creditlimit`, body: params.body }, opts))
   }
 
-  decreasebalanceofanaccount(params: {
+  async decreasebalanceofanaccount(params: {
   creditAccountId: string
   statementId: string
   body: {
@@ -535,7 +535,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/statements/${encodePathParam(params.statementId)}`, body: params.body }, opts))
   }
 
-  createorUpdateSettlement(params: {
+  async createorUpdateSettlement(params: {
   creditAccountId: string
   transactionId: string
   body: {
@@ -551,7 +551,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}/settlement`, body: params.body }, opts))
   }
 
-  createaPreAuthorization(params: {
+  async createaPreAuthorization(params: {
   creditAccountId: string
   body: {
   value: number
@@ -573,7 +573,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions`, body: params.body }, opts))
   }
 
-  createaPreAuthorizationUsingid(params: {
+  async createaPreAuthorizationUsingid(params: {
   creditAccountId: string
   transactionId: string
   body: {
@@ -593,14 +593,14 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}`, body: params.body }, opts))
   }
 
-  cancelaPreAuthorization(params: {
+  async cancelaPreAuthorization(params: {
   creditAccountId: string
   transactionId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/transactions/${encodePathParam(params.transactionId)}` }, opts))
   }
 
-  addanaccountHolder(params: {
+  async addanaccountHolder(params: {
   creditAccountId: string
   body: {
   claims: {
@@ -625,7 +625,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'POST', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/holders`, body: params.body }, opts))
   }
 
-  deleteanaccountholder(params: {
+  async deleteanaccountholder(params: {
   creditAccountId: string
   holderId: string
 }, opts?: CallOptions): Promise<{
@@ -636,7 +636,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'DELETE', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/holders/${encodePathParam(params.holderId)}` }, opts))
   }
 
-  changetoleranceofanaccount(params: {
+  async changetoleranceofanaccount(params: {
   creditAccountId: string
   body: {
   value: number
@@ -671,7 +671,7 @@ class CustomerCreditApi_account {
 }>(withCall({ method: 'PUT', path: `/api/creditcontrol/accounts/${encodePathParam(params.creditAccountId)}/tolerance`, body: params.body }, opts))
   }
 
-  partialorTotalRefundaSettlement(params: {
+  async partialorTotalRefundaSettlement(params: {
   creditAccountId: string
   transactionId: string
   body: {
@@ -688,7 +688,7 @@ class CustomerCreditApi_account {
 class CustomerCreditApi_storeConfiguration {
   constructor(private http: VtexHttpClient) {}
 
-  retrievestoreconfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async retrievestoreconfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   dailyInterestRate: number
   invoicePostponementLimit: number
   taxRate: number
@@ -734,7 +734,7 @@ class CustomerCreditApi_storeConfiguration {
 }>(withCall({ method: 'GET', path: `/api/creditcontrol/storeconfig` }, opts))
   }
 
-  createorchangestoreconfiguration(params: {
+  async createorchangestoreconfiguration(params: {
   body: {
   dailyInterestRate: number
   invoicePostponementLimit: number

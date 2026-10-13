@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class DeliveryPromiseNotificationApi_deliveryPromise {
   constructor(private http: VtexHttpClient) {}
 
-  putApiDeliveryPromisesExternalSellersBySellerIdProducts(params: {
+  async putApiDeliveryPromisesExternalSellersBySellerIdProducts(params: {
   sellerId: string
   an: string
   body: {
@@ -27,7 +27,7 @@ class DeliveryPromiseNotificationApi_deliveryPromise {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/delivery-promises/external-sellers/${encodePathParam(params.sellerId)}/products`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  patchApiDeliveryPromisesExternalSellersBySellerIdItemsByItemId(params: {
+  async patchApiDeliveryPromisesExternalSellersBySellerIdItemsByItemId(params: {
   sellerId: string
   itemId: string
   body: {

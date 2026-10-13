@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class UserRightsApi_dataErasure {
   constructor(private http: VtexHttpClient) {}
 
-  postApiUserRightsForgetJobs(params: {
+  async postApiUserRightsForgetJobs(params: {
   body: {
   email: string
 }
@@ -17,7 +17,7 @@ class UserRightsApi_dataErasure {
 }>(withCall({ method: 'POST', path: `/api/user-rights/forget/jobs`, body: params.body }, opts))
   }
 
-  getApiUserRightsForgetJobsByJobId(params: {
+  async getApiUserRightsForgetJobsByJobId(params: {
   jobId: string
 }, opts?: CallOptions): Promise<{
   status: "InProgress" | "Success" | "Failed"

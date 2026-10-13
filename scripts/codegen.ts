@@ -232,6 +232,10 @@ async function main() {
       // --- Group operations by namespace (first tag), choosing each operation's server ---
       const groups = new Map<string, OpEntry[]>()
       for (const [path, item] of Object.entries<any>(doc.paths ?? {})) {
+        // Path-item parameters would apply to every operation; the generator only reads op.parameters.
+        if (Array.isArray(item?.parameters) && item.parameters.length > 0) {
+          throw new Error(`Path-level parameters are not supported yet (${path}); extend the generator before re-pinning`)
+        }
         for (const httpMethod of HTTP_METHODS) {
           const op = item[httpMethod]
           if (!op) continue

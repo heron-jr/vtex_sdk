@@ -6,7 +6,7 @@ import type { GetPromotions, GetTaxes } from './types.js'
 class PromotionsTaxesApi_coupons {
   constructor(private http: VtexHttpClient) {}
 
-  createMultipleCoupons(params: {
+  async createMultipleCoupons(params: {
   body: {
   quantity: number
   couponConfiguration: {
@@ -23,7 +23,7 @@ class PromotionsTaxesApi_coupons {
     return this.http.request<string[]>(withCall({ method: 'POST', path: `/api/rnb/pvt/multiple-coupons`, body: params.body }, opts))
   }
 
-  getall(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getall(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   lastModifiedUtc?: string
   utmSource?: string
   utmCampaign?: string
@@ -47,7 +47,7 @@ class PromotionsTaxesApi_coupons {
 }[]>(withCall({ method: 'GET', path: `/api/rnb/pvt/coupon` }, opts))
   }
 
-  createOrUpdateCoupon(params: {
+  async createOrUpdateCoupon(params: {
   body: {
   utmSource: string
   utmCampaign?: string
@@ -79,7 +79,7 @@ class PromotionsTaxesApi_coupons {
 }>(withCall({ method: 'POST', path: `/api/rnb/pvt/coupon`, body: params.body }, opts))
   }
 
-  getbycouponcode(params: {
+  async getbycouponcode(params: {
   couponCode: string
 }, opts?: CallOptions): Promise<{
   lastModifiedUtc?: string
@@ -105,7 +105,7 @@ class PromotionsTaxesApi_coupons {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/coupon/${encodePathParam(params.couponCode)}` }, opts))
   }
 
-  getarchivedbycouponcode(params: {
+  async getarchivedbycouponcode(params: {
   couponCode: string
 }, opts?: CallOptions): Promise<{
   lastModifiedUtc?: string
@@ -131,13 +131,13 @@ class PromotionsTaxesApi_coupons {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/archive/coupon/${encodePathParam(params.couponCode)}` }, opts))
   }
 
-  archivebycouponcode(params: {
+  async archivebycouponcode(params: {
   couponCode: string
 }, opts?: CallOptions): Promise<string> {
     return this.http.request<string>(withCall({ method: 'POST', path: `/api/rnb/pvt/archive/coupon/${encodePathParam(params.couponCode)}` }, opts))
   }
 
-  massiveGeneration(params: {
+  async massiveGeneration(params: {
   quantity: number
   body: {
   utmSource: string
@@ -150,7 +150,7 @@ class PromotionsTaxesApi_coupons {
     return this.http.request<string[]>(withCall({ method: 'POST', path: `/api/rnb/pvt/coupons`, query: { 'quantity': params.quantity }, body: params.body }, opts))
   }
 
-  getusage(params: {
+  async getusage(params: {
   couponCode: string
 }, opts?: CallOptions): Promise<{
   hostName?: string
@@ -178,7 +178,7 @@ class PromotionsTaxesApi_coupons {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/coupon/usage/${encodePathParam(params.couponCode)}` }, opts))
   }
 
-  unarchivebycouponcode(params: {
+  async unarchivebycouponcode(params: {
   couponCode: string
 }, opts?: CallOptions): Promise<string> {
     return this.http.request<string>(withCall({ method: 'POST', path: `/api/rnb/pvt/unarchive/coupon/${encodePathParam(params.couponCode)}` }, opts))
@@ -187,7 +187,7 @@ class PromotionsTaxesApi_coupons {
 class PromotionsTaxesApi_promotionsAndTaxes {
   constructor(private http: VtexHttpClient) {}
 
-  getAllBenefits(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getAllBenefits(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   limitConfigurationMaxPrice?: {
   activesCount?: number
   limit?: number
@@ -217,7 +217,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/benefits/calculatorconfiguration` }, opts))
   }
 
-  searchPromotion(params: {
+  async searchPromotion(params: {
   byName: string
 }, opts?: CallOptions): Promise<{
   idCalculatorConfiguration?: string
@@ -517,7 +517,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }[]>(withCall({ method: 'GET', path: `/api/rnb/pvt/benefits/calculatorconfiguration/search`, query: { 'byName': params.byName } }, opts))
   }
 
-  getAllTaxes(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getAllTaxes(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   limitConfiguration?: {
   activesCount?: number
   limit?: number
@@ -537,7 +537,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/taxes/calculatorconfiguration` }, opts))
   }
 
-  getCalculatorConfigurationById(params: {
+  async getCalculatorConfigurationById(params: {
   idCalculatorConfiguration: string
 }, opts?: CallOptions): Promise<{
   idCalculatorConfiguration?: string
@@ -847,7 +847,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/calculatorconfiguration/${encodePathParam(params.idCalculatorConfiguration)}` }, opts))
   }
 
-  optSellerInOrOutOfPromotion(params: {
+  async optSellerInOrOutOfPromotion(params: {
   promotionId: string
   an: string
   'if-Match': string
@@ -863,7 +863,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }>(withCall({ method: 'POST', path: `/api/rnb/pvt/calculatorconfiguration/${encodePathParam(params.promotionId)}/seller-opt`, query: { 'an': params.an }, headers: { 'if-Match': params['if-Match'] }, body: params.body }, opts))
   }
 
-  createOrUpdateCalculatorConfiguration(params: {
+  async createOrUpdateCalculatorConfiguration(params: {
   body: {
   idCalculatorConfiguration?: string
   name?: string
@@ -1311,7 +1311,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }>(withCall({ method: 'POST', path: `/api/rnb/pvt/calculatorconfiguration`, body: params.body }, opts))
   }
 
-  createMultipleSkuPromotion(params: {
+  async createMultipleSkuPromotion(params: {
   'X-VTEX-calculator-name': string
   'X-VTEX-cumulative'?: boolean
   'X-VTEX-cluster-operator'?: string
@@ -1324,7 +1324,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/rnb/pvt/import/calculatorConfiguration`, headers: { 'X-VTEX-calculator-name': params['X-VTEX-calculator-name'], 'X-VTEX-cumulative': params['X-VTEX-cumulative'], 'X-VTEX-cluster-operator': params['X-VTEX-cluster-operator'], 'X-VTEX-cluster-expression': params['X-VTEX-cluster-expression'], 'X-VTEX-start-date': params['X-VTEX-start-date'], 'X-VTEX-end-date': params['X-VTEX-end-date'], 'X-VTEX-accumulate-with-manual-prices': params['X-VTEX-accumulate-with-manual-prices'] }, body: params.body, contentType: 'text/csv' }, opts))
   }
 
-  updateMultipleSkuPromotion(params: {
+  async updateMultipleSkuPromotion(params: {
   promotionId: string
   'X-VTEX-calculator-name': string
   'X-VTEX-cumulative'?: boolean
@@ -1338,19 +1338,19 @@ class PromotionsTaxesApi_promotionsAndTaxes {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/rnb/pvt/import/calculatorConfiguration/${encodePathParam(params.promotionId)}`, headers: { 'X-VTEX-calculator-name': params['X-VTEX-calculator-name'], 'X-VTEX-cumulative': params['X-VTEX-cumulative'], 'X-VTEX-cluster-operator': params['X-VTEX-cluster-operator'], 'X-VTEX-cluster-expression': params['X-VTEX-cluster-expression'], 'X-VTEX-start-date': params['X-VTEX-start-date'], 'X-VTEX-end-date': params['X-VTEX-end-date'], 'X-VTEX-accumulate-with-manual-prices': params['X-VTEX-accumulate-with-manual-prices'] }, body: params.body, contentType: 'text/csv' }, opts))
   }
 
-  archivePromotion(params: {
+  async archivePromotion(params: {
   idCalculatorConfiguration: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/rnb/pvt/archive/calculatorConfiguration/${encodePathParam(params.idCalculatorConfiguration)}` }, opts))
   }
 
-  unarchivePromotion(params: {
+  async unarchivePromotion(params: {
   idCalculatorConfiguration: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/rnb/pvt/unarchive/calculatorConfiguration/${encodePathParam(params.idCalculatorConfiguration)}` }, opts))
   }
 
-  getArchivedPromotions(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getArchivedPromotions(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   items?: GetPromotions
   nominalDiscountType?: string
 }> {
@@ -1360,7 +1360,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/archive/benefits/calculatorConfiguration` }, opts))
   }
 
-  getArchivedTaxes(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getArchivedTaxes(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   items?: GetTaxes
 }> {
     return this.http.request<{
@@ -1371,7 +1371,7 @@ class PromotionsTaxesApi_promotionsAndTaxes {
 class PromotionsTaxesApi_pricesLegacyV1 {
   constructor(private http: VtexHttpClient) {}
 
-  pricebyskuId(params: {
+  async pricebyskuId(params: {
   skuId: string
   an: string
 }, opts?: CallOptions): Promise<{
@@ -1400,14 +1400,14 @@ class PromotionsTaxesApi_pricesLegacyV1 {
 }[]>(withCall({ method: 'GET', path: `/price-sheet/${encodePathParam(params.skuId)}`, query: { 'an': params.an }, server: 'https://rnb.{environment}.com.br/api/pricing/pvt' }, opts))
   }
 
-  deletebyskuId(params: {
+  async deletebyskuId(params: {
   skuId: string
   an: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/price-sheet/${encodePathParam(params.skuId)}`, query: { 'an': params.an }, server: 'https://rnb.{environment}.com.br/api/pricing/pvt' }, opts))
   }
 
-  getallpaged(params: {
+  async getallpaged(params: {
   page: string
   pageSize: string
   an: string
@@ -1415,7 +1415,7 @@ class PromotionsTaxesApi_pricesLegacyV1 {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/price-sheet/all/${encodePathParam(params.page)}/${encodePathParam(params.pageSize)}`, query: { 'an': params.an }, server: 'https://rnb.{environment}.com.br/api/pricing/pvt' }, opts))
   }
 
-  pricebycontext(params: {
+  async pricebycontext(params: {
   an: string
   body: {
   id: number
@@ -1429,7 +1429,7 @@ class PromotionsTaxesApi_pricesLegacyV1 {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/price-sheet/context`, query: { 'an': params.an }, body: params.body, server: 'https://rnb.{environment}.com.br/api/pricing/pvt' }, opts))
   }
 
-  pricebyskuIdandtradePolicy(params: {
+  async pricebyskuIdandtradePolicy(params: {
   skuId: string
   tradePolicy: string
   an: string
@@ -1459,7 +1459,7 @@ class PromotionsTaxesApi_pricesLegacyV1 {
 }[]>(withCall({ method: 'GET', path: `/price-sheet/${encodePathParam(params.skuId)}/${encodePathParam(params.tradePolicy)}`, query: { 'an': params.an }, server: 'https://rnb.{environment}.com.br/api/pricing/pvt' }, opts))
   }
 
-  saveprice(params: {
+  async saveprice(params: {
   an: string
   body: {
   itemId: number
@@ -1477,7 +1477,7 @@ class PromotionsTaxesApi_pricesLegacyV1 {
 class PromotionsTaxesApi_campaignAudiences {
   constructor(private http: VtexHttpClient) {}
 
-  getcampaignconfiguration(params: {
+  async getcampaignconfiguration(params: {
   campaignId: string
 }, opts?: CallOptions): Promise<{
   beginDateUtc?: string
@@ -1729,7 +1729,7 @@ class PromotionsTaxesApi_campaignAudiences {
 }>(withCall({ method: 'GET', path: `/api/rnb/pvt/campaignConfiguration/${encodePathParam(params.campaignId)}` }, opts))
   }
 
-  getcampaignaudiences(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getcampaignaudiences(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   beginDateUtc?: string
   endDateUtc?: string
   id?: string
@@ -1981,7 +1981,7 @@ class PromotionsTaxesApi_campaignAudiences {
 }[]>(withCall({ method: 'GET', path: `/api/rnb/pvt/campaignConfiguration` }, opts))
   }
 
-  setcampaignconfiguration(params: {
+  async setcampaignconfiguration(params: {
   body: {
   beginDateUtc?: string
   endDateUtc?: string

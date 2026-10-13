@@ -6,13 +6,13 @@ import type { CreateUpdateAddressRequests, DocumentResponse, AddressResponse, Re
 class B2bAddressesApi_addresses {
   constructor(private http: VtexHttpClient) {}
 
-  postApiDataentitiesADDocuments(params: {
+  async postApiDataentitiesADDocuments(params: {
   body: CreateUpdateAddressRequests
 }, opts?: CallOptions): Promise<DocumentResponse> {
     return this.http.request<DocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/AD/documents`, body: params.body }, opts))
   }
 
-  getApiDataentitiesADSearch(params: {
+  async getApiDataentitiesADSearch(params: {
   _fields?: string
   _where?: string
   _sort?: string
@@ -21,21 +21,21 @@ class B2bAddressesApi_addresses {
     return this.http.request<AddressResponse[]>(withCall({ method: 'GET', path: `/api/dataentities/AD/search`, query: { '_fields': params._fields, '_where': params._where, '_sort': params._sort }, headers: { 'REST-Range': params['REST-Range'] } }, opts))
   }
 
-  getApiDataentitiesADDocumentsByAddressId(params: {
+  async getApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
   _fields?: string
 }, opts?: CallOptions): Promise<AddressResponse> {
     return this.http.request<AddressResponse>(withCall({ method: 'GET', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}`, query: { '_fields': params._fields } }, opts))
   }
 
-  patchApiDataentitiesADDocumentsByAddressId(params: {
+  async patchApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
   body: CreateUpdateAddressRequests
 }, opts?: CallOptions): Promise<DocumentResponse> {
     return this.http.request<DocumentResponse>(withCall({ method: 'PATCH', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}`, body: params.body }, opts))
   }
 
-  deleteApiDataentitiesADDocumentsByAddressId(params: {
+  async deleteApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}` }, opts))
@@ -44,7 +44,7 @@ class B2bAddressesApi_addresses {
 class B2bAddressesApi_recipients {
   constructor(private http: VtexHttpClient) {}
 
-  postApiDataentitiesContactInformationDocuments(params: {
+  async postApiDataentitiesContactInformationDocuments(params: {
   body: RecipientRequest
 }, opts?: CallOptions): Promise<{
   Id?: string
@@ -58,7 +58,7 @@ class B2bAddressesApi_recipients {
 }>(withCall({ method: 'POST', path: `/api/dataentities/contact_information/documents`, body: params.body }, opts))
   }
 
-  getApiDataentitiesContactInformationSearch(params: {
+  async getApiDataentitiesContactInformationSearch(params: {
   _where: string
   _fields?: string
   _schema: string
@@ -74,7 +74,7 @@ class B2bAddressesApi_recipients {
 }[]>(withCall({ method: 'GET', path: `/api/dataentities/contact_information/search`, query: { '_where': params._where, '_fields': params._fields, '_schema': params._schema } }, opts))
   }
 
-  getApiDataentitiesContactInformationDocumentsByRecipientId(params: {
+  async getApiDataentitiesContactInformationDocumentsByRecipientId(params: {
   recipientId: string
   _fields?: string
   _schema: string
@@ -82,14 +82,14 @@ class B2bAddressesApi_recipients {
     return this.http.request<RecipientRequest>(withCall({ method: 'GET', path: `/api/dataentities/contact_information/documents/${encodePathParam(params.recipientId)}`, query: { '_fields': params._fields, '_schema': params._schema } }, opts))
   }
 
-  patchApiDataentitiesContactInformationDocumentsByRecipientId(params: {
+  async patchApiDataentitiesContactInformationDocumentsByRecipientId(params: {
   recipientId: string
   body: RecipientRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/contact_information/documents/${encodePathParam(params.recipientId)}`, body: params.body }, opts))
   }
 
-  deleteApiDataentitiesContactInformationDocumentsByRecipientId(params: {
+  async deleteApiDataentitiesContactInformationDocumentsByRecipientId(params: {
   recipientId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/contact_information/documents/${encodePathParam(params.recipientId)}` }, opts))
@@ -98,7 +98,7 @@ class B2bAddressesApi_recipients {
 class B2bAddressesApi_locations {
   constructor(private http: VtexHttpClient) {}
 
-  postApiDataentitiesCustomFieldValuesDocuments(params: {
+  async postApiDataentitiesCustomFieldValuesDocuments(params: {
   body: LocationRequest
 }, opts?: CallOptions): Promise<{
   Id?: string
@@ -112,7 +112,7 @@ class B2bAddressesApi_locations {
 }>(withCall({ method: 'POST', path: `/api/dataentities/customFieldValues/documents`, body: params.body }, opts))
   }
 
-  getApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
+  async getApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
   locationId: string
   _fields: string
 }, opts?: CallOptions): Promise<{
@@ -175,21 +175,21 @@ class B2bAddressesApi_locations {
 }>(withCall({ method: 'GET', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.locationId)}`, query: { '_fields': params._fields } }, opts))
   }
 
-  patchApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
+  async patchApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
   locationId: string
   body: LocationRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.locationId)}`, body: params.body }, opts))
   }
 
-  deleteApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
+  async deleteApiDataentitiesCustomFieldValuesDocumentsByLocationId(params: {
   locationId: string
   _fields: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.locationId)}`, query: { '_fields': params._fields } }, opts))
   }
 
-  getApiDataentitiesCustomFieldValuesSearch(params: {
+  async getApiDataentitiesCustomFieldValuesSearch(params: {
   _schema: string
   _fields: string
   _where: string

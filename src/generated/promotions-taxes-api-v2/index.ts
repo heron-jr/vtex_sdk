@@ -6,15 +6,15 @@ import type { Getcoupons } from './types.js'
 class PromotionsTaxesApiV2Api_coupons {
   constructor(private http: VtexHttpClient) {}
 
-  getgroupedcoupons(params: Record<string, never> = {}, opts?: CallOptions): Promise<Getcoupons> {
+  async getgroupedcoupons(params: Record<string, never> = {}, opts?: CallOptions): Promise<Getcoupons> {
     return this.http.request<Getcoupons>(withCall({ method: 'GET', path: `/api/rnb/v2/pvt/coupon` }, opts))
   }
 
-  getgroupedarchivedcoupons(params: Record<string, never> = {}, opts?: CallOptions): Promise<Getcoupons> {
+  async getgroupedarchivedcoupons(params: Record<string, never> = {}, opts?: CallOptions): Promise<Getcoupons> {
     return this.http.request<Getcoupons>(withCall({ method: 'GET', path: `/api/rnb/v2/pvt/coupon/group/archived` }, opts))
   }
 
-  getcoupongroupinformation(params: {
+  async getcoupongroupinformation(params: {
   groupingKey: string
 }, opts?: CallOptions): Promise<{
   configuration?: {
@@ -50,7 +50,7 @@ class PromotionsTaxesApiV2Api_coupons {
 }>(withCall({ method: 'GET', path: `/api/rnb/v2/pvt/coupon/group/${encodePathParam(params.groupingKey)}` }, opts))
   }
 
-  editcoupongroupconfiguration(params: {
+  async editcoupongroupconfiguration(params: {
   groupingKey: string
   body: {
   utmSource?: string
@@ -64,19 +64,19 @@ class PromotionsTaxesApiV2Api_coupons {
     return this.http.request<string[]>(withCall({ method: 'PUT', path: `/api/rnb/v2/pvt/coupon/group/${encodePathParam(params.groupingKey)}`, body: params.body }, opts))
   }
 
-  getcoupongroupcodes(params: {
+  async getcoupongroupcodes(params: {
   groupingKey: string
 }, opts?: CallOptions): Promise<string[]> {
     return this.http.request<string[]>(withCall({ method: 'GET', path: `/api/rnb/v2/pvt/coupon/group/${encodePathParam(params.groupingKey)}/codes` }, opts))
   }
 
-  archivedcoupongroup(params: {
+  async archivedcoupongroup(params: {
   groupingKey: string
 }, opts?: CallOptions): Promise<number> {
     return this.http.request<number>(withCall({ method: 'PUT', path: `/api/rnb/v2/pvt/coupon/group/${encodePathParam(params.groupingKey)}/archive` }, opts))
   }
 
-  creategroupsofcoupons(params: {
+  async creategroupsofcoupons(params: {
   body: {
   couponConfiguration: {
   utmSource?: string
@@ -92,19 +92,19 @@ class PromotionsTaxesApiV2Api_coupons {
     return this.http.request<string[]>(withCall({ method: 'POST', path: `/api/rnb/v2/pvt/coupon/group`, body: params.body }, opts))
   }
 
-  unarchivedcoupongroup(params: {
+  async unarchivedcoupongroup(params: {
   groupingKey: string
 }, opts?: CallOptions): Promise<number> {
     return this.http.request<number>(withCall({ method: 'PUT', path: `/api/rnb/v2/pvt/coupon/group/${encodePathParam(params.groupingKey)}/unarchive` }, opts))
   }
 
-  getnumberofusagesofasinglecoupon(params: {
+  async getnumberofusagesofasinglecoupon(params: {
   couponCode: string
 }, opts?: CallOptions): Promise<number> {
     return this.http.request<number>(withCall({ method: 'GET', path: `/api/rnb/v2/pvt/coupon/usage-count/${encodePathParam(params.couponCode)}` }, opts))
   }
 
-  getnumberofusagesofacouponbatch(params: {
+  async getnumberofusagesofacouponbatch(params: {
   groupingKey: string
 }, opts?: CallOptions): Promise<number> {
     return this.http.request<number>(withCall({ method: 'GET', path: `/api/rnb/v2/pvt/coupon/usage-count/group/${encodePathParam(params.groupingKey)}` }, opts))

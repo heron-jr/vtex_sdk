@@ -6,7 +6,7 @@ import type { SaveautoapproveforaccountRequest, SaveaccountconfigRequest, Score,
 class SuggestionsApi_skuApprovalSettings {
   constructor(private http: VtexHttpClient) {}
 
-  getautoApprovevaluefromconfig(params: {
+  async getautoApprovevaluefromconfig(params: {
   sellerId: string
 }, opts?: CallOptions): Promise<{
   Enabled?: boolean
@@ -16,7 +16,7 @@ class SuggestionsApi_skuApprovalSettings {
 }>(withCall({ method: 'GET', path: `/suggestions/configuration/autoapproval/toggle`, query: { 'sellerId': params.sellerId }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  saveautoapproveforaccount(params: {
+  async saveautoapproveforaccount(params: {
   body: SaveautoapproveforaccountRequest
 }, opts?: CallOptions): Promise<{
   Enabled?: boolean
@@ -26,7 +26,7 @@ class SuggestionsApi_skuApprovalSettings {
 }>(withCall({ method: 'PUT', path: `/suggestions/configuration/autoapproval/toggle`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getaccountconfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getaccountconfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   Score?: Record<string, unknown>
   Matchers?: {
   MatcherId?: string
@@ -60,30 +60,30 @@ class SuggestionsApi_skuApprovalSettings {
 }>(withCall({ method: 'GET', path: `/suggestions/configuration`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  saveaccountconfig(params: {
+  async saveaccountconfig(params: {
   body: SaveaccountconfigRequest
 }, opts?: CallOptions): Promise<ResponseSaveAccountsApprovalSettings> {
     return this.http.request<ResponseSaveAccountsApprovalSettings>(withCall({ method: 'PUT', path: `/suggestions/configuration`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getmatchconfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<ResponseGetAccountsMatcherSettings> {
+  async getmatchconfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<ResponseGetAccountsMatcherSettings> {
     return this.http.request<ResponseGetAccountsMatcherSettings>(withCall({ method: 'GET', path: `/suggestions/configuration/account/config`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getselleraccountconfig(params: {
+  async getselleraccountconfig(params: {
   sellerId: string
 }, opts?: CallOptions): Promise<ResponseGetSellersApprovalSettings> {
     return this.http.request<ResponseGetSellersApprovalSettings>(withCall({ method: 'GET', path: `/suggestions/configuration/seller/${encodePathParam(params.sellerId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  putselleraccountconfig(params: {
+  async putselleraccountconfig(params: {
   sellerId: string
   body: PutselleraccountconfigRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/suggestions/configuration/seller/${encodePathParam(params.sellerId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  saveautoapproveforaccountseller(params: {
+  async saveautoapproveforaccountseller(params: {
   sellerId: string
   body: SaveautoapproveforaccountsellerRequest
 }, opts?: CallOptions): Promise<unknown> {
@@ -93,7 +93,7 @@ class SuggestionsApi_skuApprovalSettings {
 class SuggestionsApi_getSuggestions {
   constructor(private http: VtexHttpClient) {}
 
-  getsuggestions(params: {
+  async getsuggestions(params: {
   q?: string
   type?: string
   seller?: string
@@ -106,7 +106,7 @@ class SuggestionsApi_getSuggestions {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/suggestions`, query: { 'q': params.q, 'type': params.type, 'seller': params.seller, 'status': params.status, 'hasmapping': params.hasmapping, 'matcherid': params.matcherid, '_from': params._from, '_to': params._to }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getSuggestion(params: {
+  async getSuggestion(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -116,7 +116,7 @@ class SuggestionsApi_getSuggestions {
 class SuggestionsApi_manageSuggestions {
   constructor(private http: VtexHttpClient) {}
 
-  saveSuggestion(params: {
+  async saveSuggestion(params: {
   sellerId: string
   sellerSkuId: string
   body: SaveSuggestionRequest
@@ -124,7 +124,7 @@ class SuggestionsApi_manageSuggestions {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  deleteSuggestion(params: {
+  async deleteSuggestion(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -134,14 +134,14 @@ class SuggestionsApi_manageSuggestions {
 class SuggestionsApi_getVersions {
   constructor(private http: VtexHttpClient) {}
 
-  getVersions(params: {
+  async getVersions(params: {
   sellerId: string
   sellerskuid: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerskuid)}/versions`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getSuggestionbyversion(params: {
+  async getSuggestionbyversion(params: {
   sellerId: string
   sellerskuid: string
   version: string
@@ -152,7 +152,7 @@ class SuggestionsApi_getVersions {
 class SuggestionsApi_matchReceivedSKUs {
   constructor(private http: VtexHttpClient) {}
 
-  match(params: {
+  async match(params: {
   sellerId: string
   sellerskuid: string
   version: string
@@ -162,7 +162,7 @@ class SuggestionsApi_matchReceivedSKUs {
     return this.http.request<ResponseMatchMultiple>(withCall({ method: 'PUT', path: `/suggestions/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerskuid)}/versions/${encodePathParam(params.version)}/matches/${encodePathParam(params.matchid)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  matchMultiple(params: {
+  async matchMultiple(params: {
   actionName: "newproduct" | "skuassociation" | "productassociation" | "deny"
   body: MatchMultiple
 }, opts?: CallOptions): Promise<ResponseMatchMultiple> {
@@ -172,7 +172,7 @@ class SuggestionsApi_matchReceivedSKUs {
 class SuggestionsApi_multipleProductSpecificationMapping {
   constructor(private http: VtexHttpClient) {}
 
-  putSuggestionsConfigurationBySellerIDSpecifications(params: {
+  async putSuggestionsConfigurationBySellerIDSpecifications(params: {
   sellerID: string
   body: {
   [key: string]: string

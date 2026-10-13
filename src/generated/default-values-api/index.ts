@@ -6,7 +6,7 @@ import type { DefaultValuesRequest } from './types.js'
 class DefaultValuesApi_defaultValues {
   constructor(private http: VtexHttpClient) {}
 
-  postApiDataentitiesDefaultValuesDocuments(params: {
+  async postApiDataentitiesDefaultValuesDocuments(params: {
   body: DefaultValuesRequest
 }, opts?: CallOptions): Promise<{
   Id?: string
@@ -20,7 +20,7 @@ class DefaultValuesApi_defaultValues {
 }>(withCall({ method: 'POST', path: `/api/dataentities/defaultValues/documents`, body: params.body }, opts))
   }
 
-  getApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
+  async getApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
   unitId: string
   _schema: string
   _fields: string
@@ -40,14 +40,14 @@ class DefaultValuesApi_defaultValues {
 }>(withCall({ method: 'GET', path: `/api/dataentities/defaultValues/documents/${encodePathParam(params.unitId)}`, query: { '_schema': params._schema, '_fields': params._fields } }, opts))
   }
 
-  patchApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
+  async patchApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
   unitId: string
   body: DefaultValuesRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/defaultValues/documents/${encodePathParam(params.unitId)}`, body: params.body }, opts))
   }
 
-  deleteApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
+  async deleteApiDataentitiesDefaultValuesDocumentsByUnitId(params: {
   unitId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/defaultValues/documents/${encodePathParam(params.unitId)}` }, opts))

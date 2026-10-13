@@ -6,7 +6,7 @@ import type { TotalsUpdated, ItemsUpdated, ClientProfileDataUpdated, GiftRegistr
 class OrdersApi_orders {
   constructor(private http: VtexHttpClient) {}
 
-  getOrder(params: {
+  async getOrder(params: {
   orderId: string
 }, opts?: CallOptions): Promise<{
   orderId?: string
@@ -878,7 +878,7 @@ class OrdersApi_orders {
 }>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}` }, opts))
   }
 
-  getApiOmsPvtOrdersOrderGroupByOrderGroup(params: {
+  async getApiOmsPvtOrdersOrderGroupByOrderGroup(params: {
   orderGroup: string
 }, opts?: CallOptions): Promise<{
   orderId?: string
@@ -1020,7 +1020,7 @@ class OrdersApi_orders {
 }[]>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/order-group/${encodePathParam(params.orderGroup)}` }, opts))
   }
 
-  listOrders(params: {
+  async listOrders(params: {
   orderBy?: string
   page?: number
   per_page?: number
@@ -1046,13 +1046,13 @@ class OrdersApi_orders {
     return this.http.request<ListOrders>(withCall({ method: 'GET', path: `/api/oms/pvt/orders`, query: { 'orderBy': params.orderBy, 'page': params.page, 'per_page': params.per_page, 'f_hasInputInvoice': params.f_hasInputInvoice, 'q': params.q, 'f_shippingEstimate': params.f_shippingEstimate, 'f_invoicedDate': params.f_invoicedDate, 'f_creationDate': params.f_creationDate, 'f_authorizedDate': params.f_authorizedDate, 'f_UtmSource': params.f_UtmSource, 'f_sellerNames': params.f_sellerNames, 'f_callCenterOperatorName': params.f_callCenterOperatorName, 'f_salesChannel': params.f_salesChannel, 'salesChannelId': params.salesChannelId, 'f_affiliateId': params.f_affiliateId, 'f_status': params.f_status, 'incompleteOrders': params.incompleteOrders, 'f_paymentNames': params.f_paymentNames, 'f_RnB': params.f_RnB, 'searchField': params.searchField, 'f_isInstore': params.f_isInstore } }, opts))
   }
 
-  startHandling(params: {
+  async startHandling(params: {
   orderId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/start-handling` }, opts))
   }
 
-  cancelOrder(params: {
+  async cancelOrder(params: {
   orderId: string
   body: {
   reason?: string
@@ -1069,7 +1069,7 @@ class OrdersApi_orders {
 }>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/cancel`, body: params.body }, opts))
   }
 
-  registerChange(params: {
+  async registerChange(params: {
   orderId: string
   body: {
   requestId: string
@@ -1099,7 +1099,7 @@ class OrdersApi_orders {
 }>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/changes`, body: params.body }, opts))
   }
 
-  addLog(params: {
+  async addLog(params: {
   orderId: string
   body: {
   source: string
@@ -1112,7 +1112,7 @@ class OrdersApi_orders {
 class OrdersApi_invoice {
   constructor(private http: VtexHttpClient) {}
 
-  invoiceNotification(params: {
+  async invoiceNotification(params: {
   orderId: string
   body: {
   type: "Output" | "Input"
@@ -1145,7 +1145,7 @@ class OrdersApi_invoice {
 }>(withCall({ method: 'POST', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/invoice`, body: params.body }, opts))
   }
 
-  updatepartialinvoiceSendTrackingNumber(params: {
+  async updatepartialinvoiceSendTrackingNumber(params: {
   orderId: string
   invoiceNumber: string
   body: UpdatepartialinvoiceSendTrackingNumberRequest
@@ -1156,7 +1156,7 @@ class OrdersApi_invoice {
 class OrdersApi_tracking {
   constructor(private http: VtexHttpClient) {}
 
-  updateTrackingStatus(params: {
+  async updateTrackingStatus(params: {
   orderId: string
   invoiceNumber: string
   body: UpdateTrackingStatusRequest
@@ -1167,7 +1167,7 @@ class OrdersApi_tracking {
 class OrdersApi_conversation {
   constructor(private http: VtexHttpClient) {}
 
-  getConversation(params: {
+  async getConversation(params: {
   orderId: string
 }, opts?: CallOptions): Promise<GetConversation[]> {
     return this.http.request<GetConversation[]>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/conversation-message` }, opts))
@@ -1176,13 +1176,13 @@ class OrdersApi_conversation {
 class OrdersApi_payment {
   constructor(private http: VtexHttpClient) {}
 
-  getPaymenttransaction(params: {
+  async getPaymenttransaction(params: {
   orderId: string
 }, opts?: CallOptions): Promise<GetPaymenttransaction> {
     return this.http.request<GetPaymenttransaction>(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(params.orderId)}/payment-transaction` }, opts))
   }
 
-  sendPaymentNotification(params: {
+  async sendPaymentNotification(params: {
   orderId: string
   paymentId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -1192,7 +1192,7 @@ class OrdersApi_payment {
 class OrdersApi_feedV2Deprecated {
   constructor(private http: VtexHttpClient) {}
 
-  getfeedorderstatus(params: {
+  async getfeedorderstatus(params: {
   maxLot: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/oms/pvt/feed/orders/status`, query: { 'maxLot': params.maxLot } }, opts))
@@ -1201,7 +1201,7 @@ class OrdersApi_feedV2Deprecated {
 class OrdersApi_feedV3 {
   constructor(private http: VtexHttpClient) {}
 
-  getFeedConfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getFeedConfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   filter?: {
   type?: string
   status?: string[]
@@ -1231,7 +1231,7 @@ class OrdersApi_feedV3 {
 }>(withCall({ method: 'GET', path: `/api/orders/feed/config` }, opts))
   }
 
-  feedConfiguration(params: {
+  async feedConfiguration(params: {
   body: {
   filter: {
   type: string
@@ -1248,17 +1248,17 @@ class OrdersApi_feedV3 {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/feed/config`, body: params.body }, opts))
   }
 
-  feedConfigurationDelete(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+  async feedConfigurationDelete(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/orders/feed/config` }, opts))
   }
 
-  getfeedorderstatus1(params: {
+  async getfeedorderstatus1(params: {
   maxlot: string
 }, opts?: CallOptions): Promise<Getfeedorderstatus[]> {
     return this.http.request<Getfeedorderstatus[]>(withCall({ method: 'GET', path: `/api/orders/feed`, query: { 'maxlot': params.maxlot } }, opts))
   }
 
-  commititemfeedorderstatus(params: {
+  async commititemfeedorderstatus(params: {
   body: {
   handles: string[]
 }
@@ -1266,7 +1266,7 @@ class OrdersApi_feedV3 {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/feed`, body: params.body }, opts))
   }
 
-  testJSONataExpression(params: {
+  async testJSONataExpression(params: {
   body: {
   Expression: string
   Document: string
@@ -1278,7 +1278,7 @@ class OrdersApi_feedV3 {
 class OrdersApi_orderHook {
   constructor(private http: VtexHttpClient) {}
 
-  getHookConfiguration(params: {
+  async getHookConfiguration(params: {
   clientEmail?: string
   page?: string
   per_page?: string
@@ -1286,26 +1286,26 @@ class OrdersApi_orderHook {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/orders/hook/config`, query: { 'clientEmail': params.clientEmail, 'page': params.page, 'per_page': params.per_page } }, opts))
   }
 
-  hookConfiguration(params: {
+  async hookConfiguration(params: {
   body: HookConfigurationRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/hook/config`, body: params.body }, opts))
   }
 
-  deleteHookConfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+  async deleteHookConfiguration(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/orders/hook/config` }, opts))
   }
 }
 class OrdersApi_orderModifications {
   constructor(private http: VtexHttpClient) {}
 
-  getChangeSummary(params: {
+  async getChangeSummary(params: {
   orderId: string
 }, opts?: CallOptions): Promise<ChangeSummary> {
     return this.http.request<ChangeSummary>(withCall({ method: 'GET', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/change-summary` }, opts))
   }
 
-  getChangeHistory(params: {
+  async getChangeHistory(params: {
   changeOrderId: string
   an: string
 }, opts?: CallOptions): Promise<{
@@ -1360,7 +1360,7 @@ class OrdersApi_orderModifications {
 }>(withCall({ method: 'GET', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes`, query: { 'an': params.an } }, opts))
   }
 
-  createchange(params: {
+  async createchange(params: {
   changeOrderId: string
   accountName: string
   body: Createchange
@@ -1368,7 +1368,7 @@ class OrdersApi_orderModifications {
     return this.http.request<Response202>(withCall({ method: 'PATCH', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes`, query: { 'accountName': params.accountName }, body: params.body }, opts))
   }
 
-  getChangeDetail(params: {
+  async getChangeDetail(params: {
   changeOrderId: string
   changeRequestId: string
   an: string
@@ -1416,7 +1416,7 @@ class OrdersApi_orderModifications {
 }>(withCall({ method: 'GET', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/${encodePathParam(params.changeRequestId)}`, query: { 'an': params.an } }, opts))
   }
 
-  previewChange(params: {
+  async previewChange(params: {
   changeOrderId: string
   an: string
   body: {
@@ -1465,7 +1465,7 @@ class OrdersApi_orderModifications {
 }>(withCall({ method: 'POST', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/preview`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  retryChange(params: {
+  async retryChange(params: {
   changeOrderId: string
   changeRequestId: string
   an: string
@@ -1474,7 +1474,7 @@ class OrdersApi_orderModifications {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/${encodePathParam(params.changeRequestId)}/retry`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  cancelChangeStoppedonError(params: {
+  async cancelChangeStoppedonError(params: {
   changeOrderId: string
   changeRequestId: string
   an: string
@@ -1485,13 +1485,13 @@ class OrdersApi_orderModifications {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/order-system/orders/${encodePathParam(params.changeOrderId)}/changes/${encodePathParam(params.changeRequestId)}/cancel`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  getApiOrderSystemOrdersChangesSettings(params: {
+  async getApiOrderSystemOrdersChangesSettings(params: {
   an: string
 }, opts?: CallOptions): Promise<ChangeOrderSettingsResponse> {
     return this.http.request<ChangeOrderSettingsResponse>(withCall({ method: 'GET', path: `/api/order-system/orders/changes/settings`, query: { 'an': params.an } }, opts))
   }
 
-  putApiOrderSystemOrdersChangesSettings(params: {
+  async putApiOrderSystemOrdersChangesSettings(params: {
   an: string
   body: {
   paymentConfiguration?: {
@@ -1518,7 +1518,7 @@ class OrdersApi_orderModifications {
 class OrdersApi_userOrders {
   constructor(private http: VtexHttpClient) {}
 
-  userorderslist(params: {
+  async userorderslist(params: {
   clientEmail?: string
   page?: string
   per_page?: string
@@ -1531,7 +1531,7 @@ class OrdersApi_userOrders {
     return this.http.request<Userorderslist>(withCall({ method: 'GET', path: `/api/oms/user/orders`, query: { 'clientEmail': params.clientEmail, 'page': params.page, 'per_page': params.per_page, 'text': params.text, 'status': params.status, 'creation_date': params.creation_date, 'purchase_agent_id': params.purchase_agent_id, 'my_pending_approvals': params.my_pending_approvals } }, opts))
   }
 
-  userorderdetails(params: {
+  async userorderdetails(params: {
   orderId: string
   clientEmail?: string
   text?: string
@@ -1546,11 +1546,11 @@ class OrdersApi_userOrders {
 class OrdersApi_changeSeller {
   constructor(private http: VtexHttpClient) {}
 
-  getWindowToChangeSeller(params: Record<string, never> = {}, opts?: CallOptions): Promise<number> {
+  async getWindowToChangeSeller(params: Record<string, never> = {}, opts?: CallOptions): Promise<number> {
     return this.http.request<number>(withCall({ method: 'GET', path: `/api/checkout/pvt/configuration/window-to-change-seller` }, opts))
   }
 
-  updateWindowToChangeSeller(params: {
+  async updateWindowToChangeSeller(params: {
   body: {
   waitingTime: number
 }

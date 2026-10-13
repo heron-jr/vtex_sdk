@@ -6,13 +6,13 @@ import type { PickupPoint, ListDocksById, DeliveryCapacity, ShippingPolicy } fro
 class LogisticsApi_shippingPolicies {
   constructor(private http: VtexHttpClient) {}
 
-  getApiLogisticsPvtShippingPoliciesById(params: {
+  async getApiLogisticsPvtShippingPoliciesById(params: {
   id: string
 }, opts?: CallOptions): Promise<ShippingPolicy> {
     return this.http.request<ShippingPolicy>(withCall({ method: 'GET', path: `/api/logistics/pvt/shipping-policies/${encodePathParam(params.id)}` }, opts))
   }
 
-  putApiLogisticsPvtShippingPoliciesById(params: {
+  async putApiLogisticsPvtShippingPoliciesById(params: {
   id: string
   body: {
   name: string
@@ -52,13 +52,13 @@ class LogisticsApi_shippingPolicies {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/shipping-policies/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
-  deleteApiLogisticsPvtShippingPoliciesById(params: {
+  async deleteApiLogisticsPvtShippingPoliciesById(params: {
   id: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/shipping-policies/${encodePathParam(params.id)}` }, opts))
   }
 
-  getApiLogisticsPvtShippingPolicies(params: {
+  async getApiLogisticsPvtShippingPolicies(params: {
   page?: number
   perPage?: number
 } = {}, opts?: CallOptions): Promise<{
@@ -81,7 +81,7 @@ class LogisticsApi_shippingPolicies {
 }>(withCall({ method: 'GET', path: `/api/logistics/pvt/shipping-policies`, query: { 'page': params.page, 'perPage': params.perPage } }, opts))
   }
 
-  postApiLogisticsPvtShippingPolicies(params: {
+  async postApiLogisticsPvtShippingPolicies(params: {
   body: {
   id: string
   name: string
@@ -148,7 +148,7 @@ class LogisticsApi_shippingPolicies {
 class LogisticsApi_freightValues {
   constructor(private http: VtexHttpClient) {}
 
-  createUpdateFreightValues(params: {
+  async createUpdateFreightValues(params: {
   carrierId: string
   body: {
   absoluteMoneyCost: string
@@ -168,7 +168,7 @@ class LogisticsApi_freightValues {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/freights/${encodePathParam(params.carrierId)}/values/update`, body: params.body }, opts))
   }
 
-  freightValues(params: {
+  async freightValues(params: {
   carrierId: string
   postalcode: string
 }, opts?: CallOptions): Promise<{
@@ -208,27 +208,27 @@ class LogisticsApi_freightValues {
 class LogisticsApi_scheduledDelivery {
   constructor(private http: VtexHttpClient) {}
 
-  retrieveBlockedDeliveryWindows(params: {
+  async retrieveBlockedDeliveryWindows(params: {
   carrierId: string
 }, opts?: CallOptions): Promise<string[]> {
     return this.http.request<string[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/carriers/${encodePathParam(params.carrierId)}/getdayofweekblocked` }, opts))
   }
 
-  addBlockedDeliveryWindows(params: {
+  async addBlockedDeliveryWindows(params: {
   carrierId: string
   body: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/carriers/${encodePathParam(params.carrierId)}/adddayofweekblocked`, body: params.body }, opts))
   }
 
-  removeBlockedDeliveryWindows(params: {
+  async removeBlockedDeliveryWindows(params: {
   carrierId: string
   body: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/carriers/${encodePathParam(params.carrierId)}/removedayofweekblocked`, body: params.body }, opts))
   }
 
-  getApiLogisticsCapacityResourcesCarrierCapacityTypeShippingPolicyIdTimeFrames(params: {
+  async getApiLogisticsCapacityResourcesCarrierCapacityTypeShippingPolicyIdTimeFrames(params: {
   capacityType: string
   shippingPolicyId: string
   rangeStart: string
@@ -237,7 +237,7 @@ class LogisticsApi_scheduledDelivery {
     return this.http.request<DeliveryCapacity>(withCall({ method: 'GET', path: `/api/logistics-capacity/resources/carrier@${encodePathParam(params.capacityType)}@${encodePathParam(params.shippingPolicyId)}/time-frames`, query: { 'rangeStart': params.rangeStart, 'rangeEnd': params.rangeEnd } }, opts))
   }
 
-  getApiLogisticsCapacityResourcesCarrierCapacityTypeShippingPolicyIdTimeFramesByWindowDayFWindowStartTimeTWindowEndTime(params: {
+  async getApiLogisticsCapacityResourcesCarrierCapacityTypeShippingPolicyIdTimeFramesByWindowDayFWindowStartTimeTWindowEndTime(params: {
   capacityType: string
   shippingPolicyId: string
   windowDay: string
@@ -250,11 +250,11 @@ class LogisticsApi_scheduledDelivery {
 class LogisticsApi_docks {
   constructor(private http: VtexHttpClient) {}
 
-  allDocks(params: Record<string, never> = {}, opts?: CallOptions): Promise<ListDocksById[]> {
+  async allDocks(params: Record<string, never> = {}, opts?: CallOptions): Promise<ListDocksById[]> {
     return this.http.request<ListDocksById[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/docks` }, opts))
   }
 
-  createUpdateDock(params: {
+  async createUpdateDock(params: {
   body: {
   id: string
   name: string
@@ -284,25 +284,25 @@ class LogisticsApi_docks {
     return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/docks`, body: params.body }, opts))
   }
 
-  dockById(params: {
+  async dockById(params: {
   dockId: string
 }, opts?: CallOptions): Promise<ListDocksById> {
     return this.http.request<ListDocksById>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}` }, opts))
   }
 
-  dock(params: {
+  async dock(params: {
   dockId: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}` }, opts))
   }
 
-  activateDock(params: {
+  async activateDock(params: {
   dockId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}/activation` }, opts))
   }
 
-  deactivateDock(params: {
+  async deactivateDock(params: {
   dockId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/docks/${encodePathParam(params.dockId)}/deactivation` }, opts))
@@ -311,7 +311,7 @@ class LogisticsApi_docks {
 class LogisticsApi_warehouses {
   constructor(private http: VtexHttpClient) {}
 
-  allWarehouses(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async allWarehouses(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   id?: string
   name?: string
   warehouseDocks?: {
@@ -337,7 +337,7 @@ class LogisticsApi_warehouses {
 }[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/warehouses` }, opts))
   }
 
-  createUpdateWarehouse(params: {
+  async createUpdateWarehouse(params: {
   body: {
   id: string
   name: string
@@ -356,7 +356,7 @@ class LogisticsApi_warehouses {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses`, body: params.body }, opts))
   }
 
-  warehouseById(params: {
+  async warehouseById(params: {
   warehouseId: string
 }, opts?: CallOptions): Promise<{
   id?: string
@@ -384,19 +384,19 @@ class LogisticsApi_warehouses {
 }>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
-  removeWarehouse(params: {
+  async removeWarehouse(params: {
   warehouseId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
-  activateWarehouse(params: {
+  async activateWarehouse(params: {
   warehouseId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}/activation` }, opts))
   }
 
-  deactivateWarehouse(params: {
+  async deactivateWarehouse(params: {
   warehouseId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/configuration/warehouses/${encodePathParam(params.warehouseId)}/deactivation` }, opts))
@@ -405,7 +405,7 @@ class LogisticsApi_warehouses {
 class LogisticsApi_inventory {
   constructor(private http: VtexHttpClient) {}
 
-  inventoryBySku(params: {
+  async inventoryBySku(params: {
   skuId: string
 }, opts?: CallOptions): Promise<{
   skuId?: string
@@ -435,7 +435,7 @@ class LogisticsApi_inventory {
 }>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}` }, opts))
   }
 
-  inventoryperwarehouse(params: {
+  async inventoryperwarehouse(params: {
   skuId: string
   warehouseId: string
 }, opts?: CallOptions): Promise<{
@@ -470,7 +470,7 @@ class LogisticsApi_inventory {
 }[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
-  updateInventoryBySkuandWarehouse(params: {
+  async updateInventoryBySkuandWarehouse(params: {
   skuId: string
   warehouseId: string
   body: {
@@ -483,7 +483,7 @@ class LogisticsApi_inventory {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, body: params.body }, opts))
   }
 
-  patchApiLogisticsPvtInventorySkusBySkuIdWarehousesByWarehouseIdQuantity(params: {
+  async patchApiLogisticsPvtInventorySkusBySkuIdWarehousesByWarehouseIdQuantity(params: {
   skuId: string
   warehouseId: string
   body: {
@@ -495,7 +495,7 @@ class LogisticsApi_inventory {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/quantity`, body: params.body }, opts))
   }
 
-  patchApiLogisticsPvtInventorySkusBySkuIdWarehousesByWarehouseIdLeadTime(params: {
+  async patchApiLogisticsPvtInventorySkusBySkuIdWarehousesByWarehouseIdLeadTime(params: {
   skuId: string
   warehouseId: string
   body: {
@@ -505,7 +505,7 @@ class LogisticsApi_inventory {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/lead-time`, body: params.body }, opts))
   }
 
-  inventoryperdock(params: {
+  async inventoryperdock(params: {
   skuId: string
   dockId: string
 }, opts?: CallOptions): Promise<{
@@ -540,7 +540,7 @@ class LogisticsApi_inventory {
 }[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/docks/${encodePathParam(params.dockId)}` }, opts))
   }
 
-  inventoryperdockandwarehouse(params: {
+  async inventoryperdockandwarehouse(params: {
   skuId: string
   dockId: string
   warehouseId: string
@@ -576,7 +576,7 @@ class LogisticsApi_inventory {
 }[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/docks/${encodePathParam(params.dockId)}/warehouses/${encodePathParam(params.warehouseId)}` }, opts))
   }
 
-  getinventorywithdispatchedreservations(params: {
+  async getinventorywithdispatchedreservations(params: {
   itemId: string
   warehouseId: string
 }, opts?: CallOptions): Promise<{
@@ -599,7 +599,7 @@ class LogisticsApi_inventory {
 }[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.itemId)}/warehouses/${encodePathParam(params.warehouseId)}/dispatched` }, opts))
   }
 
-  getSupplyLots(params: {
+  async getSupplyLots(params: {
   skuId: string
   warehouseId: string
 }, opts?: CallOptions): Promise<{
@@ -638,7 +638,7 @@ class LogisticsApi_inventory {
 }[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/supplyLots` }, opts))
   }
 
-  saveSupplyLot(params: {
+  async saveSupplyLot(params: {
   skuId: string
   warehouseId: string
   supplyLotId: string
@@ -651,7 +651,7 @@ class LogisticsApi_inventory {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/inventory/items/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}/supplyLots/${encodePathParam(params.supplyLotId)}`, body: params.body }, opts))
   }
 
-  transferSupplyLot(params: {
+  async transferSupplyLot(params: {
   skuId: string
   warehouseId: string
   supplyLotId: string
@@ -662,7 +662,7 @@ class LogisticsApi_inventory {
 class LogisticsApi_batchOperations {
   constructor(private http: VtexHttpClient) {}
 
-  postAvailabilityV1InventoryBatch(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async postAvailabilityV1InventoryBatch(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   batchId: string
   status: "AWAITING_UPLOAD"
   upload: {
@@ -688,13 +688,13 @@ class LogisticsApi_batchOperations {
 }>(withCall({ method: 'POST', path: `/availability/v1/inventory/batch`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 
-  postAvailabilityV1InventoryBatchByBatchIdCommit(params: {
+  async postAvailabilityV1InventoryBatchByBatchIdCommit(params: {
   batchId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/availability/v1/inventory/batch/${encodePathParam(params.batchId)}/commit`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 
-  getAvailabilityV1InventoryBatchByBatchIdStatus(params: {
+  async getAvailabilityV1InventoryBatchByBatchIdStatus(params: {
   batchId: string
 }, opts?: CallOptions): Promise<{
   batchId: string
@@ -750,7 +750,7 @@ class LogisticsApi_batchOperations {
 }>(withCall({ method: 'GET', path: `/availability/v1/inventory/batch/${encodePathParam(params.batchId)}/status`, server: 'https://logistics.{environment}.com.br/{accountName}' }, opts))
   }
 
-  getAvailabilityV1InventoryBatchByBatchIdErrors(params: {
+  async getAvailabilityV1InventoryBatchByBatchIdErrors(params: {
   batchId: string
 }, opts?: CallOptions): Promise<{
   batchId: string
@@ -767,13 +767,13 @@ class LogisticsApi_batchOperations {
 class LogisticsApi_holidays {
   constructor(private http: VtexHttpClient) {}
 
-  holidayById(params: {
+  async holidayById(params: {
   holidayId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/holidays/${encodePathParam(params.holidayId)}` }, opts))
   }
 
-  createUpdateHoliday(params: {
+  async createUpdateHoliday(params: {
   holidayId: string
   body: {
   name: string
@@ -783,20 +783,20 @@ class LogisticsApi_holidays {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/logistics/pvt/configuration/holidays/${encodePathParam(params.holidayId)}`, body: params.body }, opts))
   }
 
-  holiday(params: {
+  async holiday(params: {
   holidayId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/holidays/${encodePathParam(params.holidayId)}` }, opts))
   }
 
-  allHolidays(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+  async allHolidays(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/holidays` }, opts))
   }
 }
 class LogisticsApi_reservations {
   constructor(private http: VtexHttpClient) {}
 
-  createReservation(params: {
+  async createReservation(params: {
   body: {
   salesChannel: string
   lockId: string | null
@@ -960,7 +960,7 @@ class LogisticsApi_reservations {
 }>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations`, body: params.body }, opts))
   }
 
-  reservationById(params: {
+  async reservationById(params: {
   reservationId: string
 }, opts?: CallOptions): Promise<{
   LastUpdateDateUtc?: string
@@ -1116,25 +1116,25 @@ class LogisticsApi_reservations {
 }>(withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}` }, opts))
   }
 
-  confirmReservation(params: {
+  async confirmReservation(params: {
   reservationId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}/confirm` }, opts))
   }
 
-  acknowledgmentReservation(params: {
+  async acknowledgmentReservation(params: {
   reservationId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}/acknowledge` }, opts))
   }
 
-  cancelReservation(params: {
+  async cancelReservation(params: {
   reservationId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/logistics/pvt/inventory/reservations/${encodePathParam(params.reservationId)}/cancel` }, opts))
   }
 
-  reservationbyWarehouseandSku(params: {
+  async reservationbyWarehouseandSku(params: {
   warehouseId: string
   skuId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -1144,7 +1144,7 @@ class LogisticsApi_reservations {
 class LogisticsApi_sla {
   constructor(private http: VtexHttpClient) {}
 
-  calculateSLA(params: {
+  async calculateSLA(params: {
   body: {
   items: {
   id: string
@@ -1390,17 +1390,17 @@ class LogisticsApi_sla {
 class LogisticsApi_pickupPoints {
   constructor(private http: VtexHttpClient) {}
 
-  listAllPickupPpoints(params: Record<string, never> = {}, opts?: CallOptions): Promise<PickupPoint[]> {
+  async listAllPickupPpoints(params: Record<string, never> = {}, opts?: CallOptions): Promise<PickupPoint[]> {
     return this.http.request<PickupPoint[]>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints` }, opts))
   }
 
-  getById(params: {
+  async getById(params: {
   pickupPointId: string
 }, opts?: CallOptions): Promise<PickupPoint> {
     return this.http.request<PickupPoint>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/pickuppoints/${encodePathParam(params.pickupPointId)}` }, opts))
   }
 
-  createUpdatePickupPoint(params: {
+  async createUpdatePickupPoint(params: {
   pickupPointId: string
   body: {
   id: string
@@ -1439,13 +1439,13 @@ class LogisticsApi_pickupPoints {
     return this.http.request<PickupPoint>(withCall({ method: 'PUT', path: `/api/logistics/pvt/configuration/pickuppoints/${encodePathParam(params.pickupPointId)}`, body: params.body }, opts))
   }
 
-  delete(params: {
+  async delete(params: {
   pickupPointId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/pickuppoints/${encodePathParam(params.pickupPointId)}` }, opts))
   }
 
-  getpaged(params: {
+  async getpaged(params: {
   page?: number
   pageSize?: number
   keyword?: string
@@ -1472,7 +1472,7 @@ class LogisticsApi_pickupPoints {
 class LogisticsApi_polygons {
   constructor(private http: VtexHttpClient) {}
 
-  pagedPolygons(params: {
+  async pagedPolygons(params: {
   page?: number
   perPage?: number
 } = {}, opts?: CallOptions): Promise<{
@@ -1495,7 +1495,7 @@ class LogisticsApi_polygons {
 }>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/geoshape`, query: { 'page': params.page, 'perPage': params.perPage } }, opts))
   }
 
-  createUpdatePolygon(params: {
+  async createUpdatePolygon(params: {
   body: {
   name: string
   geoShape: {
@@ -1506,7 +1506,7 @@ class LogisticsApi_polygons {
     return this.http.request<string>(withCall({ method: 'PUT', path: `/api/logistics/pvt/configuration/geoshape`, body: params.body }, opts))
   }
 
-  polygonbyId(params: {
+  async polygonbyId(params: {
   polygonName: string
 }, opts?: CallOptions): Promise<{
   isActive?: boolean
@@ -1526,7 +1526,7 @@ class LogisticsApi_polygons {
 }>(withCall({ method: 'GET', path: `/api/logistics/pvt/configuration/geoshape/${encodePathParam(params.polygonName)}` }, opts))
   }
 
-  deletePolygon(params: {
+  async deletePolygon(params: {
   polygonName: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/api/logistics/pvt/configuration/geoshape/${encodePathParam(params.polygonName)}` }, opts))

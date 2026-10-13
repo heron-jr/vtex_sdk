@@ -6,7 +6,7 @@ import type { CreateChannel, CreateFeedRequest, UpdateFeedRequest, CreateInterac
 class SentOffersApi_offerManagement {
   constructor(private http: VtexHttpClient) {}
 
-  createChannel(params: {
+  async createChannel(params: {
   an: string
   body: CreateChannel
 }, opts?: CallOptions): Promise<{
@@ -23,7 +23,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'POST', path: `/api/sent-offers/channels`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  listFeeds(params: {
+  async listFeeds(params: {
   an: string
 }, opts?: CallOptions): Promise<{
   account?: string
@@ -43,7 +43,7 @@ class SentOffersApi_offerManagement {
 }[]>(withCall({ method: 'GET', path: `/api/sent-offers/feeds`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  createFeed(params: {
+  async createFeed(params: {
   an: string
   body: CreateFeedRequest
 }, opts?: CallOptions): Promise<{
@@ -60,7 +60,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'POST', path: `/api/sent-offers/feeds`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  retrieveFeed(params: {
+  async retrieveFeed(params: {
   feedId: string
   an: string
 }, opts?: CallOptions): Promise<{
@@ -81,7 +81,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'GET', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  updateFeed(params: {
+  async updateFeed(params: {
   feedId: string
   an: string
   body: UpdateFeedRequest
@@ -89,14 +89,14 @@ class SentOffersApi_offerManagement {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  deleteFeed(params: {
+  async deleteFeed(params: {
   feedId: string
   an: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  createInteraction(params: {
+  async createInteraction(params: {
   feedId: string
   skuId: string
   an: string
@@ -129,7 +129,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'POST', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  retrieveInteraction(params: {
+  async retrieveInteraction(params: {
   feedId: string
   skuId: string
   interactionId: string
@@ -162,7 +162,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'GET', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  closeInteraction(params: {
+  async closeInteraction(params: {
   feedId: string
   skuId: string
   interactionId: string
@@ -171,7 +171,7 @@ class SentOffersApi_offerManagement {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}/close`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  createLog(params: {
+  async createLog(params: {
   feedId: string
   skuId: string
   interactionId: string
@@ -201,7 +201,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'POST', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}/logs`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  retrieveLog(params: {
+  async retrieveLog(params: {
   feedId: string
   skuId: string
   interactionId: string
@@ -239,7 +239,7 @@ class SentOffersApi_offerManagement {
 }>(withCall({ method: 'GET', path: `/api/sent-offers/feeds/${encodePathParam(params.feedId)}/skus/${encodePathParam(params.skuId)}/interactions/${encodePathParam(params.interactionId)}/logs/${encodePathParam(params.logId)}`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  searchInteractions(params: {
+  async searchInteractions(params: {
   an: string
   q: string
   channels?: string
@@ -256,7 +256,7 @@ class SentOffersApi_offerManagement {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/sent-offers/search/interactions`, query: { 'an': params.an, 'q': params.q, 'channels': params.channels, 'brand': params.brand, 'category': params.category, 'scope': params.scope, 'result': params.result, 'sort': params.sort, 'from': params.from, 'to': params.to, 'fromDate': params.fromDate, 'toDate': params.toDate }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  searchErrors(params: {
+  async searchErrors(params: {
   an: string
   q: string
   channels: string
@@ -270,7 +270,7 @@ class SentOffersApi_offerManagement {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/sent-offers/search/errors`, query: { 'an': params.an, 'q': params.q, 'channels': params.channels, 'brand': params.brand, 'category': params.category, 'errorCategory': params.errorCategory, 'sort': params.sort, 'from': params.from, 'to': params.to }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  retrieveErrorCode(params: {
+  async retrieveErrorCode(params: {
   errorCodeId: string
 }, opts?: CallOptions): Promise<{
   id?: string

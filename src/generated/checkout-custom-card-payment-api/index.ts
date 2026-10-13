@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class CheckoutCustomCardPaymentApi_profileManagement {
   constructor(private http: VtexHttpClient) {}
 
-  postApiProfileSystemPvtProfiles(params: {
+  async postApiProfileSystemPvtProfiles(params: {
   body: {
   personalData: {
   email: string
@@ -43,7 +43,7 @@ class CheckoutCustomCardPaymentApi_profileManagement {
 }>(withCall({ method: 'POST', path: `/api/profile-system/pvt/profiles`, body: params.body }, opts))
   }
 
-  getApiProfileSystemPvtProfilesByProfileIdVcsCheckout(params: {
+  async getApiProfileSystemPvtProfilesByProfileIdVcsCheckout(params: {
   profileId: string
 }, opts?: CallOptions): Promise<{
   paymentData?: string
@@ -59,7 +59,7 @@ class CheckoutCustomCardPaymentApi_profileManagement {
 }>(withCall({ method: 'GET', path: `/api/profile-system/pvt/profiles/${encodePathParam(params.profileId)}/vcs-checkout` }, opts))
   }
 
-  deleteApiProfileSystemPvtProfilesByProfileIdPersonalData(params: {
+  async deleteApiProfileSystemPvtProfilesByProfileIdPersonalData(params: {
   profileId: string
   an: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -69,7 +69,7 @@ class CheckoutCustomCardPaymentApi_profileManagement {
 class CheckoutCustomCardPaymentApi_cardTokenVault {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCardTokenVaultTokens(params: {
+  async postApiCardTokenVaultTokens(params: {
   body: {
   providerId: string
   card: {
@@ -165,7 +165,7 @@ class CheckoutCustomCardPaymentApi_cardTokenVault {
 class CheckoutCustomCardPaymentApi_checkoutOperations {
   constructor(private http: VtexHttpClient) {}
 
-  postApiCheckoutPubOrderFormByOrderFormIdItems(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdItems(params: {
   orderFormId: string
   body: {
   orderItems: {
@@ -708,7 +708,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items`, body: params.body }, opts))
   }
 
-  postApiCheckoutPubOrderFormByOrderFormIdAttachmentsClientProfileData(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdAttachmentsClientProfileData(params: {
   orderFormId: string
   body: {
   email: string
@@ -1197,7 +1197,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/clientProfileData`, body: params.body }, opts))
   }
 
-  postApiCheckoutPubOrderFormByOrderFormIdAttachmentsPaymentData(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdAttachmentsPaymentData(params: {
   orderFormId: string
   body: {
   payments: {
@@ -1695,7 +1695,7 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 }>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/paymentData`, body: params.body }, opts))
   }
 
-  postApiCheckoutPubOrderFormByOrderFormIdTransaction(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdTransaction(params: {
   orderFormId: string
   body: {
   savePersonalData?: boolean
@@ -2231,11 +2231,11 @@ class CheckoutCustomCardPaymentApi_checkoutOperations {
 class CheckoutCustomCardPaymentApi_authentication {
   constructor(private http: VtexHttpClient) {}
 
-  postApiVtexidPubAuthenticationStartlogin(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
+  async postApiVtexidPubAuthenticationStartlogin(params: Record<string, never> = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/vtexid/pub/authentication/startlogin` }, opts))
   }
 
-  postApiVtexidPubAuthenticationClassicValidate(params: {
+  async postApiVtexidPubAuthenticationClassicValidate(params: {
   an: string
   body: URLSearchParams | Record<string, string>
 }, opts?: CallOptions): Promise<{
@@ -2279,7 +2279,7 @@ class CheckoutCustomCardPaymentApi_authentication {
 class CheckoutCustomCardPaymentApi_paymentGateway {
   constructor(private http: VtexHttpClient) {}
 
-  getApiPvtTransactionsByTransactionId(params: {
+  async getApiPvtTransactionsByTransactionId(params: {
   transactionId: string
 }, opts?: CallOptions): Promise<{
   status?: "Approved"
@@ -2291,7 +2291,7 @@ class CheckoutCustomCardPaymentApi_paymentGateway {
 }>(withCall({ method: 'GET', path: `/api/pvt/transactions/${encodePathParam(params.transactionId)}` }, opts))
   }
 
-  getApiPvtTransactionsByTransactionIdPayments(params: {
+  async getApiPvtTransactionsByTransactionIdPayments(params: {
   transactionId: string
   an: string
 }, opts?: CallOptions): Promise<{
@@ -2310,7 +2310,7 @@ class CheckoutCustomCardPaymentApi_paymentGateway {
 }[]>(withCall({ method: 'GET', path: `/api/pvt/transactions/${encodePathParam(params.transactionId)}/payments`, query: { 'an': params.an } }, opts))
   }
 
-  getApiPvtAccountsByAccountId(params: {
+  async getApiPvtAccountsByAccountId(params: {
   accountId: string
 }, opts?: CallOptions): Promise<{
   bin?: string

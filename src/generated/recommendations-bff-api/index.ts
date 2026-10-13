@@ -6,7 +6,7 @@ import type { StartSessionV2Request, StartSessionV2Response, RecommendationsV2Re
 class RecommendationsBffApi_events {
   constructor(private http: VtexHttpClient) {}
 
-  postApiRecommendBffV2EventsRecommendationView(params: {
+  async postApiRecommendBffV2EventsRecommendationView(params: {
   an: string
   'x-vtex-rec-origin': string
   body: RecommendationViewEventV2Request
@@ -14,7 +14,7 @@ class RecommendationsBffApi_events {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/recommend-bff/v2/events/recommendation-view`, query: { 'an': params.an }, headers: { 'x-vtex-rec-origin': params['x-vtex-rec-origin'] }, body: params.body, server: 'https://api.{environment}.com.br' }, opts))
   }
 
-  postApiRecommendBffV2EventsRecommendationClick(params: {
+  async postApiRecommendBffV2EventsRecommendationClick(params: {
   an: string
   'x-vtex-rec-origin': string
   body: RecommendationClickEventV2Request
@@ -22,7 +22,7 @@ class RecommendationsBffApi_events {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/recommend-bff/v2/events/recommendation-click`, query: { 'an': params.an }, headers: { 'x-vtex-rec-origin': params['x-vtex-rec-origin'] }, body: params.body, server: 'https://api.{environment}.com.br' }, opts))
   }
 
-  postApiRecommendBffV2EventsProductView(params: {
+  async postApiRecommendBffV2EventsProductView(params: {
   an: string
   'x-vtex-rec-origin': string
   'user-agent'?: string
@@ -34,7 +34,7 @@ class RecommendationsBffApi_events {
 class RecommendationsBffApi_recommendations {
   constructor(private http: VtexHttpClient) {}
 
-  getApiRecommendBffV2Recommendations(params: {
+  async getApiRecommendBffV2Recommendations(params: {
   an: string
   campaignVrn: string
   userId?: string
@@ -52,7 +52,7 @@ class RecommendationsBffApi_recommendations {
 class RecommendationsBffApi_users {
   constructor(private http: VtexHttpClient) {}
 
-  postApiRecommendBffV2UsersStartSession(params: {
+  async postApiRecommendBffV2UsersStartSession(params: {
   an: string
   'x-vtex-rec-origin': string
   'x-forwarded-host'?: string

@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class SslCertificatesApi_sslCertificates {
   constructor(private http: VtexHttpClient) {}
 
-  getApiEdgeCertificates(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getApiEdgeCertificates(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   id?: string
   account?: string
   host?: string
@@ -49,7 +49,7 @@ class SslCertificatesApi_sslCertificates {
 }[]>(withCall({ method: 'GET', path: `/api/edge/certificates` }, opts))
   }
 
-  putApiEdgeCertificates(params: {
+  async putApiEdgeCertificates(params: {
   body: {
   hosts: string[]
   certificate: string
@@ -99,7 +99,7 @@ class SslCertificatesApi_sslCertificates {
 }[]>(withCall({ method: 'PUT', path: `/api/edge/certificates`, body: params.body }, opts))
   }
 
-  getApiEdgeCertificatesByCertificateId(params: {
+  async getApiEdgeCertificatesByCertificateId(params: {
   certificateId: string
 }, opts?: CallOptions): Promise<{
   id?: string

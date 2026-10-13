@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class VtexDoApi_note {
   constructor(private http: VtexHttpClient) {}
 
-  getNotesbyorderId(params: {
+  async getNotesbyorderId(params: {
   'target.id': string
   perPage?: number
   page?: number
@@ -14,7 +14,7 @@ class VtexDoApi_note {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/notes`, query: { 'target.id': params['target.id'], 'perPage': params.perPage, 'page': params.page, 'reason': params.reason }, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
-  newNote(params: {
+  async newNote(params: {
   body: {
   target: {
   id?: string
@@ -68,7 +68,7 @@ class VtexDoApi_note {
 }>(withCall({ method: 'POST', path: `/notes`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
-  getNote(params: {
+  async getNote(params: {
   noteId: string
   reason?: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -78,7 +78,7 @@ class VtexDoApi_note {
 class VtexDoApi_task {
   constructor(private http: VtexHttpClient) {}
 
-  listtasksbyassignee(params: {
+  async listtasksbyassignee(params: {
   'assignee.email'?: string
   'target.id'?: string
   context?: string
@@ -177,7 +177,7 @@ class VtexDoApi_task {
 }>(withCall({ method: 'GET', path: `/tasks`, query: { 'assignee.email': params['assignee.email'], 'target.id': params['target.id'], 'context': params.context, 'page': params.page, 'perPage': params.perPage, 'status': params.status }, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
-  newTask(params: {
+  async newTask(params: {
   body: {
   target: {
   id: string
@@ -207,13 +207,13 @@ class VtexDoApi_task {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/tasks`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
-  getTask(params: {
+  async getTask(params: {
   taskId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/tasks/${encodePathParam(params.taskId)}`, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
-  editTask(params: {
+  async editTask(params: {
   taskId: string
   body: {
   status: "Open" | "Closed" | "Suspended" | "InProgress"
@@ -222,7 +222,7 @@ class VtexDoApi_task {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/tasks/${encodePathParam(params.taskId)}`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api/do' }, opts))
   }
 
-  addComment(params: {
+  async addComment(params: {
   taskId: string
   body: {
   text: string

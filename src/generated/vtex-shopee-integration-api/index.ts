@@ -6,7 +6,7 @@ import type { CancelSuccessResponse, ShopeeOrderHookRequest, ShippingLabelDownlo
 class VtexShopeeIntegrationApi_shopeeOrders {
   constructor(private http: VtexHttpClient) {}
 
-  getApiShopeeintegrationOrderShippingLabel(params: {
+  async getApiShopeeintegrationOrderShippingLabel(params: {
   an: string
   shopeeOrderId: string
 }, opts?: CallOptions): Promise<ShippingLabelDownloadResponse> {
@@ -16,7 +16,7 @@ class VtexShopeeIntegrationApi_shopeeOrders {
 class VtexShopeeIntegrationApi_vtexOrderCallbacks {
   constructor(private http: VtexHttpClient) {}
 
-  postApiShopeeintegrationByAccountNamePubOrdersByMktplaceOrderIdCancelDelivery(params: {
+  async postApiShopeeintegrationByAccountNamePubOrdersByMktplaceOrderIdCancelDelivery(params: {
   accountName: string
   mktplaceOrderId: string
 }, opts?: CallOptions): Promise<CancelSuccessResponse> {

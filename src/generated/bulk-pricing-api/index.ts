@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class BulkPricingApi_batchImports {
   constructor(private http: VtexHttpClient) {}
 
-  postApiPriceImporterPvtImportByImportType(params: {
+  async postApiPriceImporterPvtImportByImportType(params: {
   importType: "base-prices" | "fixed-prices"
   an?: string
   output?: "none" | "email"
@@ -38,7 +38,7 @@ class BulkPricingApi_batchImports {
 class BulkPricingApi_batchStatus {
   constructor(private http: VtexHttpClient) {}
 
-  getApiPriceImporterPvtBatchesByBatchId(params: {
+  async getApiPriceImporterPvtBatchesByBatchId(params: {
   batchId: string
 }, opts?: CallOptions): Promise<{
   batchId?: string
@@ -72,7 +72,7 @@ class BulkPricingApi_batchStatus {
 }>(withCall({ method: 'GET', path: `/api/price-importer/pvt/batches/${encodePathParam(params.batchId)}` }, opts))
   }
 
-  getApiPriceImporterPvtBatchesByBatchIdErrors(params: {
+  async getApiPriceImporterPvtBatchesByBatchIdErrors(params: {
   batchId: string
 }, opts?: CallOptions): Promise<{
   url?: string

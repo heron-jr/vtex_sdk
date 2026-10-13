@@ -6,7 +6,7 @@ import type { CreateUpdateDimensionRequestBody, CreateUpdateRuleRequestBody, Err
 class BuyingPoliciesApi_dimensions {
   constructor(private http: VtexHttpClient) {}
 
-  getByAccountNameAuthorizationDimensions(params: {
+  async getByAccountNameAuthorizationDimensions(params: {
   accountName: string
   id?: string[]
   unitId?: string[]
@@ -91,14 +91,14 @@ class BuyingPoliciesApi_dimensions {
 }[]>(withCall({ method: 'GET', path: `/${encodePathParam(params.accountName)}/authorization-dimensions`, query: { 'id': params.id, 'unitId': params.unitId, 'name': params.name } }, opts))
   }
 
-  postByAccountNameAuthorizationDimensions(params: {
+  async postByAccountNameAuthorizationDimensions(params: {
   accountName: string
   body: CreateUpdateDimensionRequestBody
 }, opts?: CallOptions): Promise<DimensionResponse> {
     return this.http.request<DimensionResponse>(withCall({ method: 'POST', path: `/${encodePathParam(params.accountName)}/authorization-dimensions`, body: params.body }, opts))
   }
 
-  putByAccountNameAuthorizationDimensionsByDimensionId(params: {
+  async putByAccountNameAuthorizationDimensionsByDimensionId(params: {
   accountName: string
   dimensionId: string
   body: CreateUpdateDimensionRequestBody
@@ -106,7 +106,7 @@ class BuyingPoliciesApi_dimensions {
     return this.http.request<DimensionResponse>(withCall({ method: 'PUT', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}`, body: params.body }, opts))
   }
 
-  deleteByAccountNameAuthorizationDimensionsByDimensionId(params: {
+  async deleteByAccountNameAuthorizationDimensionsByDimensionId(params: {
   accountName: string
   dimensionId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -116,7 +116,7 @@ class BuyingPoliciesApi_dimensions {
 class BuyingPoliciesApi_rules {
   constructor(private http: VtexHttpClient) {}
 
-  postByAccountNameAuthorizationDimensionsByDimensionIdRules(params: {
+  async postByAccountNameAuthorizationDimensionsByDimensionIdRules(params: {
   accountName: string
   dimensionId: string
   body: CreateUpdateRuleRequestBody
@@ -124,7 +124,7 @@ class BuyingPoliciesApi_rules {
     return this.http.request<RuleResponse>(withCall({ method: 'POST', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules`, body: params.body }, opts))
   }
 
-  putByAccountNameAuthorizationDimensionsByDimensionIdRules(params: {
+  async putByAccountNameAuthorizationDimensionsByDimensionIdRules(params: {
   accountName: string
   dimensionId: string
   body: CreateUpdateRuleRequestBody[]
@@ -132,7 +132,7 @@ class BuyingPoliciesApi_rules {
     return this.http.request<RuleResponse[]>(withCall({ method: 'PUT', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules`, body: params.body }, opts))
   }
 
-  putByAccountNameAuthorizationDimensionsByDimensionIdRulesByRuleId(params: {
+  async putByAccountNameAuthorizationDimensionsByDimensionIdRulesByRuleId(params: {
   accountName: string
   dimensionId: string
   ruleId: string
@@ -141,7 +141,7 @@ class BuyingPoliciesApi_rules {
     return this.http.request<RuleResponse>(withCall({ method: 'PUT', path: `/${encodePathParam(params.accountName)}/authorization-dimensions/${encodePathParam(params.dimensionId)}/rules/${encodePathParam(params.ruleId)}`, body: params.body }, opts))
   }
 
-  deleteByAccountNameAuthorizationDimensionsByDimensionIdRulesByRuleId(params: {
+  async deleteByAccountNameAuthorizationDimensionsByDimensionIdRulesByRuleId(params: {
   accountName: string
   dimensionId: string
   ruleId: string
@@ -152,7 +152,7 @@ class BuyingPoliciesApi_rules {
 class BuyingPoliciesApi_manualAuthorization {
   constructor(private http: VtexHttpClient) {}
 
-  postCommercialAuthorizationsByOrderAuthIdCallback(params: {
+  async postCommercialAuthorizationsByOrderAuthIdCallback(params: {
   orderAuthId: string
   body: {
   params: {

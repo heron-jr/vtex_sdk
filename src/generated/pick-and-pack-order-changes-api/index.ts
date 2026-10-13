@@ -6,7 +6,7 @@ import type { UpdateDeadlineRequest, UpdateDeadlineResponse } from './types.js'
 class PickAndPackOrderChangesApi_orderChanges {
   constructor(private http: VtexHttpClient) {}
 
-  putOrdersByOrderIdDeadline(params: {
+  async putOrdersByOrderIdDeadline(params: {
   orderId: string
   body: UpdateDeadlineRequest
 }, opts?: CallOptions): Promise<UpdateDeadlineResponse> {
@@ -16,7 +16,7 @@ class PickAndPackOrderChangesApi_orderChanges {
 class PickAndPackOrderChangesApi_binLocations {
   constructor(private http: VtexHttpClient) {}
 
-  getBySkuIdWarehousesByWarehouseId(params: {
+  async getBySkuIdWarehousesByWarehouseId(params: {
   skuId: string
   warehouseId: string
 }, opts?: CallOptions): Promise<{
@@ -33,7 +33,7 @@ class PickAndPackOrderChangesApi_binLocations {
 }>(withCall({ method: 'GET', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
-  postBySkuIdWarehousesByWarehouseId(params: {
+  async postBySkuIdWarehousesByWarehouseId(params: {
   skuId: string
   warehouseId: string
   body: {
@@ -53,7 +53,7 @@ class PickAndPackOrderChangesApi_binLocations {
 }>(withCall({ method: 'POST', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, body: params.body, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
-  putBySkuIdWarehousesByWarehouseId(params: {
+  async putBySkuIdWarehousesByWarehouseId(params: {
   skuId: string
   warehouseId: string
   body: {
@@ -73,14 +73,14 @@ class PickAndPackOrderChangesApi_binLocations {
 }>(withCall({ method: 'PUT', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, body: params.body, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
-  deleteBySkuIdWarehousesByWarehouseId(params: {
+  async deleteBySkuIdWarehousesByWarehouseId(params: {
   skuId: string
   warehouseId: string
 }, opts?: CallOptions): Promise<Record<string, unknown>[]> {
     return this.http.request<Record<string, unknown>[]>(withCall({ method: 'DELETE', path: `/${encodePathParam(params.skuId)}/warehouses/${encodePathParam(params.warehouseId)}`, server: 'https://{accountName}.myvtex.com/pickpack/bin-location' }, opts))
   }
 
-  getBySkuIdWarehouses(params: {
+  async getBySkuIdWarehouses(params: {
   skuId: string
 }, opts?: CallOptions): Promise<{
   location?: string
@@ -96,7 +96,7 @@ class PickAndPackOrderChangesApi_binLocations {
 }[]>(withCall({ method: 'GET', path: `/${encodePathParam(params.skuId)}/warehouses`, server: 'https://{accountName}.myvtex.com/pickpack/warehouses' }, opts))
   }
 
-  deleteBySkuIdWarehouses(params: {
+  async deleteBySkuIdWarehouses(params: {
   skuId: string
 }, opts?: CallOptions): Promise<Record<string, unknown>[]> {
     return this.http.request<Record<string, unknown>[]>(withCall({ method: 'DELETE', path: `/${encodePathParam(params.skuId)}/warehouses`, server: 'https://{accountName}.{environment}.com.br/vtex_pickandpack' }, opts))

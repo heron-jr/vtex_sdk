@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class MarketplaceProtocolApi_externalMarketplace {
   constructor(private http: VtexHttpClient) {}
 
-  listAllChannels(params: {
+  async listAllChannels(params: {
   an: string
 }, opts?: CallOptions): Promise<{
   id?: number
@@ -17,7 +17,7 @@ class MarketplaceProtocolApi_externalMarketplace {
 }>(withCall({ method: 'GET', path: `/api/channel-manager/channel/all`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  retrieveChannel(params: {
+  async retrieveChannel(params: {
   an: string
 }, opts?: CallOptions): Promise<{
   id?: number
@@ -29,7 +29,7 @@ class MarketplaceProtocolApi_externalMarketplace {
 }>(withCall({ method: 'GET', path: `/api/channel-manager/channel/:channelId`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  vtexMapperRegistration(params: {
+  async vtexMapperRegistration(params: {
   an: string
   body: {
   displayName: string
@@ -44,7 +44,7 @@ class MarketplaceProtocolApi_externalMarketplace {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/mkp-category-mapper/connector/register`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  sendCategoryMappingVtexMapper(params: {
+  async sendCategoryMappingVtexMapper(params: {
   id: string
   body: {
   categories: {
@@ -78,7 +78,7 @@ class MarketplaceProtocolApi_externalMarketplace {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/mkp-category-mapper/categories/marketplace/${encodePathParam(params.id)}`, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  registerConnector(params: {
+  async registerConnector(params: {
   an: string
   body: {
   name?: string
@@ -153,7 +153,7 @@ class MarketplaceProtocolApi_externalMarketplace {
 }>(withCall({ method: 'POST', path: `/api/channel-manager/connector`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  listAllConnectors(params: {
+  async listAllConnectors(params: {
   an: string
   segment?: string
   orderByConnectorType?: string
@@ -238,7 +238,7 @@ class MarketplaceProtocolApi_externalMarketplace {
 }>(withCall({ method: 'GET', path: `/api/channel-manager/connector/all`, query: { 'an': params.an, 'segment': params.segment, 'orderByConnectorType': params.orderByConnectorType, 'active': params.active, 'name': params.name, 'page': params.page, 'pageSize': params.pageSize, 'country': params.country, 'type': params.type, 'account': params.account }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  retrieveConnector(params: {
+  async retrieveConnector(params: {
   an: string
 }, opts?: CallOptions): Promise<{
   id?: number
@@ -298,7 +298,7 @@ class MarketplaceProtocolApi_externalMarketplace {
 }>(withCall({ method: 'GET', path: `/api/channel-manager/connector/:connectorId`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  upsertMerchantConnection(params: {
+  async upsertMerchantConnection(params: {
   an: string
   body: {
   isActive: boolean
@@ -308,7 +308,7 @@ class MarketplaceProtocolApi_externalMarketplace {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/channel-manager/connector/:connectorId`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  fullUpdateConnector(params: {
+  async fullUpdateConnector(params: {
   an: string
   body: {
   name: string
@@ -324,7 +324,7 @@ class MarketplaceProtocolApi_externalMarketplace {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/channel-manager/connector/:connectorId`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  partialUpdateConnector(params: {
+  async partialUpdateConnector(params: {
   an: string
   body: {
   path: string
@@ -335,7 +335,7 @@ class MarketplaceProtocolApi_externalMarketplace {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/channel-manager/connector/:connectorId`, query: { 'an': params.an }, body: params.body, server: 'https://portal.{environment}.com.br' }, opts))
   }
 
-  removeConnector(params: {
+  async removeConnector(params: {
   an: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/channel-manager/connector/:connectorId`, query: { 'an': params.an }, server: 'https://portal.{environment}.com.br' }, opts))

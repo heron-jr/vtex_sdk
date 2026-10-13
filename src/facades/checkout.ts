@@ -5,14 +5,14 @@ import { encodePathParam, withCall } from '../core/call.js'
 export class CheckoutFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  getCart(orderFormId: string, opts?: CallOptions): Promise<unknown> {
+  async getCart(orderFormId: string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(
       withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(orderFormId)}` }, opts),
     )
   }
 
   /** A read-like POST, so it is retried like a GET unless the caller overrides `idempotent`. */
-  simulate(body: unknown, opts?: CallOptions): Promise<unknown> {
+  async simulate(body: unknown, opts?: CallOptions): Promise<unknown> {
     return this.http.request(
       withCall({ method: 'POST', path: '/api/checkout/pub/orderForms/simulation', body, idempotent: true }, opts),
     )

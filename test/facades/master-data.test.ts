@@ -26,10 +26,10 @@ describe('MasterDataFacade', () => {
     )
   })
 
-  it('rejects an entity that would change the path', () => {
+  it('rejects an entity that would change the path', async () => {
     const fetchMock = vi.fn()
     const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
-    expect(() => md.get('CL/../../oms/pvt/orders', 'x')).toThrow(VtexUsageError)
+    await expect(md.get('CL/../../oms/pvt/orders', 'x')).rejects.toBeInstanceOf(VtexUsageError)
     expect(() => md.scroll('CL/search?_where=email=*#')).toThrow(VtexUsageError)
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -163,7 +163,7 @@ describe('MasterDataFacade', () => {
       '/api/dataentities/CL/documents/x%23',
       '/api/dataentities/CL/documents/x%3Fy',
     ])
-    for (const id of ['..', '.', '']) expect(() => md.get('CL', id)).toThrow(VtexUsageError)
+    for (const id of ['..', '.', '']) await expect(md.get('CL', id)).rejects.toBeInstanceOf(VtexUsageError)
     await md.get('CL', 'doc1', null as never)
   })
 

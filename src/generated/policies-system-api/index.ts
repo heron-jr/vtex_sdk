@@ -6,37 +6,37 @@ import type { PolicyActionGetResponse, EvaluatePolicyRequest, PolicySaveRequest,
 class PoliciesSystemApi_policy {
   constructor(private http: VtexHttpClient) {}
 
-  policyList(params: Record<string, never> = {}, opts?: CallOptions): Promise<PolicyGetResponse[]> {
+  async policyList(params: Record<string, never> = {}, opts?: CallOptions): Promise<PolicyGetResponse[]> {
     return this.http.request<PolicyGetResponse[]>(withCall({ method: 'GET', path: `/api/policy-engine/policies` }, opts))
   }
 
-  policyEvaluate(params: {
+  async policyEvaluate(params: {
   body: EvaluatePolicyRequest
 }, opts?: CallOptions): Promise<PolicyActionGetResponse[]> {
     return this.http.request<PolicyActionGetResponse[]>(withCall({ method: 'POST', path: `/api/policy-engine/evaluate`, body: params.body }, opts))
   }
 
-  policyGet(params: {
+  async policyGet(params: {
   id: string
 }, opts?: CallOptions): Promise<PolicyGetResponse[]> {
     return this.http.request<PolicyGetResponse[]>(withCall({ method: 'GET', path: `/api/policy-engine/policies/${encodePathParam(params.id)}` }, opts))
   }
 
-  policyCreateOrUpdate(params: {
+  async policyCreateOrUpdate(params: {
   id: string
   body: PolicySaveRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/policy-engine/policies/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
-  policyUpdate(params: {
+  async policyUpdate(params: {
   id: string
   body: PolicySaveRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/policy-engine/policies/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
-  policyDelete(params: {
+  async policyDelete(params: {
   id: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/policy-engine/policies/${encodePathParam(params.id)}` }, opts))

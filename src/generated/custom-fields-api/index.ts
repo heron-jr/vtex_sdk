@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class CustomFieldsApi_customFieldSettings {
   constructor(private http: VtexHttpClient) {}
 
-  getApiDataentitiesCustomFieldSettingsSearch(params: {
+  async getApiDataentitiesCustomFieldSettingsSearch(params: {
   _schema: string
   _fields: string
   _where: string
@@ -73,7 +73,7 @@ class CustomFieldsApi_customFieldSettings {
 }[]>(withCall({ method: 'GET', path: `/api/dataentities/customFieldSettings/search`, query: { '_schema': params._schema, '_fields': params._fields, '_where': params._where }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  postApiDataentitiesCustomFieldSettingsDocuments(params: {
+  async postApiDataentitiesCustomFieldSettingsDocuments(params: {
   _schema: string
   body: {
   contractId: string
@@ -96,7 +96,7 @@ class CustomFieldsApi_customFieldSettings {
 }>(withCall({ method: 'POST', path: `/api/dataentities/customFieldSettings/documents`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  patchApiDataentitiesCustomFieldSettingsDocumentsByDocumentId(params: {
+  async patchApiDataentitiesCustomFieldSettingsDocumentsByDocumentId(params: {
   documentId: string
   _schema: string
   body: {
@@ -112,7 +112,7 @@ class CustomFieldsApi_customFieldSettings {
     return this.http.request<Record<string, unknown>>(withCall({ method: 'PATCH', path: `/api/dataentities/customFieldSettings/documents/${encodePathParam(params.documentId)}`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteApiDataentitiesCustomFieldSettingsDocumentsByDocumentId(params: {
+  async deleteApiDataentitiesCustomFieldSettingsDocumentsByDocumentId(params: {
   documentId: string
   _schema: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -122,7 +122,7 @@ class CustomFieldsApi_customFieldSettings {
 class CustomFieldsApi_customFieldValues {
   constructor(private http: VtexHttpClient) {}
 
-  postApiDataentitiesCustomFieldValuesDocuments(params: {
+  async postApiDataentitiesCustomFieldValuesDocuments(params: {
   _schema: string
   body: {
   contractId: string
@@ -143,7 +143,7 @@ class CustomFieldsApi_customFieldValues {
 }>(withCall({ method: 'POST', path: `/api/dataentities/customFieldValues/documents`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
+  async getApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
   customFieldValueId: string
   _fields: string
   _schema: string
@@ -207,7 +207,7 @@ class CustomFieldsApi_customFieldValues {
 }>(withCall({ method: 'GET', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.customFieldValueId)}`, query: { '_fields': params._fields, '_schema': params._schema }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  patchApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
+  async patchApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
   customFieldValueId: string
   _schema: string
   body: {
@@ -221,7 +221,7 @@ class CustomFieldsApi_customFieldValues {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.customFieldValueId)}`, query: { '_schema': params._schema }, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
+  async deleteApiDataentitiesCustomFieldValuesDocumentsByCustomFieldValueId(params: {
   customFieldValueId: string
   _fields: string
   _schema: string
@@ -229,7 +229,7 @@ class CustomFieldsApi_customFieldValues {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/customFieldValues/documents/${encodePathParam(params.customFieldValueId)}`, query: { '_fields': params._fields, '_schema': params._schema }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getApiDataentitiesCustomFieldValuesSearch(params: {
+  async getApiDataentitiesCustomFieldValuesSearch(params: {
   _schema: string
   _fields: string
   _where: string

@@ -5,13 +5,13 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class MtlsApi_certificateManagement {
   constructor(private http: VtexHttpClient) {}
 
-  postApiEdgePrivateCertificatesSign(params: {
+  async postApiEdgePrivateCertificatesSign(params: {
   body: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/edge/private-certificates/sign`, body: params.body, contentType: 'text/plain' }, opts))
   }
 
-  deleteApiEdgePrivateCertificatesBySerialNumber(params: {
+  async deleteApiEdgePrivateCertificatesBySerialNumber(params: {
   serialNumber: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/edge/private-certificates/${encodePathParam(params.serialNumber)}` }, opts))

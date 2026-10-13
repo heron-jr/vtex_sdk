@@ -6,14 +6,14 @@ import type { LocationCapacity, CapacityConfigurationRequest, CapacityConfigurat
 class OperationalCapacityApi_capacity {
   constructor(private http: VtexHttpClient) {}
 
-  getApiFulfillmentLocationsCapacityByParentAccountName(params: Record<string, never> = {}, opts?: CallOptions): Promise<LocationCapacity[]> {
+  async getApiFulfillmentLocationsCapacityByParentAccountName(params: Record<string, never> = {}, opts?: CallOptions): Promise<LocationCapacity[]> {
     return this.http.request<LocationCapacity[]>(withCall({ method: 'GET', path: `/api/fulfillment-locations/capacity/by-parent-account-name` }, opts))
   }
 }
 class OperationalCapacityApi_capacityConfiguration {
   constructor(private http: VtexHttpClient) {}
 
-  putApiFulfillmentLocationsLocationByLocationIdCapacitiesByCode(params: {
+  async putApiFulfillmentLocationsLocationByLocationIdCapacitiesByCode(params: {
   locationId: string
   code: string
   body: CapacityConfigurationRequest
@@ -24,7 +24,7 @@ class OperationalCapacityApi_capacityConfiguration {
 class OperationalCapacityApi_capacityDetails {
   constructor(private http: VtexHttpClient) {}
 
-  getApiFulfillmentLocationsLocationsByLocationIdCapacities(params: {
+  async getApiFulfillmentLocationsLocationsByLocationIdCapacities(params: {
   locationId: string
   daysRequested?: number
 }, opts?: CallOptions): Promise<CapacityDetail[]> {
@@ -34,7 +34,7 @@ class OperationalCapacityApi_capacityDetails {
 class OperationalCapacityApi_locations {
   constructor(private http: VtexHttpClient) {}
 
-  getApiFulfillmentLocationsLocation(params: {
+  async getApiFulfillmentLocationsLocation(params: {
   page?: number
   pageSize?: number
   status?: "ACTIVE" | "MANUALLY_PAUSED" | "PAUSED"
@@ -46,7 +46,7 @@ class OperationalCapacityApi_locations {
 class OperationalCapacityApi_locationStatus {
   constructor(private http: VtexHttpClient) {}
 
-  putApiFulfillmentLocationsLocationsByLocationIdStatus(params: {
+  async putApiFulfillmentLocationsLocationsByLocationIdStatus(params: {
   locationId: string
   body: UpdateLocationStatusRequest
 }, opts?: CallOptions): Promise<Location> {

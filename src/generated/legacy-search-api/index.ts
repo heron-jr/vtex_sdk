@@ -6,7 +6,7 @@ import type { Example, Item, ReferenceId, Image, Seller, CommertialOffer, Genera
 class LegacySearchApi_crossSelling {
   constructor(private http: VtexHttpClient) {}
 
-  productSearchWhoSawAlsoSaw(params: {
+  async productSearchWhoSawAlsoSaw(params: {
   productId: number
 }, opts?: CallOptions): Promise<{
   productId: string
@@ -406,7 +406,7 @@ class LegacySearchApi_crossSelling {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/whosawalsosaw/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productSearchWhoSawAlsoBought(params: {
+  async productSearchWhoSawAlsoBought(params: {
   productId: string
 }, opts?: CallOptions): Promise<{
   productId: string
@@ -768,7 +768,7 @@ class LegacySearchApi_crossSelling {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/whosawalsobought/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productSearchWhoBoughtAlsoBought(params: {
+  async productSearchWhoBoughtAlsoBought(params: {
   productId: string
 }, opts?: CallOptions): Promise<{
   productId: string
@@ -1122,25 +1122,25 @@ class LegacySearchApi_crossSelling {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/whoboughtalsobought/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productSearchShowTogether(params: {
+  async productSearchShowTogether(params: {
   productId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/showtogether/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productSearchAccessories(params: {
+  async productSearchAccessories(params: {
   productId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/accessories/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productSearchSimilars(params: {
+  async productSearchSimilars(params: {
   productId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/similars/${encodePathParam(params.productId)}` }, opts))
   }
 
-  productSearchSuggestions(params: {
+  async productSearchSuggestions(params: {
   productId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/crossselling/suggestions/${encodePathParam(params.productId)}` }, opts))
@@ -1149,7 +1149,7 @@ class LegacySearchApi_crossSelling {
 class LegacySearchApi_search {
   constructor(private http: VtexHttpClient) {}
 
-  productSearch(params: {
+  async productSearch(params: {
   search: string
 }, opts?: CallOptions): Promise<{
   productId: string
@@ -1503,7 +1503,7 @@ class LegacySearchApi_search {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/search/${encodePathParam(params.search)}` }, opts))
   }
 
-  productSearchFilteredandOrdered(params: {
+  async productSearchFilteredandOrdered(params: {
   _from?: string
   _to?: string
   ft?: string
@@ -1861,7 +1861,7 @@ class LegacySearchApi_search {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/search`, query: { '_from': params._from, '_to': params._to, 'ft': params.ft, 'fq': params.fq, 'O': params.O } }, opts))
   }
 
-  searchbyproducturl(params: {
+  async searchbyproducturl(params: {
   'product-text-link': string
 }, opts?: CallOptions): Promise<{
   productId: string
@@ -2218,7 +2218,7 @@ class LegacySearchApi_search {
 class LegacySearchApi_offers {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogSystemPubProductsOffersByProductId(params: {
+  async getApiCatalogSystemPubProductsOffersByProductId(params: {
   productId: string
 }, opts?: CallOptions): Promise<{
   SkuId: string
@@ -2288,7 +2288,7 @@ class LegacySearchApi_offers {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/products/offers/${encodePathParam(params.productId)}` }, opts))
   }
 
-  getApiCatalogSystemPubProductsOffersByProductIdSkuBySkuId(params: {
+  async getApiCatalogSystemPubProductsOffersByProductIdSkuBySkuId(params: {
   productId: string
   skuId: string
 }, opts?: CallOptions): Promise<{
@@ -2362,7 +2362,7 @@ class LegacySearchApi_offers {
 class LegacySearchApi_facets {
   constructor(private http: VtexHttpClient) {}
 
-  getApiCatalogSystemPubFacetsCategoryByCategoryId(params: {
+  async getApiCatalogSystemPubFacetsCategoryByCategoryId(params: {
   categoryId: string
   _from?: string
   _to?: string
@@ -2376,7 +2376,7 @@ class LegacySearchApi_facets {
 }[]>(withCall({ method: 'GET', path: `/api/catalog_system/pub/facets/category/${encodePathParam(params.categoryId)}`, query: { '_from': params._from, '_to': params._to } }, opts))
   }
 
-  facetscategory(params: {
+  async facetscategory(params: {
   term: string
   map: string
 }, opts?: CallOptions): Promise<{
@@ -2508,7 +2508,7 @@ class LegacySearchApi_facets {
 class LegacySearchApi_autocomplete {
   constructor(private http: VtexHttpClient) {}
 
-  autoComplete(params: {
+  async autoComplete(params: {
   productNameContains: string
 }, opts?: CallOptions): Promise<{
   itemsReturned: {

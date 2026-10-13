@@ -6,13 +6,13 @@ import type { FixedPrice, DateRange, Getprice, Getcomputedprice, PricingConfigur
 class PricingApi_pricesAndFixedPrices {
   constructor(private http: VtexHttpClient) {}
 
-  getPrice(params: {
+  async getPrice(params: {
   itemId: number
 }, opts?: CallOptions): Promise<Getprice> {
     return this.http.request<Getprice>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  createUpdatePriceOrFixedPrice(params: {
+  async createUpdatePriceOrFixedPrice(params: {
   itemId: number
   body: {
   markup?: number
@@ -34,19 +34,19 @@ class PricingApi_pricesAndFixedPrices {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/pricing/prices/${encodePathParam(params.itemId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  deletePrice(params: {
+  async deletePrice(params: {
   itemId: number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/pricing/prices/${encodePathParam(params.itemId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getFixedPrices(params: {
+  async getFixedPrices(params: {
   itemId: number
 }, opts?: CallOptions): Promise<FixedPrice[]> {
     return this.http.request<FixedPrice[]>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  createUpdatePriceOrFixedPriceNoRemove(params: {
+  async createUpdatePriceOrFixedPriceNoRemove(params: {
   itemId: number
   body: {
   tradePolicyId: string
@@ -62,14 +62,14 @@ class PricingApi_pricesAndFixedPrices {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getFixedPricesonapricetable(params: {
+  async getFixedPricesonapricetable(params: {
   itemId: number
   priceTableId: string
 }, opts?: CallOptions): Promise<FixedPrice[]> {
     return this.http.request<FixedPrice[]>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  createorupdatefixedpricesonpricetableortradepolicy(params: {
+  async createorupdatefixedpricesonpricetableortradepolicy(params: {
   itemId: number
   priceTableId: string
   body: {
@@ -85,14 +85,14 @@ class PricingApi_pricesAndFixedPrices {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed/${encodePathParam(params.priceTableId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  deletefixedpricesonapricetableortradepolicy(params: {
+  async deletefixedpricesonapricetableortradepolicy(params: {
   itemId: number
   priceTableId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/pricing/prices/${encodePathParam(params.itemId)}/fixed/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getPricingPricesByItemIdComputed(params: {
+  async getPricingPricesByItemIdComputed(params: {
   itemId: number
   categoryIds?: number
   brandId?: number
@@ -101,7 +101,7 @@ class PricingApi_pricesAndFixedPrices {
     return this.http.request<Getcomputedprice[]>(withCall({ method: 'GET', path: `/pricing/prices/${encodePathParam(params.itemId)}/computed`, query: { 'categoryIds': params.categoryIds, 'brandId': params.brandId, 'quantity': params.quantity }, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getComputedPricebypricetable(params: {
+  async getComputedPricebypricetable(params: {
   itemId: number
   priceTableId: string
   categoryIds?: number
@@ -114,11 +114,11 @@ class PricingApi_pricesAndFixedPrices {
 class PricingApi_pricingConfiguration {
   constructor(private http: VtexHttpClient) {}
 
-  getPricingConfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<PricingConfiguration> {
+  async getPricingConfig(params: Record<string, never> = {}, opts?: CallOptions): Promise<PricingConfiguration> {
     return this.http.request<PricingConfiguration>(withCall({ method: 'GET', path: `/pricing/config`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getPricingv2Status(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getPricingv2Status(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   isActive?: boolean
   hasMigrated?: boolean
 }> {
@@ -131,7 +131,7 @@ class PricingApi_pricingConfiguration {
 class PricingApi_priceTables {
   constructor(private http: VtexHttpClient) {}
 
-  getrulesforapricetable(params: {
+  async getrulesforapricetable(params: {
   priceTableId: string
 }, opts?: CallOptions): Promise<{
   tradePolicyId?: string
@@ -185,7 +185,7 @@ class PricingApi_priceTables {
 }>(withCall({ method: 'GET', path: `/pricing/pipeline/catalog/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  putPricingPipelineCatalogByPriceTableId(params: {
+  async putPricingPipelineCatalogByPriceTableId(params: {
   priceTableId: string
   body: {
   rules: {
@@ -215,13 +215,13 @@ class PricingApi_priceTables {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/pricing/pipeline/catalog/${encodePathParam(params.priceTableId)}`, body: params.body, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  putPricingTablesByPriceTableId(params: {
+  async putPricingTablesByPriceTableId(params: {
   priceTableId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/pricing/tables/${encodePathParam(params.priceTableId)}`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  getallpricetablesandrules(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
+  async getallpricetablesandrules(params: Record<string, never> = {}, opts?: CallOptions): Promise<{
   tradePolicyId?: string
   rules?: {
   id?: number
@@ -273,7 +273,7 @@ class PricingApi_priceTables {
 }[]>(withCall({ method: 'GET', path: `/pricing/pipeline/catalog`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 
-  listpricetables(params: Record<string, never> = {}, opts?: CallOptions): Promise<string[]> {
+  async listpricetables(params: Record<string, never> = {}, opts?: CallOptions): Promise<string[]> {
     return this.http.request<string[]>(withCall({ method: 'GET', path: `/pricing/tables`, server: 'https://api.vtex.com/{accountName}' }, opts))
   }
 }

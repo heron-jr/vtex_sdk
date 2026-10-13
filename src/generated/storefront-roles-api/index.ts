@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class StorefrontRolesApi_storefrontRoles {
   constructor(private http: VtexHttpClient) {}
 
-  postApiLicenseManagerStorefrontRolesAssign(params: {
+  async postApiLicenseManagerStorefrontRolesAssign(params: {
   body: {
   roleId: number
   userId: string
@@ -14,7 +14,7 @@ class StorefrontRolesApi_storefrontRoles {
     return this.http.request<boolean>(withCall({ method: 'POST', path: `/api/license-manager/storefront/roles/assign`, body: params.body }, opts))
   }
 
-  postApiLicenseManagerStorefrontUserRoles(params: {
+  async postApiLicenseManagerStorefrontUserRoles(params: {
   body: {
   id: string
   roleIds: number[]
@@ -35,7 +35,7 @@ class StorefrontRolesApi_storefrontRoles {
 }>(withCall({ method: 'POST', path: `/api/license-manager/storefront/user/roles`, body: params.body }, opts))
   }
 
-  deleteApiLicenseManagerStorefrontUserRoles(params: {
+  async deleteApiLicenseManagerStorefrontUserRoles(params: {
   body: {
   id: string
   roleIds: number[]
@@ -56,20 +56,20 @@ class StorefrontRolesApi_storefrontRoles {
 }>(withCall({ method: 'DELETE', path: `/api/license-manager/storefront/user/roles`, body: params.body }, opts))
   }
 
-  getApiLicenseManagerStorefrontUsersByUserIdResourcesByResourceKeyGranted(params: {
+  async getApiLicenseManagerStorefrontUsersByUserIdResourcesByResourceKeyGranted(params: {
   userId: string
   resourceKey: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.userId)}/resources/${encodePathParam(params.resourceKey)}/granted` }, opts))
   }
 
-  deleteApiLicenseManagerStorefrontRemoveUsersByUserId(params: {
+  async deleteApiLicenseManagerStorefrontRemoveUsersByUserId(params: {
   userId: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/api/license-manager/storefront/remove/users/${encodePathParam(params.userId)}` }, opts))
   }
 
-  getApiLicenseManagerStorefrontUsersByUserIdRoles(params: {
+  async getApiLicenseManagerStorefrontUsersByUserIdRoles(params: {
   userId: string
 }, opts?: CallOptions): Promise<{
   userId?: string
@@ -89,7 +89,7 @@ class StorefrontRolesApi_storefrontRoles {
 }>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.userId)}/roles` }, opts))
   }
 
-  getApiLicenseManagerStorefrontUsersByEmailRoles(params: {
+  async getApiLicenseManagerStorefrontUsersByEmailRoles(params: {
   email: string
 }, opts?: CallOptions): Promise<{
   userId?: string
@@ -103,7 +103,7 @@ class StorefrontRolesApi_storefrontRoles {
 }>(withCall({ method: 'GET', path: `/api/license-manager/storefront/users/${encodePathParam(params.email)}/roles` }, opts))
   }
 
-  getApiLicenseManagerStorefrontUsersByUserId(params: {
+  async getApiLicenseManagerStorefrontUsersByUserId(params: {
   userId: string
 }, opts?: CallOptions): Promise<{
   email?: string
@@ -116,7 +116,7 @@ class StorefrontRolesApi_storefrontRoles {
 class StorefrontRolesApi_customStorefrontRoles {
   constructor(private http: VtexHttpClient) {}
 
-  getApiLicenseManagerStorefrontRole(params: {
+  async getApiLicenseManagerStorefrontRole(params: {
   an: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -140,7 +140,7 @@ class StorefrontRolesApi_customStorefrontRoles {
 }[]>(withCall({ method: 'GET', path: `/api/license-manager/storefront/role`, query: { 'an': params.an } }, opts))
   }
 
-  postApiLicenseManagerStorefrontRole(params: {
+  async postApiLicenseManagerStorefrontRole(params: {
   an: string
   body: {
   Name: string
@@ -166,7 +166,7 @@ class StorefrontRolesApi_customStorefrontRoles {
 }>(withCall({ method: 'POST', path: `/api/license-manager/storefront/role`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  getApiLicenseManagerStorefrontRoleByRoleId(params: {
+  async getApiLicenseManagerStorefrontRoleByRoleId(params: {
   roleId: number
   an: string
 }, opts?: CallOptions): Promise<{
@@ -191,7 +191,7 @@ class StorefrontRolesApi_customStorefrontRoles {
 }>(withCall({ method: 'GET', path: `/api/license-manager/storefront/role/${encodePathParam(params.roleId)}`, query: { 'an': params.an } }, opts))
   }
 
-  putApiLicenseManagerStorefrontRoleByRoleId(params: {
+  async putApiLicenseManagerStorefrontRoleByRoleId(params: {
   roleId: number
   an: string
   body: {
@@ -217,7 +217,7 @@ class StorefrontRolesApi_customStorefrontRoles {
 }>(withCall({ method: 'PUT', path: `/api/license-manager/storefront/role/${encodePathParam(params.roleId)}`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  deleteApiLicenseManagerStorefrontRoleByRoleId(params: {
+  async deleteApiLicenseManagerStorefrontRoleByRoleId(params: {
   roleId: number
   an: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -227,7 +227,7 @@ class StorefrontRolesApi_customStorefrontRoles {
 class StorefrontRolesApi_customStorefrontResources {
   constructor(private http: VtexHttpClient) {}
 
-  getApiLicenseManagerStorefrontResource(params: {
+  async getApiLicenseManagerStorefrontResource(params: {
   an: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -245,7 +245,7 @@ class StorefrontRolesApi_customStorefrontResources {
 }[]>(withCall({ method: 'GET', path: `/api/license-manager/storefront/resource`, query: { 'an': params.an } }, opts))
   }
 
-  postApiLicenseManagerStorefrontResource(params: {
+  async postApiLicenseManagerStorefrontResource(params: {
   an: string
   body: {
   Key: string
@@ -266,7 +266,7 @@ class StorefrontRolesApi_customStorefrontResources {
 }>(withCall({ method: 'POST', path: `/api/license-manager/storefront/resource`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  deleteApiLicenseManagerStorefrontResourceById(params: {
+  async deleteApiLicenseManagerStorefrontResourceById(params: {
   id: number
   an: string
 }, opts?: CallOptions): Promise<unknown> {

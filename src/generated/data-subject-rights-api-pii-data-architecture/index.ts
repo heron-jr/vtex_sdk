@@ -5,7 +5,7 @@ import { withCall } from '../../core/call.js'
 class DataSubjectRightsApiPiiDataArchitectureApi_dataSubjectRights {
   constructor(private http: VtexHttpClient) {}
 
-  postApiUserRightsCreateAndProcessDeleteUserData(params: {
+  async postApiUserRightsCreateAndProcessDeleteUserData(params: {
   an?: string
   body: {
   email?: string

@@ -6,13 +6,13 @@ import type { DeliveryZonesSearchRequest, PickupPointsSearchRequest, DeliveryZon
 class DeliveryPromiseSuggestionsApi_logisticsShipping {
   constructor(private http: VtexHttpClient) {}
 
-  postApiLogisticsShippingDeliveryZonesSearchV2(params: {
+  async postApiLogisticsShippingDeliveryZonesSearchV2(params: {
   body: DeliveryZonesSearchRequest
 }, opts?: CallOptions): Promise<DeliveryZonesResponse> {
     return this.http.request<DeliveryZonesResponse>(withCall({ method: 'POST', path: `/api/logistics-shipping/delivery-zones/_search/v2`, body: params.body }, opts))
   }
 
-  postApiLogisticsShippingPickuppointsSearch(params: {
+  async postApiLogisticsShippingPickuppointsSearch(params: {
   maxDistance?: number
   body: PickupPointsSearchRequest
 }, opts?: CallOptions): Promise<PickupPointsResponse> {
@@ -22,13 +22,13 @@ class DeliveryPromiseSuggestionsApi_logisticsShipping {
 class DeliveryPromiseSuggestionsApi_deliverySuggestions {
   constructor(private http: VtexHttpClient) {}
 
-  postApiDeliveryPromiseSuggestionsSearch(params: {
+  async postApiDeliveryPromiseSuggestionsSearch(params: {
   body: DeliverySuggestionRequest
 }, opts?: CallOptions): Promise<DeliverySuggestionResponse> {
     return this.http.request<DeliverySuggestionResponse>(withCall({ method: 'POST', path: `/api/delivery-promise-suggestions/_search`, body: params.body }, opts))
   }
 
-  getApiDeliveryPromiseSuggestions(params: {
+  async getApiDeliveryPromiseSuggestions(params: {
   'products[0].productId': string
   'products[0].itemId'?: string
   deliveryZonesHash: string

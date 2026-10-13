@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, it, expect, vi } from 'vitest'
 import { DEFAULT_SERVER, resolveServer } from '../src/core/url.js'
 import { VtexClient } from '../src/client.js'
+import { VtexUsageError } from '../src/core/errors.js'
 
 const GENERATED_DIR = fileURLToPath(new URL('../src/generated/', import.meta.url))
 
@@ -117,6 +118,22 @@ describe('generated hosts', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('https://acme.vtexcommercestable.com.br/api/giftcards/_search')
     expect(init.headers['REST-Range']).toBe('resources=0-9')
+  })
+
+  it.each(['../../x', 'a/b', 'x#', 'x?y'])('generated methods encode the path id %j', async (couponCode) => {
+    const { fetchMock, vtex } = client()
+    await vtex.raw.promotionsTaxesAPI.coupons.getbycouponcode({ couponCode })
+    const url = new URL(fetchMock.mock.calls[0][0])
+    expect(url.origin).toBe('https://acme.vtexcommercestable.com.br')
+    expect(url.pathname).toBe(`/api/rnb/pvt/coupon/${encodeURIComponent(couponCode)}`)
+  })
+
+  it.each(['..', '.', ''])('generated methods reject the path id %j as a rejected promise', async (couponCode) => {
+    const { fetchMock, vtex } = client()
+    const pending = vtex.raw.promotionsTaxesAPI.coupons.getbycouponcode({ couponCode })
+    expect(pending).toBeInstanceOf(Promise)
+    await expect(pending).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it.each([

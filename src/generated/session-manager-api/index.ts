@@ -6,19 +6,19 @@ import type { CreateEditSessionRequest, CreateEditSessionResponse, GetSessionRes
 class SessionManagerApi_session {
   constructor(private http: VtexHttpClient) {}
 
-  getSession(params: {
+  async getSession(params: {
   items: string
 }, opts?: CallOptions): Promise<GetSessionResponse> {
     return this.http.request<GetSessionResponse>(withCall({ method: 'GET', path: `/api/sessions`, query: { 'items': params.items } }, opts))
   }
 
-  createnewsession(params: {
+  async createnewsession(params: {
   body: CreateEditSessionRequest
 }, opts?: CallOptions): Promise<CreateEditSessionResponse> {
     return this.http.request<CreateEditSessionResponse>(withCall({ method: 'POST', path: `/api/sessions`, body: params.body }, opts))
   }
 
-  editsession(params: {
+  async editsession(params: {
   body: CreateEditSessionRequest
 }, opts?: CallOptions): Promise<CreateEditSessionResponse> {
     return this.http.request<CreateEditSessionResponse>(withCall({ method: 'PATCH', path: `/api/sessions`, body: params.body }, opts))
@@ -27,7 +27,7 @@ class SessionManagerApi_session {
 class SessionManagerApi_segment {
   constructor(private http: VtexHttpClient) {}
 
-  getSegment(params: Record<string, never> = {}, opts?: CallOptions): Promise<Segment> {
+  async getSegment(params: Record<string, never> = {}, opts?: CallOptions): Promise<Segment> {
     return this.http.request<Segment>(withCall({ method: 'GET', path: `/api/segments` }, opts))
   }
 }

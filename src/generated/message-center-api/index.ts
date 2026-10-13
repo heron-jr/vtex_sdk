@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class MessageCenterApi_dkimConfiguration {
   constructor(private http: VtexHttpClient) {}
 
-  createDKIM(params: {
+  async createDKIM(params: {
   EmailProvider: string
 }, opts?: CallOptions): Promise<{
   status?: "emailNotFound" | "emailNotVerified" | "created"

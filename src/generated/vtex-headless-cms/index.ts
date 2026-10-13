@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class VtexHeadlessCmsApi_pages {
   constructor(private http: VtexHttpClient) {}
 
-  getAllContentTypes(params: {
+  async getAllContentTypes(params: {
   projectId: string
 }, opts?: CallOptions): Promise<{
   contentTypes?: {
@@ -49,7 +49,7 @@ class VtexHeadlessCmsApi_pages {
 }>(withCall({ method: 'GET', path: `/_v/cms/api/${encodePathParam(params.projectId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getPagesbyContentType(params: {
+  async getPagesbyContentType(params: {
   projectId: string
   'content-type': string
   page?: string
@@ -94,7 +94,7 @@ class VtexHeadlessCmsApi_pages {
 }>(withCall({ method: 'GET', path: `/_v/cms/api/${encodePathParam(params.projectId)}/${encodePathParam(params['content-type'])}`, query: { 'page': params.page, 'versionId': params.versionId, 'releaseId': params.releaseId, 'filters[{field}]': params['filters[{field}]'] }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getCMSpage(params: {
+  async getCMSpage(params: {
   projectId: string
   'content-type': string
   'document-id': string

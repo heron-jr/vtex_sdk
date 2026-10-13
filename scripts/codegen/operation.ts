@@ -277,7 +277,7 @@ export function generateMethod(ctx: Ctx): string {
   if (ctx.server && ctx.server !== DEFAULT_SERVER) callFields.push(`server: ${quoteString(ctx.server)}`)
 
   return [
-    `  ${name}(${paramsDecl}, opts?: CallOptions): Promise<${retType}> {`,
+    `  async ${name}(${paramsDecl}, opts?: CallOptions): Promise<${retType}> {`,
     `    return this.http.request<${retType}>(withCall({ ${callFields.join(', ')} }, opts))`,
     `  }`,
   ].join('\n')

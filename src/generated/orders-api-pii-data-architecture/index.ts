@@ -6,7 +6,7 @@ import type { ClientProfileData, ShippingData, Address, PickupStoreInfo, Changes
 class OrdersApiPiiDataArchitectureApi_orders {
   constructor(private http: VtexHttpClient) {}
 
-  getOrder2(params: {
+  async getOrder2(params: {
   orderId: string
   reason?: string
 }, opts?: CallOptions): Promise<{
@@ -1157,7 +1157,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }>(withCall({ method: 'GET', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}`, query: { 'reason': params.reason } }, opts))
   }
 
-  listOrders2(params: {
+  async listOrders2(params: {
   body: {
   f_status?: string
   f_creationDate?: string
@@ -1320,13 +1320,13 @@ class OrdersApiPiiDataArchitectureApi_orders {
 }>(withCall({ method: 'POST', path: `/api/orders/extendsearch/orders`, body: params.body }, opts))
   }
 
-  startHandling2(params: {
+  async startHandling2(params: {
   orderId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/orders/pvt/document/${encodePathParam(params.orderId)}/actions/start-handling` }, opts))
   }
 
-  cancelOrder2(params: {
+  async cancelOrder2(params: {
   orderId: string
   body: {
   reason?: string
@@ -1346,7 +1346,7 @@ class OrdersApiPiiDataArchitectureApi_orders {
 class OrdersApiPiiDataArchitectureApi_invoice {
   constructor(private http: VtexHttpClient) {}
 
-  invoiceNotification2(params: {
+  async invoiceNotification2(params: {
   orderId: string
   body: {
   type: string
@@ -1382,7 +1382,7 @@ class OrdersApiPiiDataArchitectureApi_invoice {
 class OrdersApiPiiDataArchitectureApi_payment {
   constructor(private http: VtexHttpClient) {}
 
-  sendPaymentNotification2(params: {
+  async sendPaymentNotification2(params: {
   orderId: string
   paymentId: string
 }, opts?: CallOptions): Promise<unknown> {

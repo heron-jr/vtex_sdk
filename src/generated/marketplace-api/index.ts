@@ -6,14 +6,14 @@ import type { UpsertMappingRequest, ResponseSellerCommissionsID, BulkUpsertSelle
 class MarketplaceApi_notification {
   constructor(private http: VtexHttpClient) {}
 
-  priceNotification(params: {
+  async priceNotification(params: {
   sellerId: string
   skuId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/notificator/${encodePathParam(params.sellerId)}/changenotification/${encodePathParam(params.skuId)}/price`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  inventoryNotification(params: {
+  async inventoryNotification(params: {
   sellerId: string
   skuId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -23,7 +23,7 @@ class MarketplaceApi_notification {
 class MarketplaceApi_matchedOffers {
   constructor(private http: VtexHttpClient) {}
 
-  getofferslist(params: {
+  async getofferslist(params: {
   sort?: string
   rows?: number
   start?: number
@@ -32,14 +32,14 @@ class MarketplaceApi_matchedOffers {
     return this.http.request<ResponseGetMatchedOffersList>(withCall({ method: 'GET', path: `/offer-manager/pvt/offers`, query: { 'sort': params.sort, 'rows': params.rows, 'start': params.start, 'fq': params.fq }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getSKUoffers(params: {
+  async getSKUoffers(params: {
   productId: string
   skuId: string
 }, opts?: CallOptions): Promise<ResponseGetMatchedOffersDataBySKU> {
     return this.http.request<ResponseGetMatchedOffersDataBySKU>(withCall({ method: 'GET', path: `/offer-manager/pvt/product/${encodePathParam(params.productId)}/sku/${encodePathParam(params.skuId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getProductoffers(params: {
+  async getProductoffers(params: {
   productId: string
 }, opts?: CallOptions): Promise<ResponseGetMatchedOffersDataByProductId> {
     return this.http.request<ResponseGetMatchedOffersDataByProductId>(withCall({ method: 'GET', path: `/offer-manager/pvt/product/${encodePathParam(params.productId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
@@ -48,7 +48,7 @@ class MarketplaceApi_matchedOffers {
 class MarketplaceApi_sellerInvite {
   constructor(private http: VtexHttpClient) {}
 
-  listSellerLeads(params: {
+  async listSellerLeads(params: {
   offset: number
   limit: number
   isConnected: string
@@ -59,39 +59,39 @@ class MarketplaceApi_sellerInvite {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/seller-register/pvt/seller-leads`, query: { 'offset': params.offset, 'limit': params.limit, 'isConnected': params.isConnected, 'search': params.search, 'status': params.status, 'orderBy': params.orderBy }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  createSellerLead(params: {
+  async createSellerLead(params: {
   body: CreateSellerLeadRequest
 }, opts?: CallOptions): Promise<ResponseCreateSellerLead> {
     return this.http.request<ResponseCreateSellerLead>(withCall({ method: 'POST', path: `/seller-register/pvt/seller-leads`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  retrieveSellerLead(params: {
+  async retrieveSellerLead(params: {
   sellerLeadId: string | number
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/seller-register/pvt/seller-leads/${encodePathParam(params.sellerLeadId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  acceptSellerLead(params: {
+  async acceptSellerLead(params: {
   sellerLeadId: string | number
   body: AcceptSellerLeadRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/seller-register/pvt/seller-leads/${encodePathParam(params.sellerLeadId)}`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  removeSellerLead(params: {
+  async removeSellerLead(params: {
   sellerLeadId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/seller-register/pvt/seller-leads/${encodePathParam(params.sellerLeadId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  createSellerFromSellerLead(params: {
+  async createSellerFromSellerLead(params: {
   sellerLeadId: string | number
   isActive?: boolean
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/seller-register/pvt/seller-leads/${encodePathParam(params.sellerLeadId)}/seller`, query: { 'isActive': params.isActive }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  resendSellerLeadRequest(params: {
+  async resendSellerLeadRequest(params: {
   sellerLeadId: string | number
   body: ResendSellerLeadRequestRequest
 }, opts?: CallOptions): Promise<unknown> {
@@ -101,27 +101,27 @@ class MarketplaceApi_sellerInvite {
 class MarketplaceApi_sellerCommissions {
   constructor(private http: VtexHttpClient) {}
 
-  listSellerCommissions(params: {
+  async listSellerCommissions(params: {
   sellerId: string
 }, opts?: CallOptions): Promise<ResponseSellerCommissionsID[]> {
     return this.http.request<ResponseSellerCommissionsID[]>(withCall({ method: 'GET', path: `/seller-register/pvt/sellers/${encodePathParam(params.sellerId)}/commissions`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  bulkUpsertSellerCommissions(params: {
+  async bulkUpsertSellerCommissions(params: {
   sellerId: string
   body: BulkUpsertSellerCommissionsRequest[]
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/seller-register/pvt/sellers/${encodePathParam(params.sellerId)}/commissions`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  retrieveSellerCommissions(params: {
+  async retrieveSellerCommissions(params: {
   sellerId: string
   categoryId: string
 }, opts?: CallOptions): Promise<ResponseSellerCommissionsID> {
     return this.http.request<ResponseSellerCommissionsID>(withCall({ method: 'GET', path: `/seller-register/pvt/sellers/${encodePathParam(params.sellerId)}/commissions/${encodePathParam(params.categoryId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  removeSellerCommissions(params: {
+  async removeSellerCommissions(params: {
   sellerId: string
   categoryId: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -131,7 +131,7 @@ class MarketplaceApi_sellerCommissions {
 class MarketplaceApi_sellers {
   constructor(private http: VtexHttpClient) {}
 
-  getListSellers(params: {
+  async getListSellers(params: {
   from?: number
   to?: number
   keyword?: string
@@ -147,20 +147,20 @@ class MarketplaceApi_sellers {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/seller-register/pvt/sellers`, query: { 'from': params.from, 'to': params.to, 'keyword': params.keyword, 'integration': params.integration, 'group ': params['group '], 'isActive': params.isActive, 'isBetterScope': params.isBetterScope, 'isVtex': params.isVtex, 'sc': params.sc, 'sellerType': params.sellerType, 'sort': params.sort }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  upsertSellerRequest(params: {
+  async upsertSellerRequest(params: {
   body: UpsertSellerRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/seller-register/pvt/sellers`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getRetrieveSeller(params: {
+  async getRetrieveSeller(params: {
   sellerId: string
   sc?: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/seller-register/pvt/sellers/${encodePathParam(params.sellerId)}`, query: { 'sc': params.sc }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  updateSeller(params: {
+  async updateSeller(params: {
   sellerId: string
   body: {
   operation: string
@@ -174,7 +174,7 @@ class MarketplaceApi_sellers {
 class MarketplaceApi_salesChannelMapping {
   constructor(private http: VtexHttpClient) {}
 
-  retrieveMapping(params: {
+  async retrieveMapping(params: {
   sellerId: string
   an: string
 }, opts?: CallOptions): Promise<{
@@ -187,7 +187,7 @@ class MarketplaceApi_salesChannelMapping {
 }[]>(withCall({ method: 'GET', path: `/seller-register/pvt/sellers/${encodePathParam(params.sellerId)}/sales-channel/mapping`, query: { 'an': params.an }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  upsertMapping(params: {
+  async upsertMapping(params: {
   sellerId: string
   an: string
   body: UpsertMappingRequest[]
@@ -204,24 +204,24 @@ class MarketplaceApi_salesChannelMapping {
 class MarketplaceApi_affiliates {
   constructor(private http: VtexHttpClient) {}
 
-  getFulfillmentPvtAffiliates(params: Record<string, never> = {}, opts?: CallOptions): Promise<ResponseListAffiliates> {
+  async getFulfillmentPvtAffiliates(params: Record<string, never> = {}, opts?: CallOptions): Promise<ResponseListAffiliates> {
     return this.http.request<ResponseListAffiliates>(withCall({ method: 'GET', path: `/fulfillment/pvt/affiliates`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getFulfillmentPvtAffiliatesByAffiliateId(params: {
+  async getFulfillmentPvtAffiliatesByAffiliateId(params: {
   affiliateId: string
 }, opts?: CallOptions): Promise<ResponseGetAffiliates> {
     return this.http.request<ResponseGetAffiliates>(withCall({ method: 'GET', path: `/fulfillment/pvt/affiliates/${encodePathParam(params.affiliateId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  putFulfillmentPvtAffiliatesByAffiliateId(params: {
+  async putFulfillmentPvtAffiliatesByAffiliateId(params: {
   affiliateId: string
   body: RequestUpdateAffiliate
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/fulfillment/pvt/affiliates/${encodePathParam(params.affiliateId)}`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  deleteFulfillmentPvtAffiliatesByAffiliateId(params: {
+  async deleteFulfillmentPvtAffiliatesByAffiliateId(params: {
   affiliateId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/fulfillment/pvt/affiliates/${encodePathParam(params.affiliateId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))

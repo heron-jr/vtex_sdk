@@ -6,7 +6,7 @@ import type { SaveReviewRequest, SaveMultipleReviewsRequest } from './types.js'
 class ReviewsAndRatingsApi_rating {
   constructor(private http: VtexHttpClient) {}
 
-  getProductRating(params: {
+  async getProductRating(params: {
   productId: string
 }, opts?: CallOptions): Promise<{
   average?: number
@@ -31,7 +31,7 @@ class ReviewsAndRatingsApi_rating {
 class ReviewsAndRatingsApi_review {
   constructor(private http: VtexHttpClient) {}
 
-  getReviewbyReviewId(params: {
+  async getReviewbyReviewId(params: {
   reviewId: string
 }, opts?: CallOptions): Promise<{
   id?: string
@@ -69,7 +69,7 @@ class ReviewsAndRatingsApi_review {
 }>(withCall({ method: 'GET', path: `/reviews-and-ratings/api/review/${encodePathParam(params.reviewId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  editReview(params: {
+  async editReview(params: {
   reviewId: string
   body: {
   productId: string
@@ -117,13 +117,13 @@ class ReviewsAndRatingsApi_review {
 }>(withCall({ method: 'PATCH', path: `/reviews-and-ratings/api/review/${encodePathParam(params.reviewId)}`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteReview(params: {
+  async deleteReview(params: {
   reviewId: string
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/reviews-and-ratings/api/review/${encodePathParam(params.reviewId)}`, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  getalistofReviews(params: {
+  async getalistofReviews(params: {
   search_term?: string
   from?: string
   to?: string
@@ -180,19 +180,19 @@ class ReviewsAndRatingsApi_review {
 }>(withCall({ method: 'GET', path: `/reviews-and-ratings/api/reviews`, query: { 'search_term': params.search_term, 'from': params.from, 'to': params.to, 'order_by': params.order_by, 'status': params.status, 'product_id': params.product_id }, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  saveMultipleReviews(params: {
+  async saveMultipleReviews(params: {
   body: SaveMultipleReviewsRequest[]
 }, opts?: CallOptions): Promise<string[]> {
     return this.http.request<string[]>(withCall({ method: 'POST', path: `/reviews-and-ratings/api/reviews`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  deleteMultipleReviews(params: {
+  async deleteMultipleReviews(params: {
   body: string[]
 }, opts?: CallOptions): Promise<boolean> {
     return this.http.request<boolean>(withCall({ method: 'DELETE', path: `/reviews-and-ratings/api/reviews`, body: params.body, server: 'https://{accountName}.myvtex.com' }, opts))
   }
 
-  saveReview(params: {
+  async saveReview(params: {
   body: SaveReviewRequest
 }, opts?: CallOptions): Promise<{
   id?: string

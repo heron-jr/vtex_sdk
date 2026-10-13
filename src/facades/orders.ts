@@ -22,7 +22,7 @@ interface OrdersPage {
 export class OrdersFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  get(orderId: string, opts?: CallOptions): Promise<unknown> {
+  async get(orderId: string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(orderId)}` }, opts))
   }
 

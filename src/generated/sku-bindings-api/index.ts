@@ -5,7 +5,7 @@ import { encodePathParam, withCall } from '../../core/call.js'
 class SkuBindingsApi_skuBindings {
   constructor(private http: VtexHttpClient) {}
 
-  getbySkuId(params: {
+  async getbySkuId(params: {
   skuId: string
 }, opts?: CallOptions): Promise<{
   Id?: number
@@ -27,7 +27,7 @@ class SkuBindingsApi_skuBindings {
 }[]>(withCall({ method: 'GET', path: `/sku-binding/pvt/skusellers/${encodePathParam(params.skuId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getpagedadmin(params: {
+  async getpagedadmin(params: {
   sellerId?: string
   skuId?: string
   sellerSkuId?: string
@@ -57,7 +57,7 @@ class SkuBindingsApi_skuBindings {
 }[]>(withCall({ method: 'GET', path: `/sku-binding/pvt/skuseller/admin`, query: { 'sellerId': params.sellerId, 'skuId': params.skuId, 'sellerSkuId': params.sellerSkuId, 'isActive': params.isActive, 'size': params.size }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getSKUseller(params: {
+  async getSKUseller(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<{
@@ -84,7 +84,7 @@ class SkuBindingsApi_skuBindings {
 }>(withCall({ method: 'GET', path: `/sku-binding/pvt/skuseller/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  bindtoanothersku(params: {
+  async bindtoanothersku(params: {
   sellerId: string
   sellerSkuId: string
   body: {
@@ -94,7 +94,7 @@ class SkuBindingsApi_skuBindings {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/sku-binding/pvt/skuseller/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getallbySellerId(params: {
+  async getallbySellerId(params: {
   sellerId: string
 }, opts?: CallOptions): Promise<{
   SellerStockKeepingUnitId?: string
@@ -114,7 +114,7 @@ class SkuBindingsApi_skuBindings {
 }[]>(withCall({ method: 'GET', path: `/sku-binding/pvt/skuseller/list/bysellerId/${encodePathParam(params.sellerId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getpagedbySellerId(params: {
+  async getpagedbySellerId(params: {
   sellerId: string
   page: string
   size: string
@@ -136,20 +136,20 @@ class SkuBindingsApi_skuBindings {
 }[]>(withCall({ method: 'GET', path: `/sku-binding/pvt/skuseller/paged/sellerid/${encodePathParam(params.sellerId)}`, query: { 'page': params.page, 'size': params.size }, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  changeNotification(params: {
+  async changeNotification(params: {
   skuId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/sku-binding/pvt/skuseller/changenotification/${encodePathParam(params.skuId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  postSkuBindingPvtSkusellerChangenotificationBySellerIdBySellerSkuId(params: {
+  async postSkuBindingPvtSkusellerChangenotificationBySellerIdBySellerSkuId(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/sku-binding/pvt/skuseller/changenotification/${encodePathParam(params.sellerId)}/${encodePathParam(params.sellerSkuId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  insertSKUBinding(params: {
+  async insertSKUBinding(params: {
   body: {
   StockKeepingUnitId: number
   IsActive: boolean
@@ -160,21 +160,21 @@ class SkuBindingsApi_skuBindings {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/sku-binding/pvt/skuseller/insertion`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  activateSKUBinding(params: {
+  async activateSKUBinding(params: {
   sellerId: string
   skuSellerId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/sku-binding/pvt/skuseller/activate/${encodePathParam(params.sellerId)}/${encodePathParam(params.skuSellerId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  deactivateSKUBinding(params: {
+  async deactivateSKUBinding(params: {
   sellerId: string
   skuSellerId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/sku-binding/pvt/skuseller/inactivate/${encodePathParam(params.sellerId)}/${encodePathParam(params.skuSellerId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  deleteSKUsellerassociation(params: {
+  async deleteSKUsellerassociation(params: {
   sellerId: string
   sellerSkuId: string
 }, opts?: CallOptions): Promise<unknown> {

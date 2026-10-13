@@ -6,37 +6,37 @@ import type { BuyerSchemaResponse, BuyerDocumentRequest, BuyerDocument, CreateBu
 class B2bBuyerDataApi_buyerData {
   constructor(private http: VtexHttpClient) {}
 
-  getApiDataentitiesShopperSchemasV1(params: Record<string, never> = {}, opts?: CallOptions): Promise<BuyerSchemaResponse[]> {
+  async getApiDataentitiesShopperSchemasV1(params: Record<string, never> = {}, opts?: CallOptions): Promise<BuyerSchemaResponse[]> {
     return this.http.request<BuyerSchemaResponse[]>(withCall({ method: 'GET', path: `/api/dataentities/shopper/schemas/v1` }, opts))
   }
 
-  postApiDataentitiesShopperDocuments(params: {
+  async postApiDataentitiesShopperDocuments(params: {
   _schema: string
   body: BuyerDocumentRequest
 }, opts?: CallOptions): Promise<CreateBuyerDocumentResponse> {
     return this.http.request<CreateBuyerDocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/shopper/documents`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
-  getApiDataentitiesShopperDocumentsByBuyerId(params: {
+  async getApiDataentitiesShopperDocumentsByBuyerId(params: {
   buyerId: string
 }, opts?: CallOptions): Promise<BuyerDocument> {
     return this.http.request<BuyerDocument>(withCall({ method: 'GET', path: `/api/dataentities/shopper/documents/${encodePathParam(params.buyerId)}` }, opts))
   }
 
-  patchApiDataentitiesShopperDocumentsByBuyerId(params: {
+  async patchApiDataentitiesShopperDocumentsByBuyerId(params: {
   buyerId: string
   body: BuyerDocumentRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/shopper/documents/${encodePathParam(params.buyerId)}`, body: params.body }, opts))
   }
 
-  deleteApiDataentitiesShopperDocumentsByBuyerId(params: {
+  async deleteApiDataentitiesShopperDocumentsByBuyerId(params: {
   buyerId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/shopper/documents/${encodePathParam(params.buyerId)}` }, opts))
   }
 
-  getApiDataentitiesShopperSearch(params: {
+  async getApiDataentitiesShopperSearch(params: {
   _where?: string
   _schema: "v1"
 }, opts?: CallOptions): Promise<BuyerDocument[]> {

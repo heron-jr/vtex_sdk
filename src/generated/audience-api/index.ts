@@ -6,7 +6,7 @@ import type { ResponseError } from './types.js'
 class AudienceApi_audienceManager {
   constructor(private http: VtexHttpClient) {}
 
-  postApiAudienceManagerPvtAudience(params: {
+  async postApiAudienceManagerPvtAudience(params: {
   an?: string
   body: {
   email: string
@@ -18,20 +18,20 @@ class AudienceApi_audienceManager {
 class AudienceApi_priceTableMapper {
   constructor(private http: VtexHttpClient) {}
 
-  getApiPriceTableMapperPvtMappingByAudienceId(params: {
+  async getApiPriceTableMapperPvtMappingByAudienceId(params: {
   audienceId: string
 }, opts?: CallOptions): Promise<string[]> {
     return this.http.request<string[]>(withCall({ method: 'GET', path: `/api/price-table-mapper/pvt/mapping/${encodePathParam(params.audienceId)}` }, opts))
   }
 
-  putApiPriceTableMapperPvtMappingByAudienceId(params: {
+  async putApiPriceTableMapperPvtMappingByAudienceId(params: {
   audienceId: string
   body: string[]
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/price-table-mapper/pvt/mapping/${encodePathParam(params.audienceId)}`, body: params.body }, opts))
   }
 
-  deleteApiPriceTableMapperPvtMappingByAudienceId(params: {
+  async deleteApiPriceTableMapperPvtMappingByAudienceId(params: {
   audienceId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/price-table-mapper/pvt/mapping/${encodePathParam(params.audienceId)}` }, opts))

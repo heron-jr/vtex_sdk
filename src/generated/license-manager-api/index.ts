@@ -6,7 +6,7 @@ import type { AccountResponse, LicenseItems, SiteItems, AppKeyItems, CreateUserR
 class LicenseManagerApi_users {
   constructor(private http: VtexHttpClient) {}
 
-  getUser(params: {
+  async getUser(params: {
   userId: string
 }, opts?: CallOptions): Promise<{
   id?: string
@@ -20,13 +20,13 @@ class LicenseManagerApi_users {
 }>(withCall({ method: 'GET', path: `/api/license-manager/users/${encodePathParam(params.userId)}` }, opts))
   }
 
-  deleteApiLicenseManagerUsersByUserId(params: {
+  async deleteApiLicenseManagerUsersByUserId(params: {
   userId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/license-manager/users/${encodePathParam(params.userId)}` }, opts))
   }
 
-  createUser(params: {
+  async createUser(params: {
   body: CreateUserRequest
 }, opts?: CallOptions): Promise<{
   id?: string
@@ -40,7 +40,7 @@ class LicenseManagerApi_users {
 }>(withCall({ method: 'POST', path: `/api/license-manager/users`, body: params.body }, opts))
   }
 
-  getListUsers(params: {
+  async getListUsers(params: {
   numItems?: number
   pageNumber?: number
   sort?: string
@@ -52,7 +52,7 @@ class LicenseManagerApi_users {
 class LicenseManagerApi_roles {
   constructor(private http: VtexHttpClient) {}
 
-  getRolesbyUser(params: {
+  async getRolesbyUser(params: {
   userId: string
 }, opts?: CallOptions): Promise<{
   id?: number
@@ -64,21 +64,21 @@ class LicenseManagerApi_roles {
 }[]>(withCall({ method: 'GET', path: `/api/license-manager/users/${encodePathParam(params.userId)}/roles` }, opts))
   }
 
-  putRolesinUser(params: {
+  async putRolesinUser(params: {
   userId: string
   body: number[]
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/license-manager/users/${encodePathParam(params.userId)}/roles`, body: params.body }, opts))
   }
 
-  removeRolefromUser(params: {
+  async removeRolefromUser(params: {
   userId: string
   roleId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/license-manager/users/${encodePathParam(params.userId)}/roles/${encodePathParam(params.roleId)}` }, opts))
   }
 
-  getListRoles(params: {
+  async getListRoles(params: {
   numItems?: number
   pageNumber?: number
   sort?: string
@@ -90,17 +90,17 @@ class LicenseManagerApi_roles {
 class LicenseManagerApi_apiKeys {
   constructor(private http: VtexHttpClient) {}
 
-  getappkeysfromaccount(params: Record<string, never> = {}, opts?: CallOptions): Promise<Getappkeysfromaccount[]> {
+  async getappkeysfromaccount(params: Record<string, never> = {}, opts?: CallOptions): Promise<Getappkeysfromaccount[]> {
     return this.http.request<Getappkeysfromaccount[]>(withCall({ method: 'GET', path: `/api/vlm/appkeys` }, opts))
   }
 
-  createnewappkey(params: {
+  async createnewappkey(params: {
   body: CreatenewappkeyRequest
 }, opts?: CallOptions): Promise<CreatenewappkeyResponse> {
     return this.http.request<CreatenewappkeyResponse>(withCall({ method: 'POST', path: `/api/vlm/appkeys`, body: params.body }, opts))
   }
 
-  updateappkey(params: {
+  async updateappkey(params: {
   id: string
   body: UpdateappkeyRequest
 }, opts?: CallOptions): Promise<unknown> {
@@ -110,14 +110,14 @@ class LicenseManagerApi_apiKeys {
 class LicenseManagerApi_stores {
   constructor(private http: VtexHttpClient) {}
 
-  getByAccount(params: Record<string, never> = {}, opts?: CallOptions): Promise<StoreItems[]> {
+  async getByAccount(params: Record<string, never> = {}, opts?: CallOptions): Promise<StoreItems[]> {
     return this.http.request<StoreItems[]>(withCall({ method: 'GET', path: `/api/vlm/account/stores` }, opts))
   }
 }
 class LicenseManagerApi_account {
   constructor(private http: VtexHttpClient) {}
 
-  getAccount(params: Record<string, never> = {}, opts?: CallOptions): Promise<AccountResponse> {
+  async getAccount(params: Record<string, never> = {}, opts?: CallOptions): Promise<AccountResponse> {
     return this.http.request<AccountResponse>(withCall({ method: 'GET', path: `/api/vlm/account` }, opts))
   }
 }

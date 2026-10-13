@@ -6,7 +6,7 @@ import type { UserIdentification, SessionPing, PageCart, PageEmptyCart, PageConf
 class VtexIntelligentSearchEventsApiHeadlessApi_events {
   constructor(private http: VtexHttpClient) {}
 
-  postEvent(params: {
+  async postEvent(params: {
   body: SessionPing | Query | Click | PageConfirmation | AutocompleteQuery | AutocompleteClick
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/event`, body: params.body, server: 'https://sp.vtex.com/event-api/v1/{accountName}' }, opts))

@@ -6,13 +6,13 @@ import type { CreateGiftCardRequest, Response, Transactions, GetGiftCardusingJSO
 class GiftcardApi_giftCard {
   constructor(private http: VtexHttpClient) {}
 
-  createGiftCard(params: {
+  async createGiftCard(params: {
   body: CreateGiftCardRequest
 }, opts?: CallOptions): Promise<Response> {
     return this.http.request<Response>(withCall({ method: 'POST', path: `/giftcards`, body: params.body, contentType: 'application/vnd.vtex.giftcard.v1+json', server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getGiftCardbyID(params: {
+  async getGiftCardbyID(params: {
   giftCardId: string
 }, opts?: CallOptions): Promise<{
   id: string
@@ -36,7 +36,7 @@ class GiftcardApi_giftCard {
 }>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  searchGiftCardsfromcartdata(params: {
+  async searchGiftCardsfromcartdata(params: {
   'REST-Range'?: string
   body: GetGiftCardusingJSONRequest
 }, opts?: CallOptions): Promise<Response2> {
@@ -46,41 +46,41 @@ class GiftcardApi_giftCard {
 class GiftcardApi_transactions {
   constructor(private http: VtexHttpClient) {}
 
-  getGiftCardTransactions(params: {
+  async getGiftCardTransactions(params: {
   giftCardId: string
 }, opts?: CallOptions): Promise<Response3[]> {
     return this.http.request<Response3[]>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  createGiftCardTransaction(params: {
+  async createGiftCardTransaction(params: {
   giftCardId: string
   body: CreateGiftCardTransactionRequest
 }, opts?: CallOptions): Promise<Response3> {
     return this.http.request<Response3>(withCall({ method: 'POST', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getGiftCardTransactionbyID(params: {
+  async getGiftCardTransactionbyID(params: {
   giftCardId: string
   transactionId: string
 }, opts?: CallOptions): Promise<Response5> {
     return this.http.request<Response5>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getTransactionAuthorizations(params: {
+  async getTransactionAuthorizations(params: {
   giftCardId: string
   transactionId: string
 }, opts?: CallOptions): Promise<Response6> {
     return this.http.request<Response6>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/authorization`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getTransactionCancellations(params: {
+  async getTransactionCancellations(params: {
   giftCardId: string
   transactionId: string
 }, opts?: CallOptions): Promise<Response7[]> {
     return this.http.request<Response7[]>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/cancellations`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  cancelGiftCardTransaction(params: {
+  async cancelGiftCardTransaction(params: {
   giftCardId: string
   transactionId: string
   body: GiftCardTransactionRequest
@@ -88,14 +88,14 @@ class GiftcardApi_transactions {
     return this.http.request<Response6>(withCall({ method: 'POST', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/cancellations`, body: params.body, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  getTransactionSettlements(params: {
+  async getTransactionSettlements(params: {
   giftCardId: string
   transactionId: string
 }, opts?: CallOptions): Promise<Response6[]> {
     return this.http.request<Response6[]>(withCall({ method: 'GET', path: `/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}/settlements`, server: 'https://{accountName}.{environment}.com.br/api' }, opts))
   }
 
-  settleGiftCardTransaction(params: {
+  async settleGiftCardTransaction(params: {
   giftCardId: string
   transactionId: string
   body: GiftCardTransactionRequest

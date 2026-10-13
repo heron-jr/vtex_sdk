@@ -39,7 +39,14 @@ describe('OrdersFacade', () => {
     expect(fetchMock.mock.calls[0][0]).toBe(
       'https://x.vtexcommercestable.com.br/api/oms/pvt/orders/..%2F..%2Fdataentities%2FCL%2Fsearch',
     )
-    expect(() => facade.get('..')).toThrow(VtexUsageError)
+    await expect(facade.get('..')).rejects.toBeInstanceOf(VtexUsageError)
+  })
+
+  it('get() reports a bad id as a rejected promise, not a synchronous throw', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json({})))
+    const facade = facadeWith(fetchMock)
+    const results = await Promise.allSettled([facade.get('ok'), facade.get('..'), facade.get('')])
+    expect(results.map((r) => r.status)).toEqual(['fulfilled', 'rejected', 'rejected'])
   })
 
   it('list() auto-paginates across pages', async () => {

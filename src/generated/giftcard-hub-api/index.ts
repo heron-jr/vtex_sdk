@@ -6,7 +6,7 @@ import type { CreateUpdateGiftCardProviderbyIDRequest, CreateGiftCardinGiftCardP
 class GiftcardHubApi_provider {
   constructor(private http: VtexHttpClient) {}
 
-  listAllGiftCardProviders(params: {
+  async listAllGiftCardProviders(params: {
   'REST-Range'?: string
 } = {}, opts?: CallOptions): Promise<{
   id?: string
@@ -30,7 +30,7 @@ class GiftcardHubApi_provider {
 }[]>(withCall({ method: 'GET', path: `/api/giftcardproviders`, headers: { 'REST-Range': params['REST-Range'] } }, opts))
   }
 
-  getGiftCardProviderbyID(params: {
+  async getGiftCardProviderbyID(params: {
   giftCardProviderId: string
 }, opts?: CallOptions): Promise<{
   id?: string
@@ -52,7 +52,7 @@ class GiftcardHubApi_provider {
 }>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}` }, opts))
   }
 
-  createUpdateGiftCardProviderbyID(params: {
+  async createUpdateGiftCardProviderbyID(params: {
   giftCardProviderId: string
   body: CreateUpdateGiftCardProviderbyIDRequest
 }, opts?: CallOptions): Promise<{
@@ -73,7 +73,7 @@ class GiftcardHubApi_provider {
 }>(withCall({ method: 'PUT', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
-  deleteGiftCardProviderbyID(params: {
+  async deleteGiftCardProviderbyID(params: {
   giftCardProviderId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}` }, opts))
@@ -82,7 +82,7 @@ class GiftcardHubApi_provider {
 class GiftcardHubApi_transaction {
   constructor(private http: VtexHttpClient) {}
 
-  createGiftCardinGiftCardProvider(params: {
+  async createGiftCardinGiftCardProvider(params: {
   giftCardProviderId: string
   body: CreateGiftCardinGiftCardProviderRequest
 }, opts?: CallOptions): Promise<{
@@ -111,7 +111,7 @@ class GiftcardHubApi_transaction {
 }>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
-  getGiftCardfromGiftCardProvider(params: {
+  async getGiftCardfromGiftCardProvider(params: {
   giftCardProviderId: string
   'REST-Range'?: string
   body: GetGiftCardfromGiftCardProviderRequest
@@ -133,7 +133,7 @@ class GiftcardHubApi_transaction {
 }[]>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/_search`, headers: { 'REST-Range': params['REST-Range'] }, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
-  getGiftCardfromGiftCardProviderbyID(params: {
+  async getGiftCardfromGiftCardProviderbyID(params: {
   giftCardProviderId: string
   giftCardId: string
 }, opts?: CallOptions): Promise<{
@@ -164,7 +164,7 @@ class GiftcardHubApi_transaction {
 }>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}` }, opts))
   }
 
-  listAllGiftCardTransactions(params: {
+  async listAllGiftCardTransactions(params: {
   giftCardProviderId: string
   giftCardId: string
 }, opts?: CallOptions): Promise<{
@@ -183,7 +183,7 @@ class GiftcardHubApi_transaction {
 }[]>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions` }, opts))
   }
 
-  createGiftCardTransaction(params: {
+  async createGiftCardTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
   body: CreateGiftCardTransactionRequest
@@ -203,7 +203,7 @@ class GiftcardHubApi_transaction {
 }>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions`, body: params.body, contentType: 'application/vnd.vtex.giftcardproviders.v1+json' }, opts))
   }
 
-  getGiftCardTransactionbyID(params: {
+  async getGiftCardTransactionbyID(params: {
   giftCardProviderId: string
   giftCardId: string
   transactionId: string
@@ -241,7 +241,7 @@ class GiftcardHubApi_transaction {
 }>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.transactionId)}` }, opts))
   }
 
-  getGiftCardAuthorizationTransaction(params: {
+  async getGiftCardAuthorizationTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
@@ -257,7 +257,7 @@ class GiftcardHubApi_transaction {
 }>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/authorization` }, opts))
   }
 
-  listAllGiftCardSettlementTransactions(params: {
+  async listAllGiftCardSettlementTransactions(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
@@ -273,7 +273,7 @@ class GiftcardHubApi_transaction {
 }[]>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/settlements` }, opts))
   }
 
-  createGiftCardSettlementTransaction(params: {
+  async createGiftCardSettlementTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
@@ -293,7 +293,7 @@ class GiftcardHubApi_transaction {
 }[]>(withCall({ method: 'POST', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/settlements`, body: params.body }, opts))
   }
 
-  listAllGiftCardCancellationTransactions(params: {
+  async listAllGiftCardCancellationTransactions(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string
@@ -309,7 +309,7 @@ class GiftcardHubApi_transaction {
 }[]>(withCall({ method: 'GET', path: `/api/giftcardproviders/${encodePathParam(params.giftCardProviderId)}/giftcards/${encodePathParam(params.giftCardId)}/transactions/${encodePathParam(params.tId)}/cancellations` }, opts))
   }
 
-  createGiftCardCancellationTransaction(params: {
+  async createGiftCardCancellationTransaction(params: {
   giftCardProviderId: string
   giftCardId: string
   tId: string

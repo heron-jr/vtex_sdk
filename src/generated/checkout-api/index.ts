@@ -6,7 +6,7 @@ import type { OrderForm, OrderFormSimulationRequest, Item, PriceChangeRequest, S
 class CheckoutApi_shoppingCart {
   constructor(private http: VtexHttpClient) {}
 
-  cartSimulation(params: {
+  async cartSimulation(params: {
   RnbBehavior?: number
   sc?: number
   individualShippingEstimates?: boolean
@@ -497,14 +497,14 @@ class CheckoutApi_shoppingCart {
 }>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForms/simulation`, query: { 'RnbBehavior': params.RnbBehavior, 'sc': params.sc, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  createANewCart(params: {
+  async createANewCart(params: {
   forceNewCart?: boolean
   individualShippingEstimates?: boolean
 } = {}, opts?: CallOptions): Promise<OrderForm> {
     return this.http.request<OrderForm>(withCall({ method: 'GET', path: `/api/checkout/pub/orderForm`, query: { 'forceNewCart': params.forceNewCart, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  getCartInformationById(params: {
+  async getCartInformationById(params: {
   orderFormId: string
   refreshOutdatedData?: boolean
   individualShippingEstimates?: boolean
@@ -512,7 +512,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}`, query: { 'refreshOutdatedData': params.refreshOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  removeAllItems(params: {
+  async removeAllItems(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: Record<string, unknown>
@@ -520,14 +520,14 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/removeAll`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  removeallpersonaldata(params: {
+  async removeallpersonaldata(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/checkout/changeToAnonymousUser/${encodePathParam(params.orderFormId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  itemsUpdate(params: {
+  async itemsUpdate(params: {
   orderFormId: string
   allowedOutdatedData?: string[]
   individualShippingEstimates?: boolean
@@ -541,7 +541,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/update`, query: { 'allowedOutdatedData': params.allowedOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  items(params: {
+  async items(params: {
   orderFormId: string
   allowedOutdatedData?: string[]
   individualShippingEstimates?: boolean
@@ -558,7 +558,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items`, query: { 'allowedOutdatedData': params.allowedOutdatedData, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  itemsHandle(params: {
+  async itemsHandle(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -582,7 +582,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'PATCH', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  priceChange(params: {
+  async priceChange(params: {
   orderFormId: string
   itemIndex: string
   individualShippingEstimates?: boolean
@@ -591,7 +591,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/price`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  deleteApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexPrice(params: {
+  async deleteApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexPrice(params: {
   orderFormId: string
   itemIndex: string
   individualShippingEstimates?: boolean
@@ -599,7 +599,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<Record<string, unknown>>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/price`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  ignoreProfileData(params: {
+  async ignoreProfileData(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -609,7 +609,7 @@ class CheckoutApi_shoppingCart {
     return this.http.request<OrderForm>(withCall({ method: 'PATCH', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/profile`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  getCartInstallments(params: {
+  async getCartInstallments(params: {
   orderFormId: string
   paymentSystem: number
   individualShippingEstimates?: boolean
@@ -659,7 +659,7 @@ class CheckoutApi_shoppingCart {
 }>(withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/installments`, query: { 'paymentSystem': params.paymentSystem, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  addCoupons(params: {
+  async addCoupons(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1278,7 +1278,7 @@ class CheckoutApi_shoppingCart {
 class CheckoutApi_cartAttachments {
   constructor(private http: VtexHttpClient) {}
 
-  getClientProfileByEmail(params: {
+  async getClientProfileByEmail(params: {
   email: string
   ensureComplete?: boolean
   individualShippingEstimates?: boolean
@@ -1360,7 +1360,7 @@ class CheckoutApi_cartAttachments {
 }>(withCall({ method: 'GET', path: `/api/checkout/pub/profiles`, query: { 'email': params.email, 'ensureComplete': params.ensureComplete, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  addClientProfile(params: {
+  async addClientProfile(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1381,7 +1381,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/clientProfileData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  addShippingAddress(params: {
+  async addShippingAddress(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1411,7 +1411,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/shippingData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  addClientPreferences(params: {
+  async addClientPreferences(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1422,7 +1422,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/clientPreferencesData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  addMarketingData(params: {
+  async addMarketingData(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1439,7 +1439,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/marketingData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  addPaymentData(params: {
+  async addPaymentData(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1459,7 +1459,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/paymentData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  postApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexAttachmentsByAttachmentName(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexAttachmentsByAttachmentName(params: {
   orderFormId: string
   itemIndex: string
   attachmentName: string
@@ -1473,7 +1473,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/attachments/${encodePathParam(params.attachmentName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  deleteApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexAttachmentsByAttachmentName(params: {
+  async deleteApiCheckoutPubOrderFormByOrderFormIdItemsByItemIndexAttachmentsByAttachmentName(params: {
   orderFormId: string
   itemIndex: string
   attachmentName: string
@@ -1482,7 +1482,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/items/${encodePathParam(params.itemIndex)}/attachments/${encodePathParam(params.attachmentName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  postApiCheckoutPubOrderFormByOrderFormIdAttachmentsSubscriptionData(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdAttachmentsSubscriptionData(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1505,7 +1505,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/subscriptionData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  deleteApiCheckoutPubOrderFormByOrderFormIdAttachmentsSubscriptionData(params: {
+  async deleteApiCheckoutPubOrderFormByOrderFormIdAttachmentsSubscriptionData(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1515,7 +1515,7 @@ class CheckoutApi_cartAttachments {
     return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/subscriptionData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  addMerchantContextData(params: {
+  async addMerchantContextData(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1531,7 +1531,7 @@ class CheckoutApi_cartAttachments {
 }>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/attachments/merchantContextData`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  postApiCheckoutPubOrderFormByOrderFormIdAttachmentsInvoiceData(params: {
+  async postApiCheckoutPubOrderFormByOrderFormIdAttachmentsInvoiceData(params: {
   orderFormId: string
   body: {
   address: {
@@ -1555,7 +1555,7 @@ class CheckoutApi_cartAttachments {
 class CheckoutApi_customData {
   constructor(private http: VtexHttpClient) {}
 
-  setMultipleCustomFieldValues(params: {
+  async setMultipleCustomFieldValues(params: {
   orderFormId: string
   appId: string
   individualShippingEstimates?: boolean
@@ -1566,7 +1566,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customData/${encodePathParam(params.appId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  setSingleCustomFieldValue(params: {
+  async setSingleCustomFieldValue(params: {
   orderFormId: string
   appId: string
   appFieldName: string
@@ -1576,7 +1576,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customData/${encodePathParam(params.appId)}/${encodePathParam(params.appFieldName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  removesinglecustomfieldvalue(params: {
+  async removesinglecustomfieldvalue(params: {
   orderFormId: string
   appId: string
   appFieldName: string
@@ -1585,7 +1585,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customData/${encodePathParam(params.appId)}/${encodePathParam(params.appFieldName)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  putApiCheckoutPubOrderFormByOrderFormIdCustomFields(params: {
+  async putApiCheckoutPubOrderFormByOrderFormIdCustomFields(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1603,7 +1603,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsOrder(params: {
+  async putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsOrder(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -1615,7 +1615,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/order`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsItemByItemId(params: {
+  async putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsItemByItemId(params: {
   orderFormId: string
   itemId: string
   individualShippingEstimates?: boolean
@@ -1628,7 +1628,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'PUT', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/item/${encodePathParam(params.itemId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  deleteApiCheckoutPubOrderFormByOrderFormIdCustomFieldsItemByItemId(params: {
+  async deleteApiCheckoutPubOrderFormByOrderFormIdCustomFieldsItemByItemId(params: {
   orderFormId: string
   itemId: string
   individualShippingEstimates?: boolean
@@ -1636,7 +1636,7 @@ class CheckoutApi_customData {
     return this.http.request<OrderForm>(withCall({ method: 'DELETE', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/customFields/item/${encodePathParam(params.itemId)}`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsAddressByAddressId(params: {
+  async putApiCheckoutPubOrderFormByOrderFormIdCustomFieldsAddressByAddressId(params: {
   orderFormId: string
   addressId: string
   individualShippingEstimates?: boolean
@@ -1652,7 +1652,7 @@ class CheckoutApi_customData {
 class CheckoutApi_configuration {
   constructor(private http: VtexHttpClient) {}
 
-  getorderFormconfiguration(params: {
+  async getorderFormconfiguration(params: {
   individualShippingEstimates?: boolean
 } = {}, opts?: CallOptions): Promise<{
   paymentConfiguration?: {
@@ -1708,34 +1708,34 @@ class CheckoutApi_configuration {
 }>(withCall({ method: 'GET', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  createorderFormconfiguration(params: {
+  async createorderFormconfiguration(params: {
   individualShippingEstimates?: boolean
   body: UpdateorderFormconfigurationRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  updateorderFormconfiguration(params: {
+  async updateorderFormconfiguration(params: {
   individualShippingEstimates?: boolean
   body: UpdateorderFormconfigurationRequest
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/checkout/pvt/configuration/orderForm`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  getWindowToChangeSeller(params: {
+  async getWindowToChangeSeller(params: {
   individualShippingEstimates?: boolean
 } = {}, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/checkout/pvt/configuration/window-to-change-seller`, query: { 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  updateWindowToChangeSeller(params: {
+  async updateWindowToChangeSeller(params: {
   individualShippingEstimates?: boolean
   body: WaitingTime
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/checkout/pvt/configuration/window-to-change-seller`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  clearorderFormMessages(params: {
+  async clearorderFormMessages(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: Record<string, unknown>
@@ -2338,7 +2338,7 @@ class CheckoutApi_configuration {
 class CheckoutApi_fulfillment {
   constructor(private http: VtexHttpClient) {}
 
-  listPickupPpointsByLocation(params: {
+  async listPickupPpointsByLocation(params: {
   geoCoordinates?: string
   postalCode?: string
   countryCode?: string
@@ -2419,7 +2419,7 @@ class CheckoutApi_fulfillment {
 }>(withCall({ method: 'GET', path: `/api/checkout/pub/pickup-points`, query: { 'geoCoordinates': params.geoCoordinates, 'postalCode': params.postalCode, 'countryCode': params.countryCode, 'individualShippingEstimates': params.individualShippingEstimates } }, opts))
   }
 
-  getAddressByPostalCode(params: {
+  async getAddressByPostalCode(params: {
   countryCode: string
   postalCode: string
   individualShippingEstimates?: boolean
@@ -2452,7 +2452,7 @@ class CheckoutApi_fulfillment {
 class CheckoutApi_orderPlacement {
   constructor(private http: VtexHttpClient) {}
 
-  placeOrderFromExistingOrderForm(params: {
+  async placeOrderFromExistingOrderForm(params: {
   orderFormId: string
   individualShippingEstimates?: boolean
   body: {
@@ -2467,7 +2467,7 @@ class CheckoutApi_orderPlacement {
     return this.http.request<OrderForm>(withCall({ method: 'POST', path: `/api/checkout/pub/orderForm/${encodePathParam(params.orderFormId)}/transaction`, query: { 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  placeOrder(params: {
+  async placeOrder(params: {
   sc?: number
   individualShippingEstimates?: boolean
   body: {
@@ -3180,7 +3180,7 @@ class CheckoutApi_orderPlacement {
 }>(withCall({ method: 'PUT', path: `/api/checkout/pub/orders`, query: { 'sc': params.sc, 'individualShippingEstimates': params.individualShippingEstimates }, body: params.body }, opts))
   }
 
-  processOrder(params: {
+  async processOrder(params: {
   orderGroup: string
   individualShippingEstimates?: boolean
 }, opts?: CallOptions): Promise<unknown> {
@@ -3190,7 +3190,7 @@ class CheckoutApi_orderPlacement {
 class CheckoutApi_region {
   constructor(private http: VtexHttpClient) {}
 
-  getSellersByRegion(params: {
+  async getSellersByRegion(params: {
   regionId: string
   country: string
   postalCode?: string

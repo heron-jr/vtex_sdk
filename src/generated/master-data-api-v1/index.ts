@@ -6,11 +6,11 @@ import type { Listdataentity, Getdataentityfields, Field, IdHrefDocumentID, IdHr
 class MasterDataApiV1Api_dataEntities {
   constructor(private http: VtexHttpClient) {}
 
-  listdataentities(params: Record<string, never> = {}, opts?: CallOptions): Promise<Listdataentity[]> {
+  async listdataentities(params: Record<string, never> = {}, opts?: CallOptions): Promise<Listdataentity[]> {
     return this.http.request<Listdataentity[]>(withCall({ method: 'GET', path: `/api/dataentities` }, opts))
   }
 
-  getdataentitystructure(params: {
+  async getdataentitystructure(params: {
   acronym: string
 }, opts?: CallOptions): Promise<Getdataentityfields> {
     return this.http.request<Getdataentityfields>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.acronym)}` }, opts))
@@ -19,7 +19,7 @@ class MasterDataApiV1Api_dataEntities {
 class MasterDataApiV1Api_documents {
   constructor(private http: VtexHttpClient) {}
 
-  createnewdocument(params: {
+  async createnewdocument(params: {
   acronym: string
   body: {
   [key: string]: unknown
@@ -28,7 +28,7 @@ class MasterDataApiV1Api_documents {
     return this.http.request<IdHrefDocumentID>(withCall({ method: 'POST', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents`, body: params.body }, opts))
   }
 
-  createorupdatepartialdocument(params: {
+  async createorupdatepartialdocument(params: {
   acronym: string
   body: {
   id?: string
@@ -38,7 +38,7 @@ class MasterDataApiV1Api_documents {
     return this.http.request<IdHrefDocumentID>(withCall({ method: 'PATCH', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents`, body: params.body }, opts))
   }
 
-  getdocument(params: {
+  async getdocument(params: {
   acronym: string
   id: string
   _fields?: string
@@ -46,7 +46,7 @@ class MasterDataApiV1Api_documents {
     return this.http.request<Document>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}`, query: { '_fields': params._fields } }, opts))
   }
 
-  updateentiredocument(params: {
+  async updateentiredocument(params: {
   acronym: string
   id: string
   body: {
@@ -56,7 +56,7 @@ class MasterDataApiV1Api_documents {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
-  updatepartialdocument(params: {
+  async updatepartialdocument(params: {
   acronym: string
   id: string
   body: Record<string, unknown>
@@ -64,7 +64,7 @@ class MasterDataApiV1Api_documents {
     return this.http.request<unknown>(withCall({ method: 'PATCH', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}`, body: params.body }, opts))
   }
 
-  deletedocument(params: {
+  async deletedocument(params: {
   acronym: string
   id: string
 }, opts?: CallOptions): Promise<unknown> {
@@ -74,14 +74,14 @@ class MasterDataApiV1Api_documents {
 class MasterDataApiV1Api_versions {
   constructor(private http: VtexHttpClient) {}
 
-  listversions(params: {
+  async listversions(params: {
   acronym: string
   id: string
 }, opts?: CallOptions): Promise<Listversion[]> {
     return this.http.request<Listversion[]>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}/versions` }, opts))
   }
 
-  getversion(params: {
+  async getversion(params: {
   acronym: string
   id: string
   versionId: string
@@ -89,7 +89,7 @@ class MasterDataApiV1Api_versions {
     return this.http.request<Getversion>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}/versions/${encodePathParam(params.versionId)}` }, opts))
   }
 
-  putversion(params: {
+  async putversion(params: {
   acronym: string
   id: string
   versionId: string
@@ -100,7 +100,7 @@ class MasterDataApiV1Api_versions {
 class MasterDataApiV1Api_scroll {
   constructor(private http: VtexHttpClient) {}
 
-  scrolldocuments(params: {
+  async scrolldocuments(params: {
   acronym: string
   _fields?: string
   _where?: string
@@ -126,7 +126,7 @@ class MasterDataApiV1Api_scroll {
 class MasterDataApiV1Api_search {
   constructor(private http: VtexHttpClient) {}
 
-  searchdocuments(params: {
+  async searchdocuments(params: {
   acronym: string
   _fields?: string
   _where?: string
@@ -151,7 +151,7 @@ class MasterDataApiV1Api_search {
 class MasterDataApiV1Api_attachments {
   constructor(private http: VtexHttpClient) {}
 
-  retrieveattachment(params: {
+  async retrieveattachment(params: {
   acronym: string
   id: string
   field: string
@@ -160,7 +160,7 @@ class MasterDataApiV1Api_attachments {
     return this.http.request<unknown>(withCall({ method: 'GET', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}/${encodePathParam(params.field)}/attachments/${encodePathParam(params['file-name'])}` }, opts))
   }
 
-  saveattachment(params: {
+  async saveattachment(params: {
   acronym: string
   id: string
   field: string
@@ -172,7 +172,7 @@ class MasterDataApiV1Api_attachments {
 class MasterDataApiV1Api_clusters {
   constructor(private http: VtexHttpClient) {}
 
-  validateDocumentbyClusters(params: {
+  async validateDocumentbyClusters(params: {
   acronym: string
   id: string
   body: {
@@ -186,7 +186,7 @@ class MasterDataApiV1Api_clusters {
 class MasterDataApiV1Api_score {
   constructor(private http: VtexHttpClient) {}
 
-  putscores(params: {
+  async putscores(params: {
   acronym: string
   id: string
   body: PutscoresRequest[]
@@ -194,7 +194,7 @@ class MasterDataApiV1Api_score {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}/score`, body: params.body }, opts))
   }
 
-  putscorebyfield(params: {
+  async putscorebyfield(params: {
   acronym: string
   id: string
   'field-name': string
@@ -203,7 +203,7 @@ class MasterDataApiV1Api_score {
     return this.http.request<unknown>(withCall({ method: 'PUT', path: `/api/dataentities/${encodePathParam(params.acronym)}/documents/${encodePathParam(params.id)}/score/${encodePathParam(params['field-name'])}`, body: params.body }, opts))
   }
 
-  deletescorebyfield(params: {
+  async deletescorebyfield(params: {
   acronym: string
   id: string
   'field-name': string
@@ -215,14 +215,14 @@ class MasterDataApiV1Api_score {
 class MasterDataApiV1Api_customerProfiles {
   constructor(private http: VtexHttpClient) {}
 
-  createNewCustomerProfilev2(params: {
+  async createNewCustomerProfilev2(params: {
   _schema?: string
   body: CreateUpdateProfileRequests
 }, opts?: CallOptions): Promise<DocumentResponse> {
     return this.http.request<DocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/CL/documents`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
-  updateCustomerProfile(params: {
+  async updateCustomerProfile(params: {
   id: string
   _schema?: string
   body: CreateUpdateProfileRequests
@@ -230,7 +230,7 @@ class MasterDataApiV1Api_customerProfiles {
     return this.http.request<DocumentResponse>(withCall({ method: 'PATCH', path: `/api/dataentities/CL/documents/${encodePathParam(params.id)}`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
-  deleteCustomerProfile(params: {
+  async deleteCustomerProfile(params: {
   id: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/CL/documents/${encodePathParam(params.id)}` }, opts))
@@ -239,21 +239,21 @@ class MasterDataApiV1Api_customerProfiles {
 class MasterDataApiV1Api_addresses {
   constructor(private http: VtexHttpClient) {}
 
-  createNewCustomerAddress(params: {
+  async createNewCustomerAddress(params: {
   _schema?: string
   body: CreateUpdateAddressRequests
 }, opts?: CallOptions): Promise<DocumentResponse> {
     return this.http.request<DocumentResponse>(withCall({ method: 'POST', path: `/api/dataentities/AD/documents`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
-  getApiDataentitiesADDocumentsByAddressId(params: {
+  async getApiDataentitiesADDocumentsByAddressId(params: {
   addressId: string
   _fields: string
 }, opts?: CallOptions): Promise<AddressResponse> {
     return this.http.request<AddressResponse>(withCall({ method: 'GET', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}`, query: { '_fields': params._fields } }, opts))
   }
 
-  updateCustomerAddress(params: {
+  async updateCustomerAddress(params: {
   addressId: string
   _schema?: string
   body: CreateUpdateAddressRequests
@@ -261,7 +261,7 @@ class MasterDataApiV1Api_addresses {
     return this.http.request<DocumentResponse>(withCall({ method: 'PATCH', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}`, query: { '_schema': params._schema }, body: params.body }, opts))
   }
 
-  deleteCustomerAD(params: {
+  async deleteCustomerAD(params: {
   addressId: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'DELETE', path: `/api/dataentities/AD/documents/${encodePathParam(params.addressId)}` }, opts))

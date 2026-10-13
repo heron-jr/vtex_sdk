@@ -6,7 +6,7 @@ import type { EnqueueNewOrderRequest, Item, ClientProfileData, ShippingData, Log
 class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
   constructor(private http: VtexHttpClient) {}
 
-  placeFulfillmentOrder(params: {
+  async placeFulfillmentOrder(params: {
   sc?: string
   affiliateId: string
   body: PlaceFulfillmentOrderRequest
@@ -14,7 +14,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
     return this.http.request<PlaceFulfillmentOrderResponse>(withCall({ method: 'POST', path: `/api/fulfillment/pvt/orders`, query: { 'sc': params.sc, 'affiliateId': params.affiliateId }, body: params.body }, opts))
   }
 
-  authorizeDispatchForFulfillmentOrder(params: {
+  async authorizeDispatchForFulfillmentOrder(params: {
   orderId: string
   sc?: string
   affiliateId: string
@@ -25,7 +25,7 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
     return this.http.request<OrderIDFulfillmentResponse>(withCall({ method: 'POST', path: `/api/fulfillment/pvt/orders/${encodePathParam(params.orderId)}/fulfill`, query: { 'sc': params.sc, 'affiliateId': params.affiliateId }, body: params.body }, opts))
   }
 
-  enqueueNewOrder(params: {
+  async enqueueNewOrder(params: {
   an?: string
   affiliateId: string
   body: EnqueueNewOrderRequest
@@ -33,14 +33,14 @@ class MarketplaceProtocolExternalMarketplaceOrdersApi_externalMarketplace {
     return this.http.request<Deliverybyseller>(withCall({ method: 'POST', path: `/api/order-integration/orders`, query: { 'an': params.an, 'affiliateId': params.affiliateId }, body: params.body }, opts))
   }
 
-  updateOrderStatus(params: {
+  async updateOrderStatus(params: {
   an?: string
   body: UpdateOrderStatusRequest
 }, opts?: CallOptions): Promise<Approveorder> {
     return this.http.request<Approveorder>(withCall({ method: 'PUT', path: `/api/order-integration/orders/status`, query: { 'an': params.an }, body: params.body }, opts))
   }
 
-  fulfillmentSimulationExternalMarketplace(params: {
+  async fulfillmentSimulationExternalMarketplace(params: {
   affiliateId?: string
   sc?: number
   body: {

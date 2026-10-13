@@ -6,28 +6,28 @@ import type { FileData, ImportResult, ValidationResult } from './types.js'
 class BuyerOrganizationsB2bSuiteApi_bulkImport {
   constructor(private http: VtexHttpClient) {}
 
-  uploadFile(params: {
+  async uploadFile(params: {
   an?: string
   body: FormData
 }, opts?: CallOptions): Promise<FileData> {
     return this.http.request<FileData>(withCall({ method: 'POST', path: `/api/b2b/import/buyer-orgs`, query: { 'an': params.an }, body: params.body, contentType: 'multipart/form-data' }, opts))
   }
 
-  checkProgress(params: {
+  async checkProgress(params: {
   importId: string
   an?: string
 }, opts?: CallOptions): Promise<FileData | ImportResult | ValidationResult> {
     return this.http.request<FileData | ImportResult | ValidationResult>(withCall({ method: 'GET', path: `/api/b2b/import/buyer-orgs/${encodePathParam(params.importId)}`, query: { 'an': params.an } }, opts))
   }
 
-  postApiB2bImportBuyerOrgsByImportId(params: {
+  async postApiB2bImportBuyerOrgsByImportId(params: {
   importId: string
   an?: string
 }, opts?: CallOptions): Promise<unknown> {
     return this.http.request<unknown>(withCall({ method: 'POST', path: `/api/b2b/import/buyer-orgs/${encodePathParam(params.importId)}`, query: { 'an': params.an } }, opts))
   }
 
-  validateFile(params: {
+  async validateFile(params: {
   importId: string
   an?: string
 }, opts?: CallOptions): Promise<unknown> {
