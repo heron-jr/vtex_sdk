@@ -41,7 +41,11 @@ describe('VtexClient', () => {
     expect(() => {
       ;(c as unknown as { account: string }).account = 'other'
     }).toThrow(TypeError)
+    expect(() => {
+      ;(c as unknown as { environment: string }).environment = 'vtexcommercebeta'
+    }).toThrow(TypeError)
     expect(c.account).toBe('lojax')
+    expect(c.environment).toBe('vtexcommercestable')
   })
 
   it('does not expose the transport', () => {

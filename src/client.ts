@@ -56,7 +56,8 @@ export class VtexClient {
    * Resolves with the parsed JSON body, the text body for other content types, or
    * `undefined` for 204/205 and empty bodies. `T` is not validated at runtime.
    * Rejects with `VtexUsageError` for invalid options and with a `VtexError` subclass
-   * for HTTP, timeout and network failures.
+   * for HTTP, timeout and network failures. A caller abort (`signal`) rejects with the
+   * signal's reason (an `AbortError` by default), not a `VtexError`.
    */
   request<T = unknown>(opts: RequestOptions): Promise<T> {
     return this.#http.request<T>(opts)
@@ -69,7 +70,7 @@ export class VtexClient {
 
   /** Redaction boundary: must never include credential-bearing fields. */
   toJSON(): { account: string; environment: VtexEnvironment } {
-    return { account: this.account, environment: this.environment }
+    return { account: this.#http.account, environment: this.#http.environment }
   }
 
   [INSPECT](): string {
