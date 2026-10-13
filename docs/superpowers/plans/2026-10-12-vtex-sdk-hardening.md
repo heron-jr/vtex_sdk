@@ -208,7 +208,7 @@ EOF
 
 ```ts
 import { inspect } from 'node:util'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   mapResponseToError, VtexAuthError, VtexNotFoundError,
   VtexValidationError, VtexRateLimitError, VtexServerError, VtexRequestError,
@@ -260,11 +260,26 @@ describe('mapResponseToError', () => {
     expect(err).toBeInstanceOf(VtexRateLimitError)
     expect(err.retryAfter).toBeUndefined()
   })
+  it('converts delta-seconds Retry-After to whole seconds, rounding up', () => {
+    const retryAfter = (value: string) => (mapResponseToError(429, {}, h({ 'Retry-After': value })) as VtexRateLimitError).retryAfter
+    expect(retryAfter('1.5')).toBe(2)
+    expect(retryAfter('0')).toBe(0)
+  })
   it('parses an HTTP-date Retry-After into seconds', () => {
-    const inTenSeconds = new Date(Date.now() + 10_000).toUTCString()
-    const err = mapResponseToError(429, {}, h({ 'Retry-After': inTenSeconds })) as VtexRateLimitError
-    expect(err.retryAfter).toBeGreaterThanOrEqual(8)
-    expect(err.retryAfter).toBeLessThanOrEqual(11)
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-12T12:00:00Z'))
+    try {
+      const retryAfter = (value: string) => (mapResponseToError(429, {}, h({ 'Retry-After': value })) as VtexRateLimitError).retryAfter
+      expect(retryAfter('Mon, 12 Oct 2026 12:00:10 GMT')).toBe(10)
+      expect(retryAfter('Mon, 12 Oct 2026 11:00:00 GMT')).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+  it('ignores Retry-After values that are neither delta-seconds nor an HTTP-date', () => {
+    for (const value of ['abc 5', '-5', '.5', '2026-10-12', '9'.repeat(400)]) {
+      expect((mapResponseToError(429, {}, h({ 'Retry-After': value })) as VtexRateLimitError).retryAfter).toBeUndefined()
+    }
   })
   it('unmapped status code (405) maps to plain VtexRequestError, not a subclass', () => {
     const err = mapResponseToError(405, {}, h())
@@ -335,12 +350,19 @@ Keep the existing `shouldRetry` and `computeBackoff` for now; Task 6 removes the
 
 ```ts
 
-/** Parses Retry-After (delta-seconds or HTTP-date) into milliseconds. */
+/**
+ * Parses Retry-After into milliseconds. Accepts delta-seconds and HTTP-dates
+ * (IMF-fixdate or RFC 850, both ending in "hh:mm:ss GMT"); anything else is
+ * ignored, because Date.parse also accepts junk such as "abc 5".
+ */
 export function parseRetryAfterMs(value: string | null | undefined, now: number = Date.now()): number | undefined {
   if (value === null || value === undefined) return undefined
   const trimmed = value.trim()
-  if (trimmed === '') return undefined
-  if (/^\d+(\.\d+)?$/.test(trimmed)) return Math.round(Number(trimmed) * 1000)
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const ms = Math.round(Number(trimmed) * 1000)
+    return Number.isFinite(ms) ? ms : undefined
+  }
+  if (!/\d{2}:\d{2}:\d{2} GMT$/.test(trimmed)) return undefined
   const at = Date.parse(trimmed)
   if (Number.isNaN(at)) return undefined
   return Math.max(0, at - now)
@@ -372,7 +394,7 @@ export class VtexRequestError extends VtexError {
   constructor(message: string, opts: { status: number; body: unknown; requestId?: string; retryAfter?: number }) {
     super(message)
     this.status = opts.status
-    Object.defineProperty(this, 'body', { value: opts.body, enumerable: false, writable: false, configurable: true })
+    Object.defineProperty(this, 'body', { value: opts.body, enumerable: false, writable: true, configurable: true })
     this.requestId = opts.requestId
     this.retryAfter = opts.retryAfter
   }
@@ -414,7 +436,7 @@ export class VtexUnexpectedResponseError extends VtexError {
 
   constructor(message: string, body: unknown) {
     super(message)
-    Object.defineProperty(this, 'body', { value: body, enumerable: false, writable: false, configurable: true })
+    Object.defineProperty(this, 'body', { value: body, enumerable: false, writable: true, configurable: true })
   }
 }
 
@@ -825,10 +847,20 @@ describe('parseRetryAfterMs', () => {
     const now = Date.parse('2026-10-12T12:00:00Z')
     expect(parseRetryAfterMs('Mon, 12 Oct 2026 11:00:00 GMT', now)).toBe(0)
   })
+  it('accepts the obsolete RFC 850 date form', () => {
+    const now = Date.parse('2026-10-12T12:00:00Z')
+    expect(parseRetryAfterMs('Monday, 12-Oct-26 12:00:30 GMT', now)).toBe(30_000)
+  })
   it('returns undefined for missing or invalid values', () => {
     expect(parseRetryAfterMs(null)).toBeUndefined()
     expect(parseRetryAfterMs('')).toBeUndefined()
     expect(parseRetryAfterMs('soon')).toBeUndefined()
+  })
+  it('rejects values that only look like dates or numbers', () => {
+    const now = Date.parse('2026-10-12T12:00:00Z')
+    for (const value of ['abc 5', '-5', '+5', '.5', '1.', '2026-10-12', 'Mon Oct 12 12:00:30 2026', '9'.repeat(400)]) {
+      expect(parseRetryAfterMs(value, now)).toBeUndefined()
+    }
   })
 })
 
@@ -1996,12 +2028,19 @@ export function shouldRetryFailure(ctx: RetryContext, failure: Failure): boolean
   }
 }
 
-/** Parses Retry-After (delta-seconds or HTTP-date) into milliseconds. */
+/**
+ * Parses Retry-After into milliseconds. Accepts delta-seconds and HTTP-dates
+ * (IMF-fixdate or RFC 850, both ending in "hh:mm:ss GMT"); anything else is
+ * ignored, because Date.parse also accepts junk such as "abc 5".
+ */
 export function parseRetryAfterMs(value: string | null | undefined, now: number = Date.now()): number | undefined {
   if (value === null || value === undefined) return undefined
   const trimmed = value.trim()
-  if (trimmed === '') return undefined
-  if (/^\d+(\.\d+)?$/.test(trimmed)) return Math.round(Number(trimmed) * 1000)
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const ms = Math.round(Number(trimmed) * 1000)
+    return Number.isFinite(ms) ? ms : undefined
+  }
+  if (!/\d{2}:\d{2}:\d{2} GMT$/.test(trimmed)) return undefined
   const at = Date.parse(trimmed)
   if (Number.isNaN(at)) return undefined
   return Math.max(0, at - now)
@@ -4906,7 +4945,8 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - Generated operations call the host and base path their OpenAPI document declares (for example Gift Card under `/api`, Pricing on `api.vtex.com/{account}`, several APIs on `{account}.myvtex.com`).
 - APIs and operations served only by third-party or variable hosts were removed from `raw.*`: provider protocols, Ads, Pick and Pack, Punchout, Tracking, and two operations with placeholder or vault hosts. Their types are still exported.
 - Network failures throw `VtexNetworkError`, and timeouts throw `VtexTimeoutError`, instead of a raw `TypeError` / `AbortError`. A caller abort still rejects with the signal's reason.
-- `VtexRequestError.body` is non-enumerable: still readable, but left out of `JSON.stringify(err)` and default logging.
+- `VtexRequestError.body` is non-enumerable: still readable and writable, but left out of `JSON.stringify(err)` and default logging.
+- `retryAfter` on errors is now whole seconds, rounded up (`'1.5'` gives `2`). It is also derived from HTTP-dates. Values that are neither delta-seconds nor an HTTP-date are ignored.
 - `orders.list()` throws `VtexPaginationLimitError` instead of requesting page 31 and beyond.
 - A `Retry-After` longer than `maxRetryAfterMs` (default 30 s) throws immediately instead of sleeping.
 - Node.js 20 or newer is required.
@@ -5166,6 +5206,11 @@ npm run codegen         # regenerate src/generated from them
 VTEX_ACCOUNT=... VTEX_APP_KEY=... VTEX_APP_TOKEN=... npm run live-check   # optional, read-only
 ```
 
+Notes for contributors:
+- The development toolchain (vitest/vite) needs Node 20.19+ or 22.12+. Consumers only need Node 20.
+- `package.json` overrides tsup's esbuild to `^0.28.2`, because esbuild 0.27.x is affected by GHSA-g7r4-m6w7-qqqr. Remove the override once tsup depends on esbuild 0.28.1 or newer, or after moving to tsdown.
+- Update dependencies with npm 11, so the lockfile keeps its platform (`libc`) annotations.
+
 See [`docs/vtex-notes.md`](./docs/vtex-notes.md) for VTEX hosts, authentication, rate limiting and how the generated layer is produced.
 
 ## License
@@ -5347,6 +5392,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Package types resolve for ESM and CJS consumers
+        if: matrix.node == 22
+        run: npx --yes @arethetypeswrong/cli@0.18.5 --pack .
 
   codegen-reproducible:
     runs-on: ubuntu-latest
@@ -5473,7 +5521,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  294 passed (294)`;
+- `Test Files  25 passed (25)` and `Tests  298 passed (298)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
