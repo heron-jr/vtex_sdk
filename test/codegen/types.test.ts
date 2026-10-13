@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import ts from 'typescript'
 import { schemaToType } from '../../scripts/codegen/types.js'
 
 const ref = (r: string) => r.split('/').pop()!
@@ -84,5 +85,64 @@ describe('schemaToType', () => {
     expect(schemaToType({ type: 'object', properties: { '{fieldName}': { type: 'string' } } }, ref)).toBe(
       '{\n  [key: string]: string\n}',
     )
+  })
+  it('widens placeholder keys mixed with named keys to unknown', () => {
+    const t = schemaToType({ type: 'object', properties: { id: { type: 'string' }, '{field}': { type: 'number' } } }, ref)
+    expect(t).toBe('{\n  id?: string\n  [key: string]: unknown\n}')
+  })
+  it('never emits a duplicate null', () => {
+    expect(schemaToType({ type: 'string', enum: ['a', null], nullable: true }, ref)).toBe('"a" | null')
+    expect(schemaToType({ type: ['string', 'null'], nullable: true }, ref)).toBe('string | null')
+  })
+  it('makes an intersection nullable as a whole', () => {
+    const t = schemaToType({ allOf: [{ $ref: '#/components/schemas/A' }, { $ref: '#/components/schemas/B' }], nullable: true }, ref)
+    expect(t).toBe('A & B | null')
+  })
+  it('handles type arrays with several or no entries', () => {
+    expect(schemaToType({ type: ['string', 'integer', 'null'] }, ref)).toBe('string | number | null')
+    expect(schemaToType({ type: ['integer', 'number'] }, ref)).toBe('number')
+    expect(schemaToType({ type: [] }, ref)).toBe('unknown')
+    expect(schemaToType({ type: [], nullable: true }, ref)).toBe('unknown')
+  })
+  it('stays linear on repetitive nested type arrays', () => {
+    let schema: any = { type: 'string' }
+    for (let i = 0; i < 12; i++) {
+      schema = { type: ['object', 'object', 'object', 'object'], properties: { a: schema } }
+    }
+    const start = Date.now()
+    schemaToType(schema, ref)
+    expect(Date.now() - start).toBeLessThan(1000)
+  })
+  it('distinguishes additionalProperties false and {}', () => {
+    expect(schemaToType({ type: 'object', additionalProperties: false }, ref)).toBe('Record<string, never>')
+    expect(schemaToType({ type: 'object', additionalProperties: {} }, ref)).toBe('{\n  [key: string]: unknown\n}')
+  })
+  it('quotes keys that are not identifiers', () => {
+    expect(schemaToType({ type: 'object', properties: { 'x-y': { type: 'string' } }, required: ['x-y'] }, ref)).toBe(
+      '{\n  "x-y": string\n}',
+    )
+  })
+  it('parenthesizes only top-level unions in array items', () => {
+    expect(schemaToType({ type: 'array', items: { type: 'object', properties: { a: { type: 'string', nullable: true } } } }, ref)).toBe(
+      '{\n  a?: string | null\n}[]',
+    )
+    expect(schemaToType({ type: 'array', items: { type: 'array', items: { type: 'string', nullable: true } } }, ref)).toBe(
+      '(string | null)[][]',
+    )
+    expect(schemaToType({ type: 'array', items: { type: 'string', enum: ['a|b', 'c'] } }, ref)).toBe('("a|b" | "c")[]')
+  })
+  it('rejects a non-string $ref with a clear error', () => {
+    expect(() => schemaToType({ $ref: 123 }, ref)).toThrow(/Invalid \$ref/)
+  })
+  it('emits syntactically valid TypeScript for odd inputs', () => {
+    const odd = [
+      { type: [] }, { type: [], nullable: true }, { enum: ['*/', '`${x}`', '"; export const x = 1; //', '\u2028'] },
+      { type: 'object', properties: { '*/ evil': { type: 'string' }, '__proto__': { type: 'number' } } },
+      { allOf: [{ oneOf: [{ type: 'string' }, { type: 'number' }] }, { type: 'object', additionalProperties: true }] },
+    ]
+    for (const schema of odd) {
+      const out = ts.transpileModule(`type T = ${schemaToType(schema, ref)}`, { reportDiagnostics: true })
+      expect(out.diagnostics ?? []).toEqual([])
+    }
   })
 })
