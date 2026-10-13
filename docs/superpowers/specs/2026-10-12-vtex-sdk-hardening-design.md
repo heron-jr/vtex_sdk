@@ -1,6 +1,6 @@
 # vtex-sdk 0.2.0 — Security Hardening & Correctness — Design Spec
 
-**Status:** Approved; implementation in progress on branch `fix/hardening-0.2.0`
+**Status:** Implemented in 0.2.0 (branch `fix/hardening-0.2.0`)
 **Date:** 2026-10-12
 **Author:** Heron Jr + Claude
 **Supersedes:** nothing. It amends `2026-07-17-vtex-sdk-design.md`, whose architecture (core + generated `raw.*` + hand-written facades) stays.
@@ -33,7 +33,7 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
 
 | # | Defect | Effect |
 |---|---|---|
-| C1 | The generator ignores OpenAPI `servers`, so every call goes to `https://{account}.{env}.com.br`. | About a third of operations (~360) target the wrong host or base path. Examples: Gift Card lacks `/api`; Pricing lives at `api.vtex.com/{account}`; VTEX ID and others at `{account}.myvtex.com`. |
+| C1 | The generator ignores OpenAPI `servers`, so every call goes to `https://{account}.{env}.com.br`. | About a third of operations (~360) target the wrong host or base path. Examples: Gift Card lacks `/api`; Pricing lives at `api.vtex.com/{account}`; Budgets, Organization Units and others at `{account}.myvtex.com`. |
 | C2 | Only `application/json*` request bodies are emitted. | 21 operations silently drop their body, including `createGiftCard` (`application/vnd.vtex.giftcard.v1+json`) and the Gift Card Hub writes. |
 | C3 | Generated methods drop header parameters and accept no per-call options. | No `REST-Range`, `signal`, `timeoutMs` or retry control. |
 | C4 | Type generator gaps: `nullable` ignored (2,830 nodes); `"a" \| "b"[]` emitted for arrays of unions; `additionalProperties` ignored; placeholder keys such as `{fieldName}` emitted literally. | Several payload types are wrong (Master Data bodies, coupon usage, order-hook headers). Generated types are also not exported. |
@@ -64,7 +64,7 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
   1. substitutes only `{accountName}` and `{environment}` with the validated values;
   2. parses the result with `new URL()`;
   3. requires `https:` (`http:` templates are upgraded);
-  4. requires the hostname to equal, or end with `.` plus, a domain in the **VTEX domain allowlist**. Initially: `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com`, `vtexpayments.com.br`. More domains are added only with evidence of VTEX ownership (see §10). Hosts under `io.vtex.com` (VTEX IO app routes, which run third-party app code) are refused even though they are under `vtex.com`.
+  4. requires the hostname to equal, or end with `.` plus, a domain in the **VTEX domain allowlist**. Initially: `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com`, `vtexpayments.com.br`. More domains are added only with evidence of VTEX ownership (see §10). On `vtex.com` only `api.vtex.com` and `sp.vtex.com` qualify: its other subdomains include `*.io.vtex.com` (VTEX IO app routes, which run third-party app code) and sites that may be run by third parties.
 - **Credentials never go to a non-allowlisted origin.** Allowlist failure throws `VtexUsageError` before any network call.
 
 ### 3.2 Path safety (S2, defense in depth)
@@ -111,7 +111,8 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
   - Leading and trailing space, tab, CR and LF are stripped from a credential first, which is the same normalization fetch applies. A secret file's trailing newline therefore works. A credential that is empty after trimming is rejected.
   - `undefined`, `null` and `''` all count as "not configured". With `appKey=''`, `appToken=''` (blank env vars) and an `authCookie`, the client uses cookie authentication.
   - A violation throws `VtexUsageError`, naming the header but never echoing its value. Otherwise `fetch` would reject inside the retry loop with an error message containing the value, which may be a credential.
-  - A body on GET/HEAD and an invalid HTTP method are rejected the same way.
+  - A body on GET/HEAD and an invalid HTTP method (including CONNECT, TRACE and TRACK, which fetch refuses) are rejected the same way.
+  - Account names starting with `xn--` (punycode) are rejected.
   - `null` header values are skipped like `undefined`.
 - **Redacted output:** `VtexHttpClient` and `VtexClient` implement `toJSON()` and `[Symbol.for('nodejs.util.inspect.custom')]`, both returning `{ account, environment }` only.
 - **Coverage:** facades and generated namespaces reference the client only through these classes, so logging any of them is safe.
@@ -212,6 +213,7 @@ Nothing is removed.
 - Overrides whose file is not in the lock are named in the error.
 
 ### 4.3 Call shape (S2, C3)
+- **Async methods:** generated (and facade) methods are `async`, so an invalid argument such as an empty or `..` id rejects the returned promise instead of throwing synchronously.
 - **Path params:** emitted as `${encodePathParam(params.x)}`.
 - **Header params:** parameters with `in: 'header'` become typed fields on `params`, required when the schema says so.
   - Except a case-insensitive denylist managed by the SDK or by `fetch`: `accept`, `content-type`, `content-length`, `host`, `x-vtex-api-appkey`, `x-vtex-api-apptoken`, `vtexidclientautcookie`, `cookie`, `authorization`.
@@ -391,7 +393,7 @@ Nothing is removed.
 - **Host contract test:** for every generated operation, resolving its server with `account: 'acme'`, `environment: 'vtexcommercestable'` yields an allowlisted https origin. Spot checks:
   - `POST /api/giftcards`;
   - `api.vtex.com/acme/pricing/...`;
-  - `acme.myvtex.com/api/vtexid/...`;
+  - `acme.myvtex.com/reviews-and-ratings/api/...`;
   - `/api/rnb/pvt/coupon`;
   - `/api/orders/feed`.
 - **Downstream-compatibility test:** reproduces a known consumer's usage verbatim:

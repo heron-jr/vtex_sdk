@@ -502,6 +502,9 @@ describe('normalizeAccount', () => {
     expect(normalizeAccount('LojaX')).toBe('lojax')
     expect(normalizeAccount('my-store-1')).toBe('my-store-1')
   })
+  it.each(['xn--acme', 'XN--abc-123'])('rejects the punycode label %j as an account name', (account) => {
+    expect(() => normalizeAccount(account)).toThrow(/Invalid VTEX account name/)
+  })
   it('accepts the 63-character boundary', () => {
     expect(normalizeAccount('a'.repeat(63))).toHaveLength(63)
   })
@@ -534,7 +537,7 @@ describe('isAllowlistedHost', () => {
   it.each([
     'acme.vtexcommercestable.com.br', 'acme.myvtex.com', 'api.vtex.com',
     'acme.vtexpayments.com.br', 'portal.vtexcommercebeta.com.br',
-    'vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
+    'sp.vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
   ])('allows %s', (host) => {
     expect(isAllowlistedHost(host)).toBe(true)
   })
@@ -544,6 +547,8 @@ describe('isAllowlistedHost', () => {
     'evil.com/.vtex.com',
     // VTEX IO app routes run third-party code
     'app.io.vtex.com', 'io.vtex.com', 'APP.IO.VTEX.COM',
+    // on vtex.com only the API hosts receive credentials
+    'vtex.com', 'help.vtex.com', 'status.vtex.com', 'acme.vtex.com',
   ])('blocks %j', (host) => {
     expect(isAllowlistedHost(host)).toBe(false)
   })
@@ -726,7 +731,9 @@ const HOSTNAME_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/i
 /** Validates a VTEX account name (a single ASCII DNS label) and lowercases it. */
 export function normalizeAccount(account: unknown): string {
   if (typeof account !== 'string' || account === '') throw new VtexUsageError('VTEX account is required')
-  if (!ACCOUNT_RE.test(account)) {
+  // xn-- labels are punycode (IDN); VTEX account names are plain ASCII, and invalid punycode
+  // would otherwise fail later with a misleading server-template error.
+  if (!ACCOUNT_RE.test(account) || /^xn--/i.test(account)) {
     throw new VtexUsageError(`Invalid VTEX account name ${JSON.stringify(account)}: use letters, digits and hyphens only`)
   }
   return account.toLowerCase()
@@ -743,17 +750,21 @@ export function validateEnvironment(environment: unknown = 'vtexcommercestable')
 }
 
 /**
- * VTEX IO app routes (app.io.vtex.com/{app}/...) run third-party app code, such as carriers'
- * apps; the merchant's credentials are never sent there, even though they sit under vtex.com.
+ * On the corporate vtex.com domain only these API hosts receive credentials. Other
+ * subdomains include VTEX IO app routes (app.io.vtex.com, which run third-party app code)
+ * and sites that may be run by third-party services.
  */
-const IO_APP_DOMAIN = 'io.vtex.com'
+const VTEX_COM_API_HOSTS = new Set(['api.vtex.com', 'sp.vtex.com'])
 
-/** True when a parsed URL hostname is an allowlisted VTEX domain or a subdomain of one. */
+/**
+ * True when a parsed URL hostname may receive credentials: a subdomain (or apex) of an
+ * allowlisted commerce domain, or one of the vtex.com API hosts.
+ */
 export function isAllowlistedHost(hostname: string): boolean {
   if (typeof hostname !== 'string' || !HOSTNAME_RE.test(hostname)) return false
   const host = hostname.toLowerCase()
-  if (host === IO_APP_DOMAIN || host.endsWith(`.${IO_APP_DOMAIN}`)) return false
-  return VTEX_DOMAIN_ALLOWLIST.some((domain) => host === domain || host.endsWith(`.${domain}`))
+  if (host === 'vtex.com' || host.endsWith('.vtex.com')) return VTEX_COM_API_HOSTS.has(host)
+  return VTEX_DOMAIN_ALLOWLIST.some((domain) => domain !== 'vtex.com' && (host === domain || host.endsWith(`.${domain}`)))
 }
 
 export interface ResolvedServer {
@@ -2070,7 +2081,7 @@ describe('header and request validation', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it.each(['GE T', '', 'GET\r\n'])('rejects the HTTP method %j', async (method) => {
+  it.each(['GE T', '', 'GET\r\n', 'CONNECT', 'trace', 'TRACK'])('rejects the HTTP method %j', async (method) => {
     const http = new VtexHttpClient({ ...BASE, fetch: vi.fn() })
     await expect(http.request({ method, path: '/x' })).rejects.toBeInstanceOf(VtexUsageError)
   })
@@ -2190,6 +2201,9 @@ describe('normalizeAccount', () => {
     expect(normalizeAccount('LojaX')).toBe('lojax')
     expect(normalizeAccount('my-store-1')).toBe('my-store-1')
   })
+  it.each(['xn--acme', 'XN--abc-123'])('rejects the punycode label %j as an account name', (account) => {
+    expect(() => normalizeAccount(account)).toThrow(/Invalid VTEX account name/)
+  })
   it('accepts the 63-character boundary', () => {
     expect(normalizeAccount('a'.repeat(63))).toHaveLength(63)
   })
@@ -2222,7 +2236,7 @@ describe('isAllowlistedHost', () => {
   it.each([
     'acme.vtexcommercestable.com.br', 'acme.myvtex.com', 'api.vtex.com',
     'acme.vtexpayments.com.br', 'portal.vtexcommercebeta.com.br',
-    'vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
+    'sp.vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
   ])('allows %s', (host) => {
     expect(isAllowlistedHost(host)).toBe(true)
   })
@@ -2232,6 +2246,8 @@ describe('isAllowlistedHost', () => {
     'evil.com/.vtex.com',
     // VTEX IO app routes run third-party code
     'app.io.vtex.com', 'io.vtex.com', 'APP.IO.VTEX.COM',
+    // on vtex.com only the API hosts receive credentials
+    'vtex.com', 'help.vtex.com', 'status.vtex.com', 'acme.vtex.com',
   ])('blocks %j', (host) => {
     expect(isAllowlistedHost(host)).toBe(false)
   })
@@ -3005,6 +3021,7 @@ import { isJsonContentType, serializeBody } from './body.js'
 
 const MAX_REDIRECTS = 3
 const METHOD_RE = /^[A-Za-z]+$/
+const FORBIDDEN_METHODS = new Set(['CONNECT', 'TRACE', 'TRACK'])
 /** Same symbol as util.inspect.custom, without importing node:util. */
 const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
 
@@ -3130,7 +3147,8 @@ export class VtexHttpClient {
   }
 
   async requestRaw<T>(opts: RequestOptions): Promise<{ data: T; headers: Headers; status: number }> {
-    if (typeof opts.method !== 'string' || !METHOD_RE.test(opts.method)) {
+    // fetch rejects CONNECT/TRACE/TRACK itself; refuse them here so it's a usage error, not a network error.
+    if (typeof opts.method !== 'string' || !METHOD_RE.test(opts.method) || FORBIDDEN_METHODS.has(opts.method.toUpperCase())) {
       throw new VtexUsageError(`Invalid HTTP method ${JSON.stringify(opts.method)}`)
     }
     const method = opts.method.toUpperCase()
@@ -3494,7 +3512,9 @@ const HOSTNAME_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/i
 /** Validates a VTEX account name (a single ASCII DNS label) and lowercases it. */
 export function normalizeAccount(account: unknown): string {
   if (typeof account !== 'string' || account === '') throw new VtexUsageError('VTEX account is required')
-  if (!ACCOUNT_RE.test(account)) {
+  // xn-- labels are punycode (IDN); VTEX account names are plain ASCII, and invalid punycode
+  // would otherwise fail later with a misleading server-template error.
+  if (!ACCOUNT_RE.test(account) || /^xn--/i.test(account)) {
     throw new VtexUsageError(`Invalid VTEX account name ${JSON.stringify(account)}: use letters, digits and hyphens only`)
   }
   return account.toLowerCase()
@@ -3511,17 +3531,21 @@ export function validateEnvironment(environment: unknown = 'vtexcommercestable')
 }
 
 /**
- * VTEX IO app routes (app.io.vtex.com/{app}/...) run third-party app code, such as carriers'
- * apps; the merchant's credentials are never sent there, even though they sit under vtex.com.
+ * On the corporate vtex.com domain only these API hosts receive credentials. Other
+ * subdomains include VTEX IO app routes (app.io.vtex.com, which run third-party app code)
+ * and sites that may be run by third-party services.
  */
-const IO_APP_DOMAIN = 'io.vtex.com'
+const VTEX_COM_API_HOSTS = new Set(['api.vtex.com', 'sp.vtex.com'])
 
-/** True when a parsed URL hostname is an allowlisted VTEX domain or a subdomain of one. */
+/**
+ * True when a parsed URL hostname may receive credentials: a subdomain (or apex) of an
+ * allowlisted commerce domain, or one of the vtex.com API hosts.
+ */
 export function isAllowlistedHost(hostname: string): boolean {
   if (typeof hostname !== 'string' || !HOSTNAME_RE.test(hostname)) return false
   const host = hostname.toLowerCase()
-  if (host === IO_APP_DOMAIN || host.endsWith(`.${IO_APP_DOMAIN}`)) return false
-  return VTEX_DOMAIN_ALLOWLIST.some((domain) => host === domain || host.endsWith(`.${domain}`))
+  if (host === 'vtex.com' || host.endsWith('.vtex.com')) return VTEX_COM_API_HOSTS.has(host)
+  return VTEX_DOMAIN_ALLOWLIST.some((domain) => domain !== 'vtex.com' && (host === domain || host.endsWith(`.${domain}`)))
 }
 
 export interface ResolvedServer {
@@ -5979,7 +6003,7 @@ export function generateMethod(ctx: Ctx): string {
   if (ctx.server && ctx.server !== DEFAULT_SERVER) callFields.push(`server: ${quoteString(ctx.server)}`)
 
   return [
-    `  ${name}(${paramsDecl}, opts?: CallOptions): Promise<${retType}> {`,
+    `  async ${name}(${paramsDecl}, opts?: CallOptions): Promise<${retType}> {`,
     `    return this.http.request<${retType}>(withCall({ ${callFields.join(', ')} }, opts))`,
     `  }`,
   ].join('\n')
@@ -6661,6 +6685,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, it, expect, vi } from 'vitest'
 import { DEFAULT_SERVER, resolveServer } from '../src/core/url.js'
 import { VtexClient } from '../src/client.js'
+import { VtexUsageError } from '../src/core/errors.js'
 
 const GENERATED_DIR = fileURLToPath(new URL('../src/generated/', import.meta.url))
 
@@ -6774,6 +6799,22 @@ describe('generated hosts', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('https://acme.vtexcommercestable.com.br/api/giftcards/_search')
     expect(init.headers['REST-Range']).toBe('resources=0-9')
+  })
+
+  it.each(['../../x', 'a/b', 'x#', 'x?y'])('generated methods encode the path id %j', async (couponCode) => {
+    const { fetchMock, vtex } = client()
+    await vtex.raw.promotionsTaxesAPI.coupons.getbycouponcode({ couponCode })
+    const url = new URL(fetchMock.mock.calls[0][0])
+    expect(url.origin).toBe('https://acme.vtexcommercestable.com.br')
+    expect(url.pathname).toBe(`/api/rnb/pvt/coupon/${encodeURIComponent(couponCode)}`)
+  })
+
+  it.each(['..', '.', ''])('generated methods reject the path id %j as a rejected promise', async (couponCode) => {
+    const { fetchMock, vtex } = client()
+    const pending = vtex.raw.promotionsTaxesAPI.coupons.getbycouponcode({ couponCode })
+    expect(pending).toBeInstanceOf(Promise)
+    await expect(pending).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -7037,6 +7078,10 @@ async function main() {
       // --- Group operations by namespace (first tag), choosing each operation's server ---
       const groups = new Map<string, OpEntry[]>()
       for (const [path, item] of Object.entries<any>(doc.paths ?? {})) {
+        // Path-item parameters would apply to every operation; the generator only reads op.parameters.
+        if (Array.isArray(item?.parameters) && item.parameters.length > 0) {
+          throw new Error(`Path-level parameters are not supported yet (${path}); extend the generator before re-pinning`)
+        }
         for (const httpMethod of HTTP_METHODS) {
           const op = item[httpMethod]
           if (!op) continue
@@ -7353,7 +7398,14 @@ describe('OrdersFacade', () => {
     expect(fetchMock.mock.calls[0][0]).toBe(
       'https://x.vtexcommercestable.com.br/api/oms/pvt/orders/..%2F..%2Fdataentities%2FCL%2Fsearch',
     )
-    expect(() => facade.get('..')).toThrow(VtexUsageError)
+    await expect(facade.get('..')).rejects.toBeInstanceOf(VtexUsageError)
+  })
+
+  it('get() reports a bad id as a rejected promise, not a synchronous throw', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json({})))
+    const facade = facadeWith(fetchMock)
+    const results = await Promise.allSettled([facade.get('ok'), facade.get('..'), facade.get('')])
+    expect(results.map((r) => r.status)).toEqual(['fulfilled', 'rejected', 'rejected'])
   })
 
   it('list() auto-paginates across pages', async () => {
@@ -7491,10 +7543,10 @@ describe('MasterDataFacade', () => {
     )
   })
 
-  it('rejects an entity that would change the path', () => {
+  it('rejects an entity that would change the path', async () => {
     const fetchMock = vi.fn()
     const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
-    expect(() => md.get('CL/../../oms/pvt/orders', 'x')).toThrow(VtexUsageError)
+    await expect(md.get('CL/../../oms/pvt/orders', 'x')).rejects.toBeInstanceOf(VtexUsageError)
     expect(() => md.scroll('CL/search?_where=email=*#')).toThrow(VtexUsageError)
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -7628,7 +7680,7 @@ describe('MasterDataFacade', () => {
       '/api/dataentities/CL/documents/x%23',
       '/api/dataentities/CL/documents/x%3Fy',
     ])
-    for (const id of ['..', '.', '']) expect(() => md.get('CL', id)).toThrow(VtexUsageError)
+    for (const id of ['..', '.', '']) await expect(md.get('CL', id)).rejects.toBeInstanceOf(VtexUsageError)
     await md.get('CL', 'doc1', null as never)
   })
 
@@ -7742,7 +7794,7 @@ interface OrdersPage {
 export class OrdersFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  get(orderId: string, opts?: CallOptions): Promise<unknown> {
+  async get(orderId: string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(withCall({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(orderId)}` }, opts))
   }
 
@@ -7842,7 +7894,7 @@ function entitySegment(dataEntity: string): string {
 export class MasterDataFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  get(dataEntity: string, id: string, opts?: MasterDataGetOptions): Promise<unknown> {
+  async get(dataEntity: string, id: string, opts?: MasterDataGetOptions): Promise<unknown> {
     const { fields, ...call } = opts ?? {}
     const query = fields?.length ? { _fields: fields.join(',') } : undefined
     const path = `/api/dataentities/${entitySegment(dataEntity)}/documents/${encodePathParam(id)}`
@@ -7910,14 +7962,14 @@ import { encodePathParam, withCall } from '../core/call.js'
 export class CheckoutFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  getCart(orderFormId: string, opts?: CallOptions): Promise<unknown> {
+  async getCart(orderFormId: string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(
       withCall({ method: 'GET', path: `/api/checkout/pub/orderForm/${encodePathParam(orderFormId)}` }, opts),
     )
   }
 
   /** A read-like POST, so it is retried like a GET unless the caller overrides `idempotent`. */
-  simulate(body: unknown, opts?: CallOptions): Promise<unknown> {
+  async simulate(body: unknown, opts?: CallOptions): Promise<unknown> {
     return this.http.request(
       withCall({ method: 'POST', path: '/api/checkout/pub/orderForms/simulation', body, idempotent: true }, opts),
     )
@@ -7935,11 +7987,11 @@ import { encodePathParam, withCall } from '../core/call.js'
 export class PricingFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  getPrice(skuId: string, opts?: CallOptions): Promise<unknown> {
+  async getPrice(skuId: string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(withCall({ method: 'GET', path: `/api/pricing/prices/${encodePathParam(skuId)}` }, opts))
   }
 
-  setPrice(skuId: string, body: unknown, opts?: CallOptions): Promise<unknown> {
+  async setPrice(skuId: string, body: unknown, opts?: CallOptions): Promise<unknown> {
     return this.http.request(withCall({ method: 'PUT', path: `/api/pricing/prices/${encodePathParam(skuId)}`, body }, opts))
   }
 }
@@ -7955,11 +8007,11 @@ import { encodePathParam, withCall } from '../core/call.js'
 export class CatalogFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  getProduct(productId: number | string, opts?: CallOptions): Promise<unknown> {
+  async getProduct(productId: number | string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(withCall({ method: 'GET', path: `/api/catalog/pvt/product/${encodePathParam(productId)}` }, opts))
   }
 
-  getSku(skuId: number | string, opts?: CallOptions): Promise<unknown> {
+  async getSku(skuId: number | string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(
       withCall({ method: 'GET', path: `/api/catalog/pvt/stockkeepingunit/${encodePathParam(skuId)}` }, opts),
     )
@@ -7977,11 +8029,11 @@ import { encodePathParam, withCall } from '../core/call.js'
 export class LogisticsFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  listWarehouses(opts?: CallOptions): Promise<unknown> {
+  async listWarehouses(opts?: CallOptions): Promise<unknown> {
     return this.http.request(withCall({ method: 'GET', path: '/api/logistics/pvt/configuration/warehouses' }, opts))
   }
 
-  getInventoryBySku(skuId: string, opts?: CallOptions): Promise<unknown> {
+  async getInventoryBySku(skuId: string, opts?: CallOptions): Promise<unknown> {
     return this.http.request(
       withCall({ method: 'GET', path: `/api/logistics/pvt/inventory/skus/${encodePathParam(skuId)}` }, opts),
     )
@@ -8318,6 +8370,8 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - `VtexClient` no longer has a protected `http` member; use `request()` / `requestRaw()`. `client.account` is the normalized (lowercase) account, and `account`/`environment` are read-only.
 - `VtexHttpClient` instances are frozen, so the class cannot be subclassed with extra fields.
 - `orders.list()` requires `perPage` between 1 and 100. Master Data entity names must match `^[A-Za-z0-9_-]{1,64}$`.
+- `request({ server })` only accepts `api.vtex.com` and `sp.vtex.com` on the `vtex.com` domain. CONNECT, TRACE and TRACK are refused as methods, and account names starting with `xn--` are rejected.
+- Facade and generated methods are `async`: argument errors arrive as a rejected promise instead of a synchronous throw.
 - Network failures throw `VtexNetworkError`, and timeouts throw `VtexTimeoutError`, instead of a raw `TypeError` / `AbortError`. A caller abort still rejects with the signal's reason.
 - `VtexRequestError.body` is non-enumerable: still readable and writable, but left out of `JSON.stringify(err)` and default logging.
 - `retryAfter` on errors is now whole seconds, rounded up (`'1.5'` gives `2`). It is also derived from HTTP-dates. Values that are neither delta-seconds nor an HTTP-date are ignored.
@@ -8326,7 +8380,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - Node.js 20 or newer is required. Node 20 reached end-of-life in April 2026; it still works and CI still tests it, but prefer Node 22 or 24.
 
 ### Security
-- Credentials are sent only to hosts under the allowlisted VTEX domains, after the account and environment are validated. The allowlist is frozen at runtime.
+- Credentials are sent only to hosts under the allowlisted VTEX domains, after the account and environment are validated. On `vtex.com` only `api.vtex.com` and `sp.vtex.com` qualify. The allowlist is frozen at runtime.
 - Path parameters are percent-encoded. Empty, `.` and `..` values are rejected, and a URL that would change origin or contain dot segments is refused before sending.
 - Redirects are handled manually: same origin only, at most 3 hops.
 - `console.log(client)` and `JSON.stringify(client)` no longer reveal credentials.
@@ -8340,7 +8394,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - Request bodies for vendor JSON, multipart, form-urlencoded and text content types; this fixes `createGiftCard`.
 - Exported type namespaces per API (for example `OrdersApiTypes`), the `VtexError` base class and the new error classes, `DEFAULT_SERVER`, `VTEX_DOMAIN_ALLOWLIST`, `ORDERS_MAX_PAGES` and `encodePathParam` (for `request()` paths).
 - `maxRetryAfterMs` client option and `maxCachedClients` factory option.
-- `npm run live-check`: an optional, GET-only check against a real account.
+- `scripts/live-check.ts` (`npm run live-check`, or `npx tsx --env-file=.env scripts/live-check.ts`): an optional, GET-only check against a real account.
 - CI: typecheck, tests and build on Node 20/22/24, plus a codegen reproducibility check.
 
 ### Fixed
@@ -8367,7 +8421,7 @@ This project is not affiliated with, endorsed by or sponsored by VTEX.
   - Each call goes to the host and base path its API reference declares: for example Gift Card under `/api`, Pricing on `api.vtex.com/{account}`, and several APIs on `{account}.myvtex.com`.
   - Not callable here, though their types are exported:
     - protocols that *you* implement: payment, antifraud and gift card providers, external promotions, B2B password migration and the seller protocols;
-    - APIs served by third-party hosts: Ads, Pick and Pack, Punchout, Tracking, and the Shipping Network API (carriers' VTEX IO apps).
+    - APIs served by hosts outside the allowlist (third-party or store-specific): Ads, Pick and Pack, Punchout, Tracking, and the Shipping Network API (carriers' VTEX IO apps).
 - **Facades**: orders, catalog, master data, pricing, logistics and checkout, with auto-pagination.
 - **Core**:
   - credentials only go to VTEX hosts, and path parameters are encoded;
@@ -8427,6 +8481,8 @@ await vtex.raw.giftcardAPI.giftCard.searchGiftCardsfromcartdata({ 'REST-Range': 
 - `retry`: `false`, or `{ maxRetries }`;
 - `idempotent`.
 
+Some operations declare a non-JSON `Accept` (for example Master Data v10.2 `application/vnd.vtex.ds.v10+json`, or an XML or text endpoint). The SDK always sends `Accept: application/json`; pass `{ headers: { Accept: '...' } }` when an endpoint needs another type.
+
 ## Retries and idempotency
 
 **GET, HEAD, OPTIONS, PUT and DELETE**
@@ -8476,13 +8532,15 @@ A connection that cannot be established times out in about 10 s, and each attemp
 
 A caller's `AbortSignal` rejects with the signal's reason, which is an `AbortError` by default.
 
+Every method that returns a promise reports argument errors (for example an empty or `..` id) by rejecting it, so `.catch()` and `Promise.allSettled` see them. `orders.list()` and `masterData.scroll()` validate their options when called and throw synchronously, before returning the iterator.
+
 ## Security model
 
 **What is validated before anything is sent**
 - `account` must be a single DNS label.
 - `environment` is `vtexcommercestable` (the default) or `vtexcommercebeta`.
 
-**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported (frozen) as `VTEX_DOMAIN_ALLOWLIST`. Hosts under `io.vtex.com` (VTEX IO app routes, which run third-party app code) are refused even though they are under `vtex.com`.
+**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported (frozen) as `VTEX_DOMAIN_ALLOWLIST`. On `vtex.com` itself only `api.vtex.com` and `sp.vtex.com` receive credentials: its other subdomains include `*.io.vtex.com` (VTEX IO app routes, which run third-party app code) and sites that may be operated by third parties. VTEX IO routes scoped to your own account (`{account}.myvtex.com`, `/api/io/...` on the account host) are allowed; they run apps installed on that account.
 
 **Where the account comes from:** take `account` from trusted configuration, never from request input. The allowlist cannot stop a valid account name chosen by an attacker (`attacker.myvtex.com` is still a VTEX host). With the factory, the resolver must return that account's own credentials.
 
@@ -8657,7 +8715,7 @@ Other APIs use a base path or a different VTEX host. Examples at the current pin
 
 The complete, reviewed list of host templates is `EXPECTED_TEMPLATES` in `test/generated-hosts.test.ts`; a schema re-pin that adds a host fails that test until it is reviewed.
 
-Credentials are only sent to hosts under the allowlisted VTEX domains (`VTEX_DOMAIN_ALLOWLIST`). Hosts under `io.vtex.com` (VTEX IO app routes) are always refused.
+Credentials are only sent to hosts under the allowlisted VTEX domains (`VTEX_DOMAIN_ALLOWLIST`); on `vtex.com` only `api.vtex.com` and `sp.vtex.com`. Hosts under `io.vtex.com` (VTEX IO app routes) are always refused.
 
 ## Authentication
 
@@ -8787,6 +8845,7 @@ Checkout runs with `persist-credentials: false`, because `npm ci` runs lifecycle
 
 ```
 * text=auto eol=lf
+src/generated/** linguist-generated=true
 ```
 
 - [ ] **Step 1: Create `.github/workflows/ci.yml`**
@@ -8966,7 +9025,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  26 passed (26)` and `Tests  594 passed (594)`;
+- `Test Files  26 passed (26)` and `Tests  611 passed (611)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
