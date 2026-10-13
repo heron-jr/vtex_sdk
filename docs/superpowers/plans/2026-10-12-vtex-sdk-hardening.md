@@ -3669,33 +3669,69 @@ describe('VtexClient', () => {
     expect(c.environment).toBe('vtexcommercestable')
   })
 
-  it('never prints or serializes credentials (client, facade, raw namespace)', () => {
-    const c = new VtexClient({ account: 'lojax', appKey: 'K', appToken: 'T-SECRET' })
-    expect(inspect(c)).not.toContain('T-SECRET')
+  it('keeps account and environment read-only at runtime', () => {
+    const c = new VtexClient({ account: 'lojax', appKey: 'K', appToken: 'T' })
+    expect(() => {
+      ;(c as unknown as { account: string }).account = 'other'
+    }).toThrow(TypeError)
+    expect(c.account).toBe('lojax')
+  })
+
+  it('does not expose the transport', () => {
+    const c = new VtexClient({ account: 'lojax', appKey: 'K', appToken: 'T' })
+    expect(Object.keys(c)).not.toContain('http')
+    expect((c as unknown as Record<string, unknown>)['http']).toBeUndefined()
+  })
+
+  it.each([
+    ['app key', { account: 'lojax', appKey: 'K-SECRET', appToken: 'T-SECRET' }],
+    ['cookie', { account: 'lojax', authCookie: 'C-SECRET' }],
+  ])('never prints or serializes credentials (%s auth)', (_label, config) => {
+    const c = new VtexClient(config)
+    const deep = { customInspect: false, showHidden: true, depth: Infinity }
+    const outputs = [
+      inspect(c),
+      inspect(c, deep),
+      inspect(structuredClone(c), deep),
+      JSON.stringify(c),
+      JSON.stringify({ ...c }),
+      inspect(c.orders, deep),
+      JSON.stringify(c.orders),
+      inspect(c.raw.ordersAPI, deep),
+      JSON.stringify(c.raw.ordersAPI),
+    ]
+    for (const out of outputs) expect(out).not.toMatch(/[KTC]-SECRET/)
     expect(JSON.stringify(c)).toBe('{"account":"lojax","environment":"vtexcommercestable"}')
-    expect(inspect(c.orders, { depth: 5 })).not.toContain('T-SECRET')
-    expect(JSON.stringify(c.orders)).not.toContain('T-SECRET')
-    expect(inspect(c.raw.ordersAPI, { depth: 5 })).not.toContain('T-SECRET')
-    expect(JSON.stringify(c.raw.ordersAPI)).not.toContain('T-SECRET')
   })
 
   it('exposes request() and requestRaw() with the same safety checks', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: { 'content-type': 'application/json', 'REST-Content-Range': 'resources 0-0/1' },
-      }),
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'content-type': 'application/json', 'REST-Content-Range': 'resources 0-0/1' },
+        }),
+      ),
     )
     const c = new VtexClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock })
     const raw = await c.requestRaw<{ ok: boolean }>({
       method: 'GET', path: '/api/dataentities/CL/search', headers: { 'REST-Range': 'resources=0-0' },
     })
+    expect(raw.status).toBe(200)
     expect(raw.data).toEqual({ ok: true })
     expect(raw.headers.get('REST-Content-Range')).toBe('resources 0-0/1')
-    expect(fetchMock.mock.calls[0][1].headers['REST-Range']).toBe('resources=0-0')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('https://lojax.vtexcommercestable.com.br/api/dataentities/CL/search')
+    expect(init.headers['REST-Range']).toBe('resources=0-0')
+    expect(init.headers['X-VTEX-API-AppToken']).toBe('T')
+    await expect(c.request<{ ok: boolean }>({ method: 'GET', path: '/api/x' })).resolves.toEqual({ ok: true })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+
     await expect(c.request({ method: 'GET', path: '/x', server: 'https://evil.example' })).rejects.toBeInstanceOf(
       VtexUsageError,
     )
+    await expect(c.request({ method: 'GET', path: '/api/../x' })).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
 ```
@@ -3721,9 +3757,14 @@ import { CheckoutFacade } from './facades/checkout.js'
 /** Same symbol as util.inspect.custom, without importing node:util. */
 const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
 
+/** Result of `requestRaw()`: the parsed body plus the response status and headers. */
+export interface VtexRawResponse<T> {
+  data: T
+  headers: Headers
+  status: number
+}
+
 export class VtexClient {
-  readonly account: string
-  readonly environment: VtexEnvironment
   readonly raw: RawNamespaces
   readonly orders: OrdersFacade
   readonly catalog: CatalogFacade
@@ -3731,32 +3772,48 @@ export class VtexClient {
   readonly pricing: PricingFacade
   readonly logistics: LogisticsFacade
   readonly checkout: CheckoutFacade
-  /** @internal shared HTTP client for facades */
-  protected readonly http: VtexHttpClient
+  // Private so the transport (and the credentials it holds) can't be swapped or reached from outside.
+  readonly #http: VtexHttpClient
 
   constructor(config: VtexClientConfig) {
-    this.http = new VtexHttpClient(config)
-    this.account = this.http.account
-    this.environment = this.http.environment
-    this.raw = new RawNamespaces(this.http)
-    this.orders = new OrdersFacade(this.http)
-    this.catalog = new CatalogFacade(this.http)
-    this.masterData = new MasterDataFacade(this.http)
-    this.pricing = new PricingFacade(this.http)
-    this.logistics = new LogisticsFacade(this.http)
-    this.checkout = new CheckoutFacade(this.http)
+    this.#http = new VtexHttpClient(config)
+    this.raw = new RawNamespaces(this.#http)
+    this.orders = new OrdersFacade(this.#http)
+    this.catalog = new CatalogFacade(this.#http)
+    this.masterData = new MasterDataFacade(this.#http)
+    this.pricing = new PricingFacade(this.#http)
+    this.logistics = new LogisticsFacade(this.#http)
+    this.checkout = new CheckoutFacade(this.#http)
   }
 
-  /** Low-level request with the same safety checks as generated methods. */
+  /** Normalized (lowercase) account name; it always matches the host requests go to. */
+  get account(): string {
+    return this.#http.account
+  }
+
+  get environment(): VtexEnvironment {
+    return this.#http.environment
+  }
+
+  /**
+   * Low-level request with the same safety checks as generated methods (host allowlist,
+   * path encoding, header validation, retries, same-origin redirects).
+   *
+   * Resolves with the parsed JSON body, the text body for other content types, or
+   * `undefined` for 204/205 and empty bodies. `T` is not validated at runtime.
+   * Rejects with `VtexUsageError` for invalid options and with a `VtexError` subclass
+   * for HTTP, timeout and network failures.
+   */
   request<T = unknown>(opts: RequestOptions): Promise<T> {
-    return this.http.request<T>(opts)
+    return this.#http.request<T>(opts)
   }
 
-  /** Like request(), but also returns the response headers and status. */
-  requestRaw<T = unknown>(opts: RequestOptions): Promise<{ data: T; headers: Headers; status: number }> {
-    return this.http.requestRaw<T>(opts)
+  /** Like request(), but also returns the response status and headers (e.g. `REST-Content-Range`). */
+  requestRaw<T = unknown>(opts: RequestOptions): Promise<VtexRawResponse<T>> {
+    return this.#http.requestRaw<T>(opts)
   }
 
+  /** Redaction boundary: must never include credential-bearing fields. */
   toJSON(): { account: string; environment: VtexEnvironment } {
     return { account: this.account, environment: this.environment }
   }
@@ -6346,6 +6403,7 @@ Expected: FAIL:
 
 ```ts
 export { VtexClient } from './client.js'
+export type { VtexRawResponse } from './client.js'
 export { createVtexFactory } from './factory.js'
 export type { VtexFactoryConfig, VtexCreds } from './factory.js'
 export type {
@@ -6489,7 +6547,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 
 ### Added
 - Per-call options on every generated and facade method: `headers`, `signal`, `timeoutMs`, `retry`, `idempotent`.
-- `client.request()` and `client.requestRaw()`, the latter returning `{ data, headers, status }`.
+- `client.request()` and `client.requestRaw()`, the latter returning `{ data, headers, status }` (exported as `VtexRawResponse<T>`).
 - Typed header parameters on generated methods (for example `REST-Range`). `params` is optional when nothing is required.
 - Request bodies for vendor JSON, multipart, form-urlencoded and text content types; this fixes `createGiftCard`.
 - Exported type namespaces per API (for example `OrdersApiTypes`), the `VtexError` base class and the new error classes, `DEFAULT_SERVER` and `VTEX_DOMAIN_ALLOWLIST`.
@@ -6708,7 +6766,7 @@ const { data, headers, status } = await vtex.requestRaw({
 })
 ```
 
-`request()` / `requestRaw()` go through the same checks as generated methods. Pass `server` to target another allowlisted host template, for example `'https://{accountName}.{environment}.com.br/api'`.
+`request()` / `requestRaw()` go through the same checks as generated methods. Pass `server` to target another allowlisted host template, for example `'https://{accountName}.{environment}.com.br/api'`. The type argument is not validated at runtime. The client's transport is private: custom helpers should depend on `Pick<VtexClient, 'request' | 'requestRaw'>`.
 
 ## Types
 
@@ -7058,7 +7116,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  441 passed (441)`;
+- `Test Files  25 passed (25)` and `Tests  444 passed (444)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.

@@ -147,7 +147,8 @@ VtexError                         (new base, extends Error)
   - Callers that already hold the evicted client keep using it.
 
 ### 3.8 Public request API
-- **New methods:** `VtexClient` gains public `request<T>(opts)` and `requestRaw<T>(opts)`. `requestRaw` returns `{ data, headers, status }`.
+- **New methods:** `VtexClient` gains public `request<T>(opts)` and `requestRaw<T>(opts)`. `requestRaw` returns `{ data, headers, status }`, exported as `VtexRawResponse<T>`.
+- **Private transport:** the transport is a `#private` field of `VtexClient`, not a public or protected `http` member, so it can't be swapped to bypass the checks. `account` and `environment` are getters that read it.
 - **Options:** `{ method, path, query?, body?, contentType?, headers?, server?, signal?, timeoutMs?, retry?, idempotent? }`.
 - **Same safeguards:** these methods go through §3.1–§3.5. A `server` outside the allowlist is rejected. This replaces subclassing or reaching into `client.http` to read response headers (e.g. `REST-Content-Range`).
 - **`VtexHttpClient`:** stays exported, with the same protections.
