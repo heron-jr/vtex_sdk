@@ -2,7 +2,7 @@
 
 **Status:** Approved (brainstorming) — pending user review before implementation planning
 **Date:** 2026-07-17
-**Author:** vasto.heron@gmail.com + Claude
+**Author:** Heron Jr + Claude
 
 ## 1. Purpose & Context
 

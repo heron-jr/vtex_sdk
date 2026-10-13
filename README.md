@@ -1,193 +1,236 @@
 # vtex-sdk
 
-TypeScript SDK for the [VTEX API](https://developers.vtex.com/docs/api-reference).
-Full endpoint coverage generated from VTEX's official OpenAPI schemas
-([github.com/vtex/openapi-schemas](https://github.com/vtex/openapi-schemas)),
-with ergonomic facades over the hot APIs. Node ≥18, dual ESM/CJS, zero HTTP
-dependencies (uses native `fetch`).
+Unofficial TypeScript SDK for the [VTEX APIs](https://developers.vtex.com/docs/api-reference), for Node.js 20 or newer
+(Node 20 is end-of-life; prefer 22 or 24).
+It is generated from VTEX's public OpenAPI documents and adds hand-written facades over the most used APIs.
+This project is not affiliated with, endorsed by or sponsored by VTEX.
 
-- **`raw.*`** — 75 APIs, 1,061 endpoints, fully typed, generated straight from VTEX's OpenAPI schemas. Nothing is out of reach.
-- **Facades** — hand-written ergonomics over the 6 hottest APIs (orders, catalog, master data, pricing, logistics, checkout): auto-pagination, clean method names, sane defaults.
-- **Core** — typed errors, retry with backoff + jitter, timeouts, hooks, multi-account support. Never a raw `fetch` throw.
+- **`raw.*`**: 964 operations across 62 VTEX APIs.
+  - Each call goes to the host and base path its API reference declares: for example Gift Card under `/api`, Pricing on `api.vtex.com/{account}`, and several APIs on `{account}.myvtex.com`.
+  - Not callable here, though their types are exported:
+    - protocols that *you* implement: payment, antifraud and gift card providers, external promotions, B2B password migration and the seller protocols;
+    - APIs served by third-party hosts: Ads, Pick and Pack, Punchout, Tracking, and the Shipping Network API (carriers' VTEX IO apps).
+- **Facades**: orders, catalog, master data, pricing, logistics and checkout, with auto-pagination.
+- **Core**:
+  - credentials only go to VTEX hosts, and path parameters are encoded;
+  - non-idempotent writes are not retried blindly;
+  - redirects never leave the origin;
+  - typed errors, timeouts and hooks.
 
 ## Install
 
+The package is installed from GitHub; it is not published to npm. Pin a tag:
+
 ```bash
-npm install vtex-sdk
+npm install github:heron-jr/vtex-sdk#v0.2.0
 ```
 
-## Quick start (single account)
+npm builds `dist/` during install through the package's `prepare` script. Installs that skip lifecycle scripts (`--ignore-scripts`, or package managers that don't run dependency scripts) end up without `dist/`; enable scripts for this package, or build it once with `npm run build` inside `node_modules/vtex-sdk`.
+
+## Quick start
 
 ```ts
 import { VtexClient } from 'vtex-sdk'
 
 const vtex = new VtexClient({
-  account: 'lojax',
+  account: 'myaccount',
   appKey: process.env.VTEX_APP_KEY!,
   appToken: process.env.VTEX_APP_TOKEN!,
 })
 
-// Facade — get a single order
+// Facade: one order
 const order = await vtex.orders.get('1234567890123-01')
 
-// Facade — auto-paginated list (AsyncGenerator, walks pages for you)
-for await (const order of vtex.orders.list({ status: 'ready-for-handling' })) {
-  console.log(order)
+// Facade: auto-paginated list (AsyncGenerator)
+for await (const summary of vtex.orders.list({ status: 'invoiced' })) {
+  console.log(summary)
 }
 
-// Full coverage via raw.* for anything not covered by a facade
-const raw = await vtex.raw.ordersAPI.orders.getOrder({ orderId: '1234567890123-01' })
+// Generated layer: any operation from the API reference
+const feedConfig = await vtex.raw.ordersAPI.feedV3.getFeedConfiguration()
 ```
 
-## Multiple accounts
+## Per-call options
 
-Each `VtexClient` is immutable and bound to a single account — there is no
-global state. For apps that serve many VTEX accounts, `createVtexFactory`
-resolves and caches one client per account:
+Every generated and facade method takes optional per-call options as its last argument:
+
+```ts
+const controller = new AbortController()
+await vtex.orders.get('1234567890123-01', { signal: controller.signal, timeoutMs: 5_000 })
+
+// Header parameters declared by the API reference are typed on the params object
+await vtex.raw.giftcardAPI.giftCard.searchGiftCardsfromcartdata({ 'REST-Range': 'resources=0-9', body })
+```
+
+`CallOptions` contains:
+- `headers`;
+- `signal`;
+- `timeoutMs`, applied per attempt;
+- `retry`: `false`, or `{ maxRetries }`;
+- `idempotent`.
+
+## Retries and idempotency
+
+**GET, HEAD, OPTIONS, PUT and DELETE**
+- Retried on network errors, timeouts, 429 and 5xx.
+- 3 retries by default, with exponential backoff and full jitter.
+
+**POST and PATCH**
+- Retried only on 429, and when the connection could not be established.
+- A timeout, a 5xx or a dropped connection on a write is reported, not retried, because VTEX may already have applied it.
+
+You can override the default per call:
+
+```ts
+// Upsert keyed by couponCode: safe to repeat
+await vtex.raw.promotionsTaxesAPI.coupons.createOrUpdateCoupon({ body: coupon }, { idempotent: true })
+
+// Some VTEX PUTs are commands (placing an order, debiting a credit account):
+// idempotent: false stops retries on 5xx/timeouts but keeps 429 retries
+await vtex.request({ method: 'PUT', path: '/api/checkout/pub/orders', body: order, idempotent: false })
+
+// No retries at all
+await vtex.orders.get(id, { retry: false })
+```
+
+A connection that cannot be established times out in about 10 s, and each attempt waits for it. A POST to an unreachable host can therefore take about 40 s over 4 attempts before failing.
+
+**`Retry-After`**
+- Both delta-seconds and HTTP-date values are honored, up to `maxRetryAfterMs` (default 30 s).
+- A longer wait throws right away, with `retryAfter` set in seconds, so a job runner can reschedule. The error matches the status: `VtexRateLimitError` for a 429, `VtexServerError` for a 503.
+
+## Errors
+
+| Class | When |
+|---|---|
+| `VtexError` | Base class of everything the SDK throws |
+| `VtexRequestError` | Non-2xx response; exposes `status`, `body` (readable, not enumerable), `requestId`, `retryAfter` |
+| `VtexAuthError` | 401 / 403 |
+| `VtexNotFoundError` | 404 |
+| `VtexValidationError` | 400 / 422 |
+| `VtexRateLimitError` | 429 after retries, or a 429 whose `Retry-After` is above the cap |
+| `VtexServerError` | 5xx after retries, or a 5xx whose `Retry-After` is above the cap |
+| `VtexNetworkError` | No complete response (DNS, connection, socket, body read); exposes `cause`, `method`, `route`, `attempts` |
+| `VtexTimeoutError` | Per-attempt timeout; a subclass of `VtexNetworkError` |
+| `VtexUsageError` | Invalid configuration, account, environment, server, path, header or argument (for example `perPage` outside 1–100); nothing was sent |
+| `VtexPaginationLimitError` | `orders.list()` reached VTEX's 30-page limit; narrow the filters |
+| `VtexUnexpectedResponseError` | A 2xx response the SDK cannot use safely: a malformed or truncated List Orders page, or Master Data scroll rows without a scroll token |
+
+A caller's `AbortSignal` rejects with the signal's reason, which is an `AbortError` by default.
+
+## Security model
+
+**What is validated before anything is sent**
+- `account` must be a single DNS label.
+- `environment` is `vtexcommercestable` (the default) or `vtexcommercebeta`.
+
+**Where credentials go:** only to hosts under `vtexcommercestable.com.br`, `vtexcommercebeta.com.br`, `myvtex.com`, `vtex.com` or `vtexpayments.com.br`. The list is exported (frozen) as `VTEX_DOMAIN_ALLOWLIST`. Hosts under `io.vtex.com` (VTEX IO app routes, which run third-party app code) are refused even though they are under `vtex.com`.
+
+**Where the account comes from:** take `account` from trusted configuration, never from request input. The allowlist cannot stop a valid account name chosen by an attacker (`attacker.myvtex.com` is still a VTEX host). With the factory, the resolver must return that account's own credentials.
+
+**Paths**
+- Path parameters are percent-encoded.
+- Empty, `.` and `..` values are rejected.
+- A URL that would change origin or contain dot segments is refused.
+
+**Redirects:** followed only within the same origin, at most 3 hops, and 301/302/303 only for GET and HEAD.
+
+**What gets printed**
+- `console.log(client)` and `JSON.stringify(client)` show only `{ account, environment }`.
+- Error bodies are left out of default serialization.
+- Hook payloads contain the full URL, including the query string. Avoid logging them verbatim when queries carry personal data.
+
+## Auth and environments
+
+```ts
+// App-key auth (server to server)
+new VtexClient({ account: 'myaccount', appKey, appToken })
+
+// User/session auth with a VTEX ID token
+new VtexClient({ account: 'myaccount', authCookie })
+
+// Beta environment
+new VtexClient({ account: 'myaccount', appKey, appToken, environment: 'vtexcommercebeta' })
+```
+
+`environment` applies to hosts written with `{environment}`. A few APIs document a fixed stable host (Card Token Vault, Legacy CMS, Payment Policies), and those calls go to `vtexcommercestable` regardless.
+
+App keys and tokens are server-side secrets. The SDK is Node-only.
+
+## Multiple accounts
 
 ```ts
 import { createVtexFactory } from 'vtex-sdk'
 
 const factory = createVtexFactory({
-  // Called once per account; resolve from env, a vault, or a database.
-  credentials: async (account) => loadCredsFor(account),
+  // Called once per account; return only credentials.
+  credentials: async (account) => loadCredentialsFor(account),
+  maxCachedClients: 100,
 })
 
-const lojaY = await factory.forAccount('lojay')
-await lojaY.orders.get('5678-01')
-
-// Same account returns the same cached client instance.
-const lojaYAgain = await factory.forAccount('lojay')
-
-// Evict a cached client (e.g. after credential rotation), or clear all.
-factory.clear('lojay')
-factory.clear()
+const client = await factory.forAccount('myaccount')
+factory.clear('myaccount') // or factory.clear() for all
 ```
 
-`credentials` returns either `{ appKey, appToken }` or `{ authCookie }`.
+Behavior:
+- Account names are normalized before they are used as cache keys.
+- Only `appKey`, `appToken` and `authCookie` are taken from the resolver.
+- A client is evicted after a 401 or 403, so the next `forAccount` call picks up rotated credentials.
+  - This includes a 401/403 from an allowlisted `server` override.
+  - A 403 caused by a missing role re-runs the resolver every time, so keep the resolver cheap or cache on your side.
+- The resolver must always settle. A promise that never resolves blocks that account until `clear()`, so give slow secret stores a timeout.
+- `clear()` with no argument drops every client. `clear(undefined)` does nothing.
+- Options are copied when the factory is created. `credentials`, `environment` and `maxCachedClients` are validated then; numeric client options (`maxRetries`, `timeoutMs`, `maxRetryAfterMs`) are validated when the first client is built.
 
-## `raw.*` vs facades
+## Facades
 
-Every VTEX endpoint is reachable through `vtex.raw.<namespace>.<subNamespace>.<method>(...)`,
-grouped by the same tags VTEX uses in its OpenAPI schemas (one namespace per
-API, one class per tag within it). This is the full 1,061-endpoint surface —
-reach for it whenever there's no facade, or when you need a field the facade
-doesn't expose.
-
-```ts
-// Orders API — orders sub-namespace
-await vtex.raw.ordersAPI.orders.getOrder({ orderId: '1234567890123-01' })
-
-// Catalog API
-const product = await vtex.catalog.getProduct(123)
-const sku = await vtex.catalog.getSku(456)
-```
-
-Facades sit on top of `raw.*` and add the ergonomics worth hand-writing:
-auto-pagination, cursor handling, and short, memorable method names. The six
-facades and their methods:
-
-| Facade | Methods |
+| Facade | Methods (each also accepts `CallOptions` last) |
 |---|---|
-| `vtex.orders` | `get(orderId)`, `list(filters?)` — auto-paginated `AsyncGenerator` |
+| `vtex.orders` | `get(orderId)`, `list(filters?)` (AsyncGenerator, max 30 pages per query; `perPage` 1–100, default 100; `page`/`per_page` are rejected) |
 | `vtex.catalog` | `getProduct(productId)`, `getSku(skuId)` |
-| `vtex.masterData` | `get(dataEntity, id)`, `scroll(dataEntity, opts?)` — auto-paginated `AsyncGenerator` over the MD scroll cursor |
+| `vtex.masterData` | `get(dataEntity, id, { fields? })`, `scroll(dataEntity, { fields?, size?, query?, sort? })` |
 | `vtex.pricing` | `getPrice(skuId)`, `setPrice(skuId, body)` |
 | `vtex.logistics` | `listWarehouses()`, `getInventoryBySku(skuId)` |
-| `vtex.checkout` | `getCart(orderFormId)`, `simulate(body)` |
+| `vtex.checkout` | `getCart(orderFormId)`, `simulate(body)` (retried like a GET) |
+
+The Master Data scroll token expires after 20 minutes without a request, and that includes your processing time between rows; an expired token surfaces as an error after earlier rows were yielded. The scroll is never restarted automatically (that would duplicate rows), so start a new one. `orders.list()` throws `VtexPaginationLimitError` only after yielding page 30, so write orders idempotently (upserts) when backfilling.
+
+## Low-level requests
 
 ```ts
-// Master Data — scroll a whole data entity without managing the cursor
-for await (const doc of vtex.masterData.scroll('CL', { fields: ['id', 'email'] })) {
-  console.log(doc)
-}
-
-// Pricing
-const price = await vtex.pricing.getPrice('123')
-await vtex.pricing.setPrice('123', { basePrice: 99.9 })
-
-// Logistics
-const warehouses = await vtex.logistics.listWarehouses()
-const inventory = await vtex.logistics.getInventoryBySku('123')
-
-// Checkout
-const cart = await vtex.checkout.getCart(orderFormId)
-const simulation = await vtex.checkout.simulate({ items: [{ id: '123', quantity: 1, seller: '1' }] })
+const { data, headers, status } = await vtex.requestRaw({
+  method: 'GET',
+  path: '/api/dataentities/CL/search',
+  query: { _where: 'email=someone@example.com', _fields: 'id,email' },
+  headers: { 'REST-Range': 'resources=0-0' },
+})
 ```
 
-## Errors
+`request()` / `requestRaw()` go through the same host, header, retry and redirect checks as generated methods. Pass `server` to target another allowlisted host template, for example `'https://{accountName}.{environment}.com.br/api'`.
 
-All failures throw a typed error — never a raw `fetch` rejection:
+`path` is validated but not encoded: wrap every interpolated value, or an id containing `/` silently points the call at another endpoint.
 
 ```ts
-import { VtexRateLimitError, VtexNotFoundError } from 'vtex-sdk'
+import { encodePathParam } from 'vtex-sdk'
 
-try {
-  await vtex.orders.get('does-not-exist')
-} catch (err) {
-  if (err instanceof VtexNotFoundError) {
-    // 404
-  } else if (err instanceof VtexRateLimitError) {
-    // 429 after retries were exhausted; err.retryAfter (seconds) if VTEX sent one
-  } else {
-    throw err
-  }
-}
+await vtex.request({ method: 'GET', path: `/api/oms/pvt/orders/${encodePathParam(orderId)}` })
 ```
 
-| Class | Trigger |
-|---|---|
-| `VtexRequestError` | base class — exposes `status`, `body`, `requestId`, `retryAfter` |
-| `VtexAuthError` | 401 / 403 |
-| `VtexNotFoundError` | 404 |
-| `VtexValidationError` | 400 / 422 |
-| `VtexRateLimitError` | 429, once `maxRetries` is exhausted |
-| `VtexServerError` | 5xx, once `maxRetries` is exhausted |
+The type argument is not validated at runtime. The client's transport is private: custom helpers should depend on `Pick<VtexClient, 'request' | 'requestRaw'>`.
 
-## Auth & environments
-
-Two supported credential shapes, mutually exclusive:
+## Types
 
 ```ts
-// App-key auth (server-to-server) — most common
-new VtexClient({ account: 'lojax', appKey, appToken })
+import type { OrdersApiTypes, GiftcardApiTypes, CallOptions } from 'vtex-sdk'
 
-// User/session auth — cookie obtained via VTEX ID
-new VtexClient({ account: 'lojax', authCookie })
+const filter: OrdersApiTypes.HookFilter = { type: 'FromWorkflow', status: ['invoiced'] }
 ```
 
-The default environment is `vtexcommercestable`; pass `environment: 'vtexcommercebeta'`
-to target beta instead:
-
-```ts
-new VtexClient({ account: 'lojax', appKey, appToken, environment: 'vtexcommercebeta' })
-```
-
-Every request goes to `https://{account}.{environment}.com.br`.
-
-## Rate limiting
-
-On HTTP `429` (and on `5xx` or a network error) the SDK retries automatically:
-it honors the `Retry-After` header when VTEX sends one, and otherwise backs
-off exponentially with jitter. Retries are capped by `maxRetries` (default
-**3**); once exhausted, the original `429`/`5xx` surfaces as a
-`VtexRateLimitError` / `VtexServerError` with `.retryAfter` set when known.
-
-```ts
-new VtexClient({ account: 'lojax', appKey, appToken, maxRetries: 5 })
-```
-
-## Observability & timeouts
-
-Optional hooks for logging/metrics, and a configurable per-request timeout
-(default 30s):
+## Observability
 
 ```ts
 new VtexClient({
-  account: 'lojax',
-  appKey,
-  appToken,
-  timeoutMs: 10_000,
+  account: 'myaccount', appKey, appToken,
   hooks: {
     onRequest: ({ method, url, attempt }) => console.log('->', method, url, attempt),
     onResponse: ({ status }) => console.log('<-', status),
@@ -196,9 +239,28 @@ new VtexClient({
 })
 ```
 
-## More
+## Development
 
-See [`docs/vtex-notes.md`](./docs/vtex-notes.md) for a distilled internal
-reference on VTEX auth, base URLs, rate limiting, and how the generated
-`raw.*` layer is produced — including known limitations of the generated
-types.
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build
+npm run fetch-schemas   # download the locked OpenAPI documents (verified)
+npm run fetch-schemas -- --update-lock <commit-sha>   # re-pin; review the lock diff
+npm run codegen         # regenerate src/generated from them
+npx tsx --env-file=.env scripts/live-check.ts   # optional, GET-only; VTEX_ACCOUNT/APP_KEY/APP_TOKEN in .env
+```
+
+Notes for contributors:
+- The development toolchain (vitest/vite) needs Node 20.19+ or 22.12+. Consumers only need Node 20.
+- `--update-lock` calls the GitHub API anonymously; set `GITHUB_TOKEN` to avoid its rate limit. Plain `fetch-schemas` needs no token.
+- Keep secrets in `.env` (gitignored) rather than inline on the command line, where they end up in shell history.
+- `package.json` overrides tsup's esbuild to `^0.28.2`, because esbuild 0.27.x is affected by GHSA-g7r4-m6w7-qqqr. Remove the override once tsup depends on esbuild 0.28.2 or newer, or after moving to tsdown.
+- Update dependencies with npm 11, so the lockfile keeps its platform (`libc`) annotations.
+
+See [`docs/vtex-notes.md`](./docs/vtex-notes.md) for VTEX hosts, authentication, rate limiting and how the generated layer is produced.
+
+## License
+
+MIT, see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).

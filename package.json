@@ -1,7 +1,7 @@
 {
   "name": "vtex-sdk",
   "version": "0.2.0",
-  "description": "TypeScript SDK for the VTEX API (multi-account).",
+  "description": "Unofficial TypeScript SDK for the VTEX APIs (Node.js).",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -19,7 +19,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "sideEffects": false,
   "engines": {
@@ -45,5 +47,22 @@
     "tsup": {
       "esbuild": "^0.28.2"
     }
-  }
+  },
+  "license": "MIT",
+  "author": "Heron Jr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heron-jr/vtex-sdk.git"
+  },
+  "homepage": "https://github.com/heron-jr/vtex-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/heron-jr/vtex-sdk/issues"
+  },
+  "keywords": [
+    "vtex",
+    "sdk",
+    "typescript",
+    "openapi"
+  ],
+  "private": true
 }
