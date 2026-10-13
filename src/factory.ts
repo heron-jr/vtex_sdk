@@ -33,7 +33,7 @@ function pickCredentials(creds: VtexCreds): Credentials {
 }
 
 export function createVtexFactory(config: VtexFactoryConfig) {
-  const maxEntries = config.maxCachedClients ?? 100
+  const maxEntries = config.maxCachedClients === undefined ? 100 : config.maxCachedClients
   if (typeof maxEntries !== 'number' || !Number.isInteger(maxEntries) || maxEntries < 1) {
     throw new VtexUsageError(`maxCachedClients must be an integer >= 1 (got ${String(maxEntries)})`)
   }

@@ -94,7 +94,18 @@ describe('createVtexFactory', () => {
     expect(credentials).toHaveBeenCalledTimes(4)
   })
 
-  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '10' as never])(
+  it('keeps 100 clients by default', async () => {
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials })
+    for (let i = 0; i <= 100; i++) await factory.forAccount(`loja${i}`) // 101 accounts: loja0 is dropped
+    expect(credentials).toHaveBeenCalledTimes(101)
+    await factory.forAccount('loja100')
+    expect(credentials).toHaveBeenCalledTimes(101)
+    await factory.forAccount('loja0')
+    expect(credentials).toHaveBeenCalledTimes(102)
+  })
+
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '10' as never, null as never])(
     'rejects maxCachedClients %j',
     (maxCachedClients) => {
       expect(() => createVtexFactory({ credentials: vi.fn(), maxCachedClients })).toThrow(VtexUsageError)
@@ -118,6 +129,35 @@ describe('createVtexFactory', () => {
     await expect(first.orders.get('1')).rejects.toBeInstanceOf(VtexAuthError)
     const second = await factory.forAccount('x')
     expect(second).not.toBe(first)
+    expect(credentials).toHaveBeenCalledTimes(2)
+  })
+
+  it('evicts on 403 and still calls the user onResponse hook', async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response('{}', { status: 403, headers: { 'content-type': 'application/json' } })),
+    )
+    const onResponse = vi.fn()
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials, fetch: fetchMock, maxRetries: 0, hooks: { onResponse } })
+    const first = await factory.forAccount('x')
+    await expect(first.orders.get('1')).rejects.toBeInstanceOf(VtexAuthError)
+    expect(onResponse).toHaveBeenCalledWith(expect.objectContaining({ status: 403 }))
+    expect(await factory.forAccount('x')).not.toBe(first)
+  })
+
+  it('does not evict a newer client when a stale one gets a 401', async () => {
+    let status = 200
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response('{}', { status, headers: { 'content-type': 'application/json' } })),
+    )
+    const credentials = vi.fn().mockResolvedValue({ appKey: 'K', appToken: 'T' })
+    const factory = createVtexFactory({ credentials, fetch: fetchMock, maxRetries: 0 })
+    const stale = await factory.forAccount('x')
+    factory.clear('x')
+    const fresh = await factory.forAccount('x')
+    status = 401
+    await expect(stale.orders.get('1')).rejects.toBeInstanceOf(VtexAuthError)
+    expect(await factory.forAccount('x')).toBe(fresh)
     expect(credentials).toHaveBeenCalledTimes(2)
   })
 })
