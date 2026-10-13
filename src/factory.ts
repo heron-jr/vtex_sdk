@@ -1,11 +1,16 @@
 import type { VtexClientConfig, VtexEnvironment, VtexHooks } from './core/types.js'
 import { VtexUsageError } from './core/errors.js'
-import { normalizeAccount } from './core/url.js'
+import { normalizeAccount, validateEnvironment } from './core/url.js'
 import { VtexClient } from './client.js'
 
 export type VtexCreds = { appKey: string; appToken: string } | { authCookie: string }
 
 export interface VtexFactoryConfig {
+  /**
+   * Returns the credentials for an account. Called once per cached account, and again after
+   * a 401/403 evicts it. It must always settle: a promise that never resolves blocks that
+   * account until `clear()`, so put a timeout on slow secret stores.
+   */
   credentials: (account: string) => VtexCreds | Promise<VtexCreds>
   environment?: VtexEnvironment
   maxRetries?: number
@@ -17,6 +22,13 @@ export interface VtexFactoryConfig {
   hooks?: VtexHooks
 }
 
+export interface VtexFactory {
+  /** Cached client for the account (normalized to lowercase). Rejects with VtexUsageError for an invalid name. */
+  forAccount(account: string): Promise<VtexClient>
+  /** Drops one account's client, or every client when called with no argument. */
+  clear(account?: string): void
+}
+
 type Credentials = Pick<VtexClientConfig, 'appKey' | 'appToken' | 'authCookie'>
 
 /** Only credential fields are taken from the resolver, so it cannot redirect the client elsewhere. */
@@ -24,18 +36,33 @@ function pickCredentials(creds: VtexCreds): Credentials {
   if (typeof creds !== 'object' || creds === null) {
     throw new VtexUsageError('The credentials resolver must return an object')
   }
-  const source = creds as { appKey?: unknown; appToken?: unknown; authCookie?: unknown }
+  // Values are copied as-is; the client validates them without echoing them.
+  const source = creds as Credentials
   const picked: Credentials = {}
-  if (typeof source.appKey === 'string') picked.appKey = source.appKey
-  if (typeof source.appToken === 'string') picked.appToken = source.appToken
-  if (typeof source.authCookie === 'string') picked.authCookie = source.authCookie
+  if (source.appKey !== undefined) picked.appKey = source.appKey
+  if (source.appToken !== undefined) picked.appToken = source.appToken
+  if (source.authCookie !== undefined) picked.authCookie = source.authCookie
   return picked
 }
 
-export function createVtexFactory(config: VtexFactoryConfig) {
+export function createVtexFactory(config: VtexFactoryConfig): VtexFactory {
+  if (typeof config.credentials !== 'function') {
+    throw new VtexUsageError('credentials must be a function returning the credentials for an account')
+  }
   const maxEntries = config.maxCachedClients === undefined ? 100 : config.maxCachedClients
   if (typeof maxEntries !== 'number' || !Number.isInteger(maxEntries) || maxEntries < 1) {
-    throw new VtexUsageError(`maxCachedClients must be an integer >= 1 (got ${String(maxEntries)})`)
+    const got = typeof maxEntries === 'number' ? String(maxEntries) : typeof maxEntries
+    throw new VtexUsageError(`maxCachedClients must be an integer >= 1 (got ${got})`)
+  }
+  // Snapshot the options so later changes to `config` don't affect clients built afterwards.
+  const resolve = config.credentials
+  const userHooks = config.hooks ?? {}
+  const options = {
+    environment: validateEnvironment(config.environment ?? 'vtexcommercestable'),
+    maxRetries: config.maxRetries,
+    timeoutMs: config.timeoutMs,
+    maxRetryAfterMs: config.maxRetryAfterMs,
+    fetch: config.fetch,
   }
   const cache = new Map<string, Promise<VtexClient>>()
 
@@ -44,18 +71,15 @@ export function createVtexFactory(config: VtexFactoryConfig) {
   }
 
   async function build(account: string, onAuthFailure: () => void): Promise<VtexClient> {
-    const creds = await config.credentials(account)
-    const userHooks = config.hooks ?? {}
+    const creds = await resolve(account)
     return new VtexClient({
       ...pickCredentials(creds),
+      ...options,
       account,
-      environment: config.environment,
-      maxRetries: config.maxRetries,
-      timeoutMs: config.timeoutMs,
-      maxRetryAfterMs: config.maxRetryAfterMs,
-      fetch: config.fetch,
       hooks: {
-        ...userHooks,
+        // Call through the user's object (not a spread copy) so prototype methods and `this` survive.
+        onRequest: (info) => userHooks.onRequest?.(info),
+        onRetry: (info) => userHooks.onRetry?.(info),
         onResponse: (info) => {
           if (info.status === 401 || info.status === 403) onAuthFailure()
           userHooks.onResponse?.(info)
@@ -78,6 +102,8 @@ export function createVtexFactory(config: VtexFactoryConfig) {
         cache.set(key, cached)
         return cached
       }
+      // Referring to `entry` in its own initializer is safe: build() awaits the resolver
+      // before any request (and so any eviction callback) can run.
       const entry: Promise<VtexClient> = build(key, () => evict(key, entry))
       cache.set(key, entry)
       entry.catch(() => evict(key, entry))
@@ -88,13 +114,15 @@ export function createVtexFactory(config: VtexFactoryConfig) {
       }
       return entry
     },
-    clear(account?: string): void {
-      if (account === undefined) {
+    clear(...args: [account?: string]): void {
+      // Only a call with no argument clears everything; clear(undefined) (e.g. a missing
+      // request param) is a no-op rather than a full flush.
+      if (args.length === 0) {
         cache.clear()
         return
       }
       try {
-        cache.delete(normalizeAccount(account))
+        cache.delete(normalizeAccount(args[0] as string))
       } catch {
         // An invalid account name can never be in the cache.
       }
