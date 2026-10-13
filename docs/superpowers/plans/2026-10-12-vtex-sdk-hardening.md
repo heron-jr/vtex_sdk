@@ -2742,7 +2742,7 @@ describe('withCall', () => {
 })
 ```
 
-Replace `test/core/auth.test.ts` with this version. Credential errors become `VtexUsageError`, and malformed credentials are rejected without being echoed.
+Replace `test/core/auth.test.ts` with this version. Credential errors become `VtexUsageError`, and malformed credentials are rejected without being echoed, surrounding whitespace is trimmed, and blank values count as unset.
 
 ```ts
 import { describe, it, expect } from 'vitest'
@@ -2784,6 +2784,26 @@ describe('buildAuthHeaders', () => {
   it('rejects a non-string or control-character cookie', () => {
     expect(() => buildAuthHeaders({ account: 'x', authCookie: 'a\nb' })).toThrow(VtexUsageError)
     expect(() => buildAuthHeaders({ account: 'x', authCookie: 123 as never })).toThrow(VtexUsageError)
+  })
+  it('strips leading/trailing whitespace such as a secret file newline', () => {
+    const h = buildAuthHeaders({ account: 'x', appKey: ' K\t', appToken: 'T\n' })
+    expect(h['X-VTEX-API-AppKey']).toBe('K')
+    expect(h['X-VTEX-API-AppToken']).toBe('T')
+    expect(buildAuthHeaders({ account: 'x', authCookie: 'C\r\n' })['VtexIdclientAutCookie']).toBe('C')
+  })
+  it('rejects a whitespace-only credential', () => {
+    expect(() => buildAuthHeaders({ account: 'x', appKey: 'K', appToken: ' \n' })).toThrow(VtexUsageError)
+  })
+  it('treats blank or null app keys as unset and falls back to the cookie', () => {
+    const blank = buildAuthHeaders({ account: 'x', appKey: '', appToken: '', authCookie: 'C' })
+    expect(blank).toEqual({ VtexIdclientAutCookie: 'C' })
+    const nulls = buildAuthHeaders({ account: 'x', appKey: null as never, appToken: null as never, authCookie: 'C' })
+    expect(nulls).toEqual({ VtexIdclientAutCookie: 'C' })
+  })
+  it('reports missing credentials when every value is blank', () => {
+    expect(() => buildAuthHeaders({ account: 'x', appKey: '', appToken: '', authCookie: '' })).toThrow(
+      /No VTEX credentials/,
+    )
   })
 })
 ```
@@ -2892,17 +2912,26 @@ import { VtexUsageError } from './errors.js'
 import { isValidHeaderValue } from './headers.js'
 import type { VtexClientConfig } from './types.js'
 
-/** Validates a credential without ever echoing it. */
+/** undefined, null and '' count as "not configured" (e.g. a blank env var). */
+function isSet(value: unknown): boolean {
+  return value !== undefined && value !== null && value !== ''
+}
+
+/**
+ * Validates a credential without ever echoing it. Leading/trailing HTTP whitespace is
+ * stripped first, as fetch does for header values, so a secret file's trailing newline works.
+ */
 function credential(name: string, value: unknown): string {
-  if (typeof value !== 'string' || value === '' || !isValidHeaderValue(value)) {
+  const trimmed = typeof value === 'string' ? value.replace(/^[\t\n\r ]+|[\t\n\r ]+$/g, '') : undefined
+  if (trimmed === undefined || trimmed === '' || !isValidHeaderValue(trimmed)) {
     throw new VtexUsageError(`${name} must be a non-empty string without control characters`)
   }
-  return value
+  return trimmed
 }
 
 export function buildAuthHeaders(config: VtexClientConfig): Record<string, string> {
-  if (config.appKey !== undefined || config.appToken !== undefined) {
-    if (!config.appKey || !config.appToken) {
+  if (isSet(config.appKey) || isSet(config.appToken)) {
+    if (!isSet(config.appKey) || !isSet(config.appToken)) {
       throw new VtexUsageError('Both appKey and appToken are required for app-key authentication')
     }
     return {
@@ -2910,7 +2939,7 @@ export function buildAuthHeaders(config: VtexClientConfig): Record<string, strin
       'X-VTEX-API-AppToken': credential('appToken', config.appToken),
     }
   }
-  if (config.authCookie !== undefined) {
+  if (isSet(config.authCookie)) {
     return { VtexIdclientAutCookie: credential('authCookie', config.authCookie) }
   }
   throw new VtexUsageError('No VTEX credentials provided: supply appKey/appToken or authCookie')
@@ -3054,6 +3083,7 @@ export class VtexHttpClient {
     this.#hooks = config.hooks ?? {}
     this.#server(DEFAULT_SERVER)
     // account/environment pick the host credentials go to: make them immutable at runtime too.
+    // This also makes the class unsuitable for subclassing; wrap it or use VtexClient.request().
     Object.freeze(this)
   }
 
@@ -7005,7 +7035,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  25 passed (25)` and `Tests  430 passed (430)`;
+- `Test Files  25 passed (25)` and `Tests  434 passed (434)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.

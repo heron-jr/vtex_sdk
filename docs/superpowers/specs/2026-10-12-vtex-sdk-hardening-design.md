@@ -105,9 +105,11 @@ A pre-publication audit of `main` @ `6788909` covered secrets, security and fitn
 - **Everything else:** cross-origin (including an http downgrade, another port, or another account's VTEX host), a `Location` carrying userinfo, or a 301/302/303 on another method, throws `VtexRequestError`. Its `status` is the 3xx code and its message says "redirect blocked". Headers are never re-sent to the new location.
 
 ### 3.5 Credential confidentiality (S4)
-- **Private storage:** `VtexHttpClient` keeps auth headers in a `#private` field. The instance is frozen, so `account`/`environment` cannot be re-pointed at runtime.
+- **Private storage:** `VtexHttpClient` keeps auth headers in a `#private` field. The instance is frozen, so `account`/`environment` cannot be re-pointed at runtime. A frozen instance cannot take subclass fields, so the class is documented as not for subclassing; wrap it or use `VtexClient.request()`.
 - **Header validation before sending:**
   - Credentials must be non-empty strings with no CR, LF or NUL. Header names must be RFC 9110 tokens, and values must contain no CR, LF or NUL.
+  - Leading and trailing space, tab, CR and LF are stripped from a credential first, which is the same normalization fetch applies. A secret file's trailing newline therefore works. A credential that is empty after trimming is rejected.
+  - `undefined`, `null` and `''` all count as "not configured". With `appKey=''`, `appToken=''` (blank env vars) and an `authCookie`, the client uses cookie authentication.
   - A violation throws `VtexUsageError`, naming the header but never echoing its value. Otherwise `fetch` would reject inside the retry loop with an error message containing the value, which may be a credential.
   - A body on GET/HEAD and an invalid HTTP method are rejected the same way.
   - `null` header values are skipped like `undefined`.
