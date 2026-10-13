@@ -167,10 +167,27 @@ describe('VtexHttpClient.request', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('honors a caller AbortSignal immediately instead of retrying a rejected fetch', async () => {
+  it('does not send at all when the caller signal is already aborted', async () => {
     const controller = new AbortController()
     controller.abort()
-    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    const onRequest = vi.fn()
+    const http = new VtexHttpClient({
+      account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 3, hooks: { onRequest },
+    })
+
+    const err = await http.request({ method: 'POST', path: '/x', body: {}, signal: controller.signal }).catch((e: unknown) => e)
+    expect((err as Error).name).toBe('AbortError')
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(onRequest).not.toHaveBeenCalled()
+  })
+
+  it('honors a caller abort during fetch instead of retrying', async () => {
+    const controller = new AbortController()
+    const fetchMock = vi.fn().mockImplementation(() => {
+      controller.abort()
+      return Promise.reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+    })
     const http = new VtexHttpClient({ account: 'lojax', appKey: 'K', appToken: 'T', fetch: fetchMock, maxRetries: 3 })
 
     await expect(http.request({ method: 'GET', path: '/x', signal: controller.signal })).rejects.toThrow()
@@ -448,12 +465,153 @@ describe('redirects', () => {
   })
 })
 
+describe('redirect origin rules', () => {
+  const ORIGIN = 'https://lojax.vtexcommercestable.com.br'
+
+  it.each([
+    ['a scheme downgrade', 'http://lojax.vtexcommercestable.com.br/x'],
+    ['a sibling VTEX account host', 'https://other.vtexcommercestable.com.br/x'],
+    ['a protocol-relative URL', '//evil.com/x'],
+    ['backslashes', 'https:\\\\evil.com/x'],
+    ['a slash-backslash path', '/\\evil.com'],
+    ['a non-default port', 'https://lojax.vtexcommercestable.com.br:8443/x'],
+    ['userinfo on the same origin', 'https://u:p@lojax.vtexcommercestable.com.br/x'],
+  ])('blocks a redirect to %s without a second request', async (_name, location) => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(null, { status: 307, headers: { location } }))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    const err = await http.request({ method: 'GET', path: '/x' }).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(VtexRequestError)
+    expect((err as Error).message).toMatch(/redirect blocked/i)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('follows a same-origin 303 for a GET', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 303, headers: { location: '/y' } }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x' })).resolves.toEqual({ ok: true })
+    expect(fetchMock.mock.calls[1][0]).toBe(`${ORIGIN}/y`)
+    expect(fetchMock.mock.calls[1][1].method).toBe('GET')
+  })
+
+  it('treats a 3xx without Location as a plain error response', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(null, { status: 304 }))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock, maxRetries: 3 })
+    const err = await http.request({ method: 'GET', path: '/x' }).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(VtexRequestError)
+    expect((err as VtexRequestError).status).toBe(304)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('body read interruptions', () => {
+  /** A 200 whose body never finishes until the request signal aborts. */
+  function stalledBodyFetch() {
+    return vi.fn((_input: string | URL | Request, init?: RequestInit) => {
+      const res = new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } })
+      Object.defineProperty(res, 'text', {
+        value: () =>
+          new Promise<string>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => reject(new DOMException('This operation was aborted', 'AbortError')))
+          }),
+      })
+      return Promise.resolve(res)
+    })
+  }
+
+  it('rethrows the caller abort reason when it happens during the body read', async () => {
+    const controller = new AbortController()
+    const reason = new Error('caller gave up')
+    const http = new VtexHttpClient({ ...BASE, fetch: stalledBodyFetch() })
+    const pending = http.request({ method: 'GET', path: '/x', signal: controller.signal }).catch((e: unknown) => e)
+    setTimeout(() => controller.abort(reason), 20)
+    expect(await pending).toBe(reason)
+  })
+
+  it('reports a body-read timeout as VtexTimeoutError', async () => {
+    const http = new VtexHttpClient({ ...BASE, fetch: stalledBodyFetch(), timeoutMs: 20 })
+    await expect(http.request({ method: 'GET', path: '/x' })).rejects.toBeInstanceOf(VtexTimeoutError)
+  })
+})
+
+describe('header and request validation', () => {
+  it.each([
+    ['a CRLF in a caller header value', { 'X-A': 'a\r\nX-Injected: 1' }],
+    ['a NUL in a caller header value', { 'X-A': 'a\0b' }],
+    ['an invalid header name', { 'Bad Name': 'v' }],
+  ])('rejects %s before sending', async (_name, headers) => {
+    const fetchMock = vi.fn()
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x', headers })).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects a malformed credential at construction without echoing it', () => {
+    let caught: unknown
+    try {
+      new VtexHttpClient({ ...BASE, appToken: 'SUPER-SECRET-TOKEN\nX' })
+    } catch (err) {
+      caught = err
+    }
+    expect(caught).toBeInstanceOf(VtexUsageError)
+    expect(inspect(caught)).not.toContain('SUPER-SECRET-TOKEN')
+  })
+
+  it('rejects a body on GET and HEAD', async () => {
+    const fetchMock = vi.fn()
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await expect(http.request({ method: 'GET', path: '/x', body: { a: 1 } })).rejects.toBeInstanceOf(VtexUsageError)
+    await expect(http.request({ method: 'HEAD', path: '/x', body: 'x' })).rejects.toBeInstanceOf(VtexUsageError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it.each(['GE T', '', 'GET\r\n'])('rejects the HTTP method %j', async (method) => {
+    const http = new VtexHttpClient({ ...BASE, fetch: vi.fn() })
+    await expect(http.request({ method, path: '/x' })).rejects.toBeInstanceOf(VtexUsageError)
+  })
+
+  it('skips null header values instead of sending "null"', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}))
+    const http = new VtexHttpClient({ ...BASE, fetch: fetchMock })
+    await http.request({ method: 'GET', path: '/x', headers: { 'X-Opt': null as never } })
+    expect('X-Opt' in fetchMock.mock.calls[0][1].headers).toBe(false)
+  })
+})
+
 describe('credential confidentiality', () => {
   it('never prints or serializes credentials', () => {
     const http = new VtexHttpClient({ ...BASE })
     expect(inspect(http)).not.toContain('T-SECRET')
     expect(JSON.stringify(http)).toBe('{"account":"lojax","environment":"vtexcommercestable"}')
     expect(Object.keys(http)).toEqual(['account', 'environment'])
+  })
+
+  it('cannot be re-pointed at another account at runtime', () => {
+    const http = new VtexHttpClient({ ...BASE })
+    expect(Object.isFrozen(http)).toBe(true)
+    expect(() => {
+      ;(http as unknown as { account: string }).account = 'otherstore'
+    }).toThrow(TypeError)
+    expect(http.account).toBe('lojax')
+  })
+})
+
+describe('hooks', () => {
+  it('releases the response body when onResponse throws', async () => {
+    const cancel = vi.fn(() => Promise.resolve())
+    const res = jsonResponse({ ok: true })
+    const realBody = res.body
+    Object.defineProperty(res, 'body', {
+      get: () => (realBody ? new Proxy(realBody, { get: (t, p, r) => (p === 'cancel' ? cancel : Reflect.get(t, p, r)) }) : realBody),
+    })
+    const http = new VtexHttpClient({
+      ...BASE,
+      fetch: vi.fn().mockResolvedValue(res),
+      hooks: { onResponse: () => { throw new Error('hook failed') } },
+    })
+    await expect(http.request({ method: 'GET', path: '/x' })).rejects.toThrow('hook failed')
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 })
 

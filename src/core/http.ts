@@ -1,9 +1,9 @@
-import { inspect } from 'node:util'
 import type { RequestOptions, VtexClientConfig, VtexEnvironment, VtexHooks } from './types.js'
 import {
   DEFAULT_SERVER, buildRequestUrl, normalizeAccount, resolveServer, validateEnvironment, type ResolvedServer,
 } from './url.js'
 import { buildAuthHeaders } from './auth.js'
+import { assertHeader, setHeader } from './headers.js'
 import { VtexNetworkError, VtexRequestError, VtexTimeoutError, VtexUsageError, mapResponseToError } from './errors.js'
 import {
   MAX_TIMER_MS, backoffDelay, isConnectPhaseError, parseRetryAfterMs, shouldRetryFailure, sleep, type Failure,
@@ -11,6 +11,9 @@ import {
 import { isJsonContentType, serializeBody } from './body.js'
 
 const MAX_REDIRECTS = 3
+const METHOD_RE = /^[A-Za-z]+$/
+/** Same symbol as util.inspect.custom, without importing node:util. */
+const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
 
 /** Rejects NaN, Infinity, negatives and (optionally) fractions in numeric options. */
 function checkedNumber(name: string, value: unknown, min: number, integer = false): number {
@@ -68,15 +71,6 @@ async function parseBody(res: Response): Promise<unknown> {
   return text
 }
 
-/** Sets a header, replacing any existing header with the same name in a different case. */
-function setHeader(headers: Record<string, string>, name: string, value: string): void {
-  const lower = name.toLowerCase()
-  for (const key of Object.keys(headers)) {
-    if (key.toLowerCase() === lower) delete headers[key]
-  }
-  headers[name] = value
-}
-
 /** Next URL for a redirect the SDK may follow, or undefined when it must be blocked. */
 function redirectTarget(currentUrl: string, res: Response, method: string): string | undefined {
   const location = res.headers.get('location')
@@ -87,7 +81,7 @@ function redirectTarget(currentUrl: string, res: Response, method: string): stri
   } catch {
     return undefined
   }
-  if (next.origin !== new URL(currentUrl).origin) return undefined
+  if (next.origin !== new URL(currentUrl).origin || next.username || next.password) return undefined
   if (res.status === 307 || res.status === 308) return next.href
   if ((res.status === 301 || res.status === 302 || res.status === 303) && (method === 'GET' || method === 'HEAD')) {
     return next.href
@@ -116,13 +110,15 @@ export class VtexHttpClient {
     this.#fetch = config.fetch ?? fetch
     this.#hooks = config.hooks ?? {}
     this.#server(DEFAULT_SERVER)
+    // account/environment pick the host credentials go to: make them immutable at runtime too.
+    Object.freeze(this)
   }
 
   toJSON(): { account: string; environment: VtexEnvironment } {
     return { account: this.account, environment: this.environment }
   }
 
-  [inspect.custom](): string {
+  [INSPECT](): string {
     return `VtexHttpClient ${JSON.stringify(this.toJSON())}`
   }
 
@@ -140,17 +136,25 @@ export class VtexHttpClient {
   }
 
   async requestRaw<T>(opts: RequestOptions): Promise<{ data: T; headers: Headers; status: number }> {
+    if (typeof opts.method !== 'string' || !METHOD_RE.test(opts.method)) {
+      throw new VtexUsageError(`Invalid HTTP method ${JSON.stringify(opts.method)}`)
+    }
     const method = opts.method.toUpperCase()
     const server = this.#server(opts.server ?? DEFAULT_SERVER)
     let url = buildRequestUrl(server, opts.path, opts.query)
     const route = server.basePath + opts.path
     const { body, contentType } = serializeBody(opts.body, opts.contentType)
+    if (body !== undefined && (method === 'GET' || method === 'HEAD')) {
+      throw new VtexUsageError(`A ${method} request cannot have a body`)
+    }
 
     const headers: Record<string, string> = { Accept: 'application/json', ...this.#authHeaders }
     if (contentType) setHeader(headers, 'Content-Type', contentType)
     for (const [name, value] of Object.entries(opts.headers ?? {})) {
-      if (value !== undefined) setHeader(headers, name, String(value))
+      if (value !== undefined && value !== null) setHeader(headers, name, String(value))
     }
+    // Validate here: fetch would reject inside the retry loop, echoing the value (maybe a credential).
+    for (const [name, value] of Object.entries(headers)) assertHeader(name, value)
 
     const maxRetries =
       opts.retry === false ? 0 : checkedNumber('retry.maxRetries', opts.retry?.maxRetries ?? this.#maxRetries, 0, true)
@@ -160,6 +164,7 @@ export class VtexHttpClient {
     let redirects = 0
 
     for (;;) {
+      opts.signal?.throwIfAborted()
       const controller = new AbortController()
       let timedOut = false
       const timer = setTimeout(() => {
@@ -189,7 +194,12 @@ export class VtexHttpClient {
           throw this.#networkError(err, timedOut, method, route, attempt + 1)
         }
 
-        this.#hooks.onResponse?.({ method, url, status: res.status, attempt })
+        try {
+          this.#hooks.onResponse?.({ method, url, status: res.status, attempt })
+        } catch (err) {
+          await res.body?.cancel().catch(() => {})
+          throw err
+        }
 
         if (res.status >= 300 && res.status < 400 && res.headers.has('location')) {
           await res.body?.cancel().catch(() => {})
