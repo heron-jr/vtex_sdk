@@ -21,7 +21,9 @@ const HOSTNAME_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*$/i
 /** Validates a VTEX account name (a single ASCII DNS label) and lowercases it. */
 export function normalizeAccount(account: unknown): string {
   if (typeof account !== 'string' || account === '') throw new VtexUsageError('VTEX account is required')
-  if (!ACCOUNT_RE.test(account)) {
+  // xn-- labels are punycode (IDN); VTEX account names are plain ASCII, and invalid punycode
+  // would otherwise fail later with a misleading server-template error.
+  if (!ACCOUNT_RE.test(account) || /^xn--/i.test(account)) {
     throw new VtexUsageError(`Invalid VTEX account name ${JSON.stringify(account)}: use letters, digits and hyphens only`)
   }
   return account.toLowerCase()
@@ -38,17 +40,21 @@ export function validateEnvironment(environment: unknown = 'vtexcommercestable')
 }
 
 /**
- * VTEX IO app routes (app.io.vtex.com/{app}/...) run third-party app code, such as carriers'
- * apps; the merchant's credentials are never sent there, even though they sit under vtex.com.
+ * On the corporate vtex.com domain only these API hosts receive credentials. Other
+ * subdomains include VTEX IO app routes (app.io.vtex.com, which run third-party app code)
+ * and sites that may be run by third-party services.
  */
-const IO_APP_DOMAIN = 'io.vtex.com'
+const VTEX_COM_API_HOSTS = new Set(['api.vtex.com', 'sp.vtex.com'])
 
-/** True when a parsed URL hostname is an allowlisted VTEX domain or a subdomain of one. */
+/**
+ * True when a parsed URL hostname may receive credentials: a subdomain (or apex) of an
+ * allowlisted commerce domain, or one of the vtex.com API hosts.
+ */
 export function isAllowlistedHost(hostname: string): boolean {
   if (typeof hostname !== 'string' || !HOSTNAME_RE.test(hostname)) return false
   const host = hostname.toLowerCase()
-  if (host === IO_APP_DOMAIN || host.endsWith(`.${IO_APP_DOMAIN}`)) return false
-  return VTEX_DOMAIN_ALLOWLIST.some((domain) => host === domain || host.endsWith(`.${domain}`))
+  if (host === 'vtex.com' || host.endsWith('.vtex.com')) return VTEX_COM_API_HOSTS.has(host)
+  return VTEX_DOMAIN_ALLOWLIST.some((domain) => domain !== 'vtex.com' && (host === domain || host.endsWith(`.${domain}`)))
 }
 
 export interface ResolvedServer {

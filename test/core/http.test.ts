@@ -566,7 +566,7 @@ describe('header and request validation', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it.each(['GE T', '', 'GET\r\n'])('rejects the HTTP method %j', async (method) => {
+  it.each(['GE T', '', 'GET\r\n', 'CONNECT', 'trace', 'TRACK'])('rejects the HTTP method %j', async (method) => {
     const http = new VtexHttpClient({ ...BASE, fetch: vi.fn() })
     await expect(http.request({ method, path: '/x' })).rejects.toBeInstanceOf(VtexUsageError)
   })

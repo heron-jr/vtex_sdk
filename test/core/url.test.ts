@@ -13,6 +13,9 @@ describe('normalizeAccount', () => {
     expect(normalizeAccount('LojaX')).toBe('lojax')
     expect(normalizeAccount('my-store-1')).toBe('my-store-1')
   })
+  it.each(['xn--acme', 'XN--abc-123'])('rejects the punycode label %j as an account name', (account) => {
+    expect(() => normalizeAccount(account)).toThrow(/Invalid VTEX account name/)
+  })
   it('accepts the 63-character boundary', () => {
     expect(normalizeAccount('a'.repeat(63))).toHaveLength(63)
   })
@@ -45,7 +48,7 @@ describe('isAllowlistedHost', () => {
   it.each([
     'acme.vtexcommercestable.com.br', 'acme.myvtex.com', 'api.vtex.com',
     'acme.vtexpayments.com.br', 'portal.vtexcommercebeta.com.br',
-    'vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
+    'sp.vtex.com', 'myvtex.com', 'ACME.MyVtex.com',
   ])('allows %s', (host) => {
     expect(isAllowlistedHost(host)).toBe(true)
   })
@@ -55,6 +58,8 @@ describe('isAllowlistedHost', () => {
     'evil.com/.vtex.com',
     // VTEX IO app routes run third-party code
     'app.io.vtex.com', 'io.vtex.com', 'APP.IO.VTEX.COM',
+    // on vtex.com only the API hosts receive credentials
+    'vtex.com', 'help.vtex.com', 'status.vtex.com', 'acme.vtex.com',
   ])('blocks %j', (host) => {
     expect(isAllowlistedHost(host)).toBe(false)
   })

@@ -12,6 +12,7 @@ import { isJsonContentType, serializeBody } from './body.js'
 
 const MAX_REDIRECTS = 3
 const METHOD_RE = /^[A-Za-z]+$/
+const FORBIDDEN_METHODS = new Set(['CONNECT', 'TRACE', 'TRACK'])
 /** Same symbol as util.inspect.custom, without importing node:util. */
 const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
 
@@ -137,7 +138,8 @@ export class VtexHttpClient {
   }
 
   async requestRaw<T>(opts: RequestOptions): Promise<{ data: T; headers: Headers; status: number }> {
-    if (typeof opts.method !== 'string' || !METHOD_RE.test(opts.method)) {
+    // fetch rejects CONNECT/TRACE/TRACK itself; refuse them here so it's a usage error, not a network error.
+    if (typeof opts.method !== 'string' || !METHOD_RE.test(opts.method) || FORBIDDEN_METHODS.has(opts.method.toUpperCase())) {
       throw new VtexUsageError(`Invalid HTTP method ${JSON.stringify(opts.method)}`)
     }
     const method = opts.method.toUpperCase()
