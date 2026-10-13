@@ -4456,11 +4456,12 @@ describe('schemaToType', () => {
   })
   it('rejects a non-string $ref with a clear error', () => {
     expect(() => schemaToType({ $ref: 123 }, ref)).toThrow(/Invalid \$ref/)
+    expect(() => schemaToType({ $ref: '' }, ref)).toThrow(/Invalid \$ref/)
   })
   it('emits syntactically valid TypeScript for odd inputs', () => {
     const odd = [
       { type: [] }, { type: [], nullable: true }, { enum: ['*/', '`${x}`', '"; export const x = 1; //', '\u2028'] },
-      { type: 'object', properties: { '*/ evil': { type: 'string' }, '__proto__': { type: 'number' } } },
+      { type: 'object', properties: JSON.parse('{"*/ evil":{"type":"string"},"__proto__":{"type":"number"}}') },
       { allOf: [{ oneOf: [{ type: 'string' }, { type: 'number' }] }, { type: 'object', additionalProperties: true }] },
     ]
     for (const schema of odd) {
@@ -5260,8 +5261,8 @@ export function normalizeServer(server: ServerObject): string | undefined {
 /**
  * Picks the server for an operation: operation > path item > document. The first
  * level that declares servers decides; within it, the first resolvable entry wins.
- * When no level declares servers, the account host is used. A level whose `servers`
- * is present but not an array counts as declared and unresolvable.
+ * When no level declares servers, the account host is used. An absent, null or empty
+ * `servers` falls through; any other non-array value counts as declared and unresolvable.
  */
 export function pickServer(levels: Array<ServerObject[] | undefined>): string | undefined {
   for (const level of levels) {
@@ -5328,6 +5329,7 @@ EOF
 import { describe, it, expect } from 'vitest'
 import ts from 'typescript'
 import { generateMethod } from '../../scripts/codegen/operation.js'
+import { isValidHeaderValue } from '../../src/core/headers.js'
 
 const refName = (r: string) => r.split('/').pop()!
 const ok = { '200': { content: { 'application/json': { schema: { type: 'object' } } } } }
@@ -5556,6 +5558,12 @@ describe('generateMethod', () => {
     expect(gen({ parameters: [{ name: ' Authorization', in: 'header' }] })).toThrow(/invalid header name/)
     expect(gen({ parameters: [{ name: '__proto__', in: 'query' }] })).toThrow(/parameter named/)
     expect(gen({ parameters: [{ name: 'constructor', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'toString', in: 'query' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'valueOf', in: 'header' }] })).toThrow(/parameter named/)
+    expect(gen({ parameters: [{ name: 'constructor', in: 'cookie' }] })).not.toThrow()
+    expect(
+      gen({ requestBody: { content: { 'application/vnd.x+json;\r\nX-Evil: 1': { schema: { type: 'object' } } } } }),
+    ).toThrow(/content type/)
     expect(gen({}, 'get', 'constructor')).toThrow(/method named/)
     expect(gen({}, 'get', 'http')).toThrow(/method named/)
     expect(gen({}, 'trace')).toThrow(/HTTP method/)
@@ -5599,7 +5607,7 @@ describe('generateMethod', () => {
     })
     expect(code).toContain('  flag: string | number')
     expect(code).toContain('  id: number')
-    expect(code).toContain("  'X-List'?: string")
+    expect(code).toMatch(/^  'X-List'\?: string$/m)
     expect(code).toContain(`  'X-Mode'?: "a" | "b"`)
   })
 
@@ -5628,7 +5636,14 @@ describe('generateMethod', () => {
         op: {
           operationId: 'X',
           parameters: [{ name: `q${h}`, in: 'query', schema: { type: 'string', enum: [h] } }],
-          requestBody: { content: { [`application/vnd.x+json;${h}`]: { schema: { type: 'object', properties: { [h]: { type: 'string' } } } } } },
+          // Content types that aren't valid header values are refused (tested above); the rest are escaped.
+          requestBody: {
+            content: {
+              [isValidHeaderValue(h) ? `application/vnd.x+json;${h}` : 'application/vnd.x+json']: {
+                schema: { type: 'object', properties: { [h]: { type: 'string' } } },
+              },
+            },
+          },
           responses: ok,
         },
       })
@@ -5660,7 +5675,7 @@ import { methodName } from './naming.js'
 import { schemaToType } from './types.js'
 import { DEFAULT_SERVER } from '../../src/core/url.js'
 import { isJsonContentType, mediaType } from '../../src/core/body.js'
-import { isValidHeaderName } from '../../src/core/headers.js'
+import { isValidHeaderName, isValidHeaderValue } from '../../src/core/headers.js'
 
 interface Ctx {
   httpMethod: string
@@ -5690,8 +5705,12 @@ const MANAGED_HEADERS = new Set([
 ])
 /** Method names that would clash with the generated class itself. */
 const RESERVED_METHOD_NAMES = new Set(['constructor', 'http'])
-/** Option keys that object literals or the `= {}` default would mishandle. */
-const RESERVED_PARAM_NAMES = new Set(['__proto__', 'constructor'])
+/**
+ * Option keys that object literals or the `= {}` default would mishandle: every
+ * Object.prototype member (`__proto__`, `constructor`, `toString`, `valueOf`...), since an
+ * omitted optional param would otherwise read the inherited function.
+ */
+const RESERVED_PARAM_NAMES = new Set(Object.getOwnPropertyNames(Object.prototype))
 /** Header values must be primitives the runtime accepts (string, number, boolean or a literal union of them). */
 const PRIMITIVE_TYPE_RE =
   /^(?:string|number|boolean|true|false|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")(?: \| (?:string|number|boolean|true|false|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*"))*$/
@@ -5743,6 +5762,10 @@ function requestBodyInfo(requestBody: any, refName: (ref: string) => string): Bo
   if (!content || typeof content !== 'object') return undefined
   const types = Object.keys(content)
   if (types.length === 0) return undefined
+  for (const t of types) {
+    // The chosen type is sent as the Content-Type header, which the runtime would reject.
+    if (!isValidHeaderValue(t)) throw new Error(`Refusing to generate a request body with content type ${JSON.stringify(t)}`)
+  }
   const plainJson = types.find((t) => mediaType(t) === 'application/json')
   if (plainJson) return { type: schemaToType(content[plainJson].schema ?? {}, refName) }
   const vendorJson = types.find(isJsonContentType)
@@ -5822,16 +5845,21 @@ export function generateMethod(ctx: Ctx): string {
   const headerParams: any[] = []
   const seenQueryNames = new Set<string>()
   const seenHeaderNames = new Set<string>()
+  // Only params that become option keys are checked against reserved names (path names are
+  // checked with the placeholders below); ignored ones, e.g. cookie params, can't clash.
+  const refuseReserved = (name: string) => {
+    if (RESERVED_PARAM_NAMES.has(name)) {
+      throw new Error(`Refusing to generate a method with a parameter named ${JSON.stringify(name)} (${path})`)
+    }
+  }
   for (const p of resolvedParams) {
     if (!p || !p.name) continue
     const paramName = String(p.name)
-    if (RESERVED_PARAM_NAMES.has(paramName)) {
-      throw new Error(`Refusing to generate a method with a parameter named ${JSON.stringify(paramName)} (${path})`)
-    }
     const lowerName = paramName.toLowerCase()
     if (p.in === 'path') {
       inlinePathParams.set(paramName, p)
     } else if (p.in === 'query' && !seenQueryNames.has(paramName)) {
+      refuseReserved(paramName)
       seenQueryNames.add(paramName)
       queryParams.push(p)
     } else if (p.in === 'header') {
@@ -5839,6 +5867,7 @@ export function generateMethod(ctx: Ctx): string {
         throw new Error(`Refusing to generate a method with invalid header name ${JSON.stringify(paramName)} (${path})`)
       }
       if (!MANAGED_HEADERS.has(lowerName) && !seenHeaderNames.has(lowerName)) {
+        refuseReserved(paramName)
         seenHeaderNames.add(lowerName)
         headerParams.push(p)
       }
@@ -6124,6 +6153,43 @@ describe('fetchSchemas', () => {
     await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: big })).rejects.toThrow(/larger than/)
     expect(existsSync(out)).toBe(false)
   })
+
+  it('stops reading a streamed body (no content-length) once it passes the cap', async () => {
+    let pulls = 0
+    const chunk = new Uint8Array(4 * 1024 * 1024)
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulls++
+        controller.enqueue(chunk)
+      },
+    })
+    const streaming = vi.fn(async () => new Response(stream))
+    await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: streaming })).rejects.toThrow(
+      /Download failed for A.json: .*larger than/,
+    )
+    expect(pulls).toBeLessThan(MAX_SCHEMA_BYTES / chunk.byteLength + 4)
+  })
+
+  it('names the file and the cause when the request itself fails', async () => {
+    const failing = vi.fn(async () => {
+      throw new TypeError('fetch failed', { cause: new Error('unexpected redirect') })
+    })
+    await expect(fetchSchemas({ lock: lockOf({ 'A.json': A }), outDir: out, fetch: failing })).rejects.toThrow(
+      'Download failed for A.json: fetch failed (unexpected redirect)',
+    )
+  })
+
+  it('validates the whole lock before fetching anything', async () => {
+    const fetchMock = fakeFetch({ 'A.json': A })
+    const unsafeSecond = { ...lockOf({ 'A.json': A }), files: { 'A.json': gitBlobSha(A), '../x.json': gitBlobSha(A) } }
+    await expect(fetchSchemas({ lock: unsafeSecond, outDir: out, fetch: fetchMock })).rejects.toThrow(/unsafe/)
+    const empty = { ...lockOf({ 'A.json': A }), files: {} }
+    await expect(fetchSchemas({ lock: empty, outDir: out, fetch: fetchMock })).rejects.toThrow(/no files/)
+    const caseDup = { ...lockOf({ 'A.json': A }), files: { 'A.json': gitBlobSha(A), 'a.json': gitBlobSha(A) } }
+    await expect(fetchSchemas({ lock: caseDup, outDir: out, fetch: fetchMock })).rejects.toThrow(/Duplicate/)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(existsSync(out)).toBe(false)
+  })
 })
 
 describe('listSchemaLock', () => {
@@ -6149,6 +6215,10 @@ describe('listSchemaLock', () => {
     ['a traversal name', [{ type: 'file', name: '../package.json', sha: gitBlobSha(A) }], /unsafe/],
     ['a bad sha', [{ type: 'file', name: 'A.json', sha: 'nope' }], /blob SHA/],
     ['a non-array body', { message: 'rate limited' }, /not an array/],
+    ['names differing only in case', [
+      { type: 'file', name: 'A.json', sha: gitBlobSha(A) },
+      { type: 'file', name: 'a.json', sha: gitBlobSha(A) },
+    ], /Duplicate/],
     ['no schemas', [{ type: 'file', name: 'package.json', sha: gitBlobSha(A) }], /no schema files/],
     ['a truncated listing', Array.from({ length: 1000 }, (_, i) => ({ type: 'file', name: `F${i}.json`, sha: gitBlobSha(A) })), /truncated/],
   ])('rejects %s', async (_label, entries, error) => {
@@ -6217,8 +6287,13 @@ export function parseSchemaLock(json: unknown): SchemaLock {
     throw new Error('Schema lock files must be an object of name to blob SHA')
   }
   const files: Record<string, string> = {}
+  const seen = new Set<string>()
   for (const [name, sha] of Object.entries(lock.files)) {
-    files[assertSchemaFileName(name)] = assertSha(sha, `blob SHA for ${name}`)
+    const key = assertSchemaFileName(name).toLowerCase()
+    // Case variants collide on Windows and macOS file systems.
+    if (seen.has(key)) throw new Error(`Duplicate schema file name ${JSON.stringify(name)} (names must be unique ignoring case)`)
+    seen.add(key)
+    files[name] = assertSha(sha, `blob SHA for ${name}`)
   }
   if (Object.keys(files).length === 0) throw new Error('Schema lock lists no files')
   return { repo: SCHEMA_REPO, ref, files }
@@ -6238,7 +6313,7 @@ export function schemaDownloadUrl(ref: string, name: string): URL {
 import { mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import {
-  SCHEMA_REPO, assertSchemaFileName, assertSha, gitBlobSha, schemaDownloadUrl, type SchemaLock,
+  SCHEMA_REPO, assertSchemaFileName, assertSha, gitBlobSha, parseSchemaLock, schemaDownloadUrl, type SchemaLock,
 } from './integrity.js'
 
 /** Largest accepted schema; the biggest VTEX schema today is about 3 MB. */
@@ -6257,9 +6332,18 @@ export interface FetchSchemasOptions {
   log?: (line: string) => void
 }
 
+/** Message plus its cause: undici reports DNS, TLS and redirect failures as "fetch failed" with a cause. */
+function describe(err: unknown): string {
+  if (!(err instanceof Error)) return String(err)
+  return err.cause instanceof Error ? `${err.message} (${err.cause.message})` : err.message
+}
+
 async function readCapped(res: Response, name: string): Promise<Uint8Array> {
   const declared = Number(res.headers.get('content-length'))
-  if (Number.isFinite(declared) && declared > MAX_SCHEMA_BYTES) throw new Error(`${name} is larger than ${MAX_SCHEMA_BYTES} bytes`)
+  if (Number.isFinite(declared) && declared > MAX_SCHEMA_BYTES) {
+    await res.body?.cancel()
+    throw new Error(`${name} is larger than ${MAX_SCHEMA_BYTES} bytes`)
+  }
   if (!res.body) return new Uint8Array(0)
   const reader = res.body.getReader()
   const chunks: Uint8Array[] = []
@@ -6289,6 +6373,8 @@ async function readCapped(res: Response, name: string): Promise<Uint8Array> {
  * that are not in the lock never survive a successful run.
  */
 export async function fetchSchemas(opts: FetchSchemasOptions): Promise<number> {
+  // Validate the whole lock up front, so an unsafe name is refused before anything is fetched.
+  const lock = parseSchemaLock(opts.lock)
   const doFetch = opts.fetch ?? fetch
   const log = opts.log ?? (() => {})
   const target = resolve(opts.outDir)
@@ -6297,15 +6383,19 @@ export async function fetchSchemas(opts: FetchSchemasOptions): Promise<number> {
   const stage = await mkdtemp(join(parent, '.schemas-'))
   let count = 0
   try {
-    for (const [name, expected] of Object.entries(opts.lock.files)) {
-      const file = assertSchemaFileName(name)
-      const res = await doFetch(schemaDownloadUrl(opts.lock.ref, file), {
-        headers: { 'User-Agent': USER_AGENT },
-        redirect: 'error',
-        signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
-      })
-      if (!res.ok) throw new Error(`Download failed for ${file}: HTTP ${res.status}`)
-      const content = await readCapped(res, file)
+    for (const [file, expected] of Object.entries(lock.files)) {
+      let content: Uint8Array
+      try {
+        const res = await doFetch(schemaDownloadUrl(lock.ref, file), {
+          headers: { 'User-Agent': USER_AGENT },
+          redirect: 'error',
+          signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        content = await readCapped(res, file)
+      } catch (err) {
+        throw new Error(`Download failed for ${file}: ${describe(err)}`, { cause: err })
+      }
       const actual = gitBlobSha(content)
       if (actual !== expected) throw new Error(`Integrity check failed for ${file}: expected blob ${expected}, got ${actual}`)
       const dest = join(stage, file)
@@ -6352,13 +6442,18 @@ export async function listSchemaLock(opts: ListSchemaLockOptions): Promise<Schem
   const ref = assertSha(opts.ref, 'ref')
   const headers: Record<string, string> = { 'User-Agent': USER_AGENT, Accept: 'application/vnd.github+json' }
   if (opts.token) headers.Authorization = `Bearer ${opts.token}`
-  const res = await (opts.fetch ?? fetch)(`https://api.github.com/repos/${SCHEMA_REPO}/contents?ref=${ref}`, {
-    headers,
-    redirect: 'error',
-    signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
-  })
-  if (!res.ok) throw new Error(`GitHub listing failed: HTTP ${res.status}`)
-  const entries: unknown = await res.json()
+  let entries: unknown
+  try {
+    const res = await (opts.fetch ?? fetch)(`https://api.github.com/repos/${SCHEMA_REPO}/contents?ref=${ref}`, {
+      headers,
+      redirect: 'error',
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    entries = await res.json()
+  } catch (err) {
+    throw new Error(`GitHub listing failed: ${describe(err)}`, { cause: err })
+  }
   if (!Array.isArray(entries)) throw new Error('GitHub listing is not an array')
   if (entries.length >= MAX_LISTING_ENTRIES) throw new Error('GitHub listing may be truncated (1,000 entries)')
   const files: Record<string, string> = {}
@@ -6366,6 +6461,9 @@ export async function listSchemaLock(opts: ListSchemaLockOptions): Promise<Schem
     if (entry?.type !== 'file' || typeof entry.name !== 'string' || !entry.name.endsWith('.json')) continue
     if (SKIP.has(entry.name)) continue
     const name = assertSchemaFileName(entry.name)
+    if (Object.keys(files).some((n) => n.toLowerCase() === name.toLowerCase())) {
+      throw new Error(`Duplicate schema file name ${JSON.stringify(name)} (names must be unique ignoring case)`)
+    }
     files[name] = assertSha(entry.sha, `blob SHA for ${name}`)
   }
   if (Object.keys(files).length === 0) throw new Error('GitHub listing has no schema files')
@@ -6827,129 +6925,134 @@ async function main() {
   let basePathsTrimmed = 0
 
   for (const file of files) {
-    const doc = JSON.parse(contents.get(file)!.toString('utf8'))
-    overridesApplied += applyOverrides(file, doc)
-    const title: string = doc.info?.title ?? file.replace(/\.json$/, '')
-    // Disambiguation source for collisions: several files legitimately share an
-    // identical `info.title` (e.g. four "Marketplace Protocol" documents that only
-    // differ by filename/description), so fall back to the filename when needed.
-    const fileBase = file.replace(/\.json$/, '').replace(/^VTEX\s*-\s*/, '')
+    try {
+      const doc = JSON.parse(contents.get(file)!.toString('utf8'))
+      overridesApplied += applyOverrides(file, doc)
+      const title: string = doc.info?.title ?? file.replace(/\.json$/, '')
+      // Disambiguation source for collisions: several files legitimately share an
+      // identical `info.title` (e.g. four "Marketplace Protocol" documents that only
+      // differ by filename/description), so fall back to the filename when needed.
+      const fileBase = file.replace(/\.json$/, '').replace(/^VTEX\s*-\s*/, '')
 
-    const slug = uniqueName([slugify(title), slugify(fileBase)], usedSlugs)
-    const apiClass = uniqueName([apiClassName(slug)], usedApiClasses)
-    const topNs = uniqueName([tagToNamespace(title), tagToNamespace(fileBase)], usedTopNamespaces)
+      const slug = uniqueName([slugify(title), slugify(fileBase)], usedSlugs)
+      const apiClass = uniqueName([apiClassName(slug)], usedApiClasses)
+      const topNs = uniqueName([tagToNamespace(title), tagToNamespace(fileBase)], usedTopNamespaces)
 
-    const schemas: Record<string, any> = doc.components?.schemas ?? {}
-    const parameters: Record<string, any> = doc.components?.parameters ?? {}
-    const { refName, declared, dangling } = makeRefResolver(schemas)
-    const resolveRef = (ref: string) => {
-      const name = ref.split('/').pop()!
-      return parameters[name]
-    }
-
-    // --- Group operations by namespace (first tag), choosing each operation's server ---
-    const groups = new Map<string, OpEntry[]>()
-    for (const [path, item] of Object.entries<any>(doc.paths ?? {})) {
-      for (const httpMethod of HTTP_METHODS) {
-        const op = item[httpMethod]
-        if (!op) continue
-        const picked = pickServer([op.servers, item.servers, doc.servers])
-        let server: string | undefined
-        if (picked === undefined) {
-          excludedOps.push(`${fileBase}: ${httpMethod.toUpperCase()} ${path}`)
-        } else {
-          server = trimBasePathOverlap(picked, path)
-          if (server !== picked) basePathsTrimmed++
-        }
-        const tag = (op.tags && op.tags[0]) || title
-        const ns = tagToNamespace(tag)
-        if (!groups.has(ns)) groups.set(ns, [])
-        groups.get(ns)!.push({ httpMethod, path, op, server })
+      const schemas: Record<string, any> = doc.components?.schemas ?? {}
+      const parameters: Record<string, any> = doc.components?.parameters ?? {}
+      const { refName, declared, dangling } = makeRefResolver(schemas)
+      const resolveRef = (ref: string) => {
+        const name = ref.split('/').pop()!
+        return parameters[name]
       }
+
+      // --- Group operations by namespace (first tag), choosing each operation's server ---
+      const groups = new Map<string, OpEntry[]>()
+      for (const [path, item] of Object.entries<any>(doc.paths ?? {})) {
+        for (const httpMethod of HTTP_METHODS) {
+          const op = item[httpMethod]
+          if (!op) continue
+          const picked = pickServer([op.servers, item.servers, doc.servers])
+          let server: string | undefined
+          if (picked === undefined) {
+            excludedOps.push(`${fileBase}: ${httpMethod.toUpperCase()} ${path}`)
+          } else {
+            server = trimBasePathOverlap(picked, path)
+            if (server !== picked) basePathsTrimmed++
+          }
+          const tag = (op.tags && op.tags[0]) || title
+          const ns = tagToNamespace(tag)
+          if (!groups.has(ns)) groups.set(ns, [])
+          groups.get(ns)!.push({ httpMethod, path, op, server })
+        }
+      }
+
+      // --- Emit one class per namespace; names are deduped over all operations ---------
+      const nsClasses: string[] = []
+      const nsFieldNames: string[] = []
+      for (const [ns, entries] of groups) {
+        const finalNames = dedupe(entries.map((e) => methodName(e.op, e.httpMethod, e.path)))
+        const included = entries
+          .map((e, i) => ({ ...e, name: finalNames[i] }))
+          .filter((e): e is OpEntry & { name: string; server: string } => e.server !== undefined)
+        if (included.length === 0) continue
+        const methodsCode = included.map((e) =>
+          generateMethod({
+            httpMethod: e.httpMethod,
+            path: e.path,
+            op: e.op,
+            refName,
+            resolveRef,
+            name: e.name,
+            server: e.server,
+          }),
+        )
+        totalMethods += methodsCode.length
+        const className = `${apiClass}_${ns}`
+        nsClasses.push(
+          [
+            `class ${className} {`,
+            `  constructor(private http: VtexHttpClient) {}`,
+            ``,
+            methodsCode.join('\n\n'),
+            `}`,
+          ].join('\n'),
+        )
+        nsFieldNames.push(ns)
+      }
+      totalNamespaces += nsFieldNames.length
+
+      // --- types.ts: declared schemas + fallback `unknown` aliases for dangling refs -
+      const typeLines: string[] = []
+      for (const [raw, schema] of Object.entries(schemas)) {
+        typeLines.push(`export type ${declared.get(raw)} = ${schemaToType(schema, refName)}\n`)
+      }
+      for (const [, finalName] of dangling) {
+        typeLines.push(`export type ${finalName} = unknown\n`)
+      }
+      await mkdir(join('src/generated', slug), { recursive: true })
+      await writeFile(join('src/generated', slug, 'types.ts'), typeLines.join('\n') || 'export {}\n')
+      typeExports.push(`export type * as ${apiClass}Types from './${slug}/types.js'`)
+
+      if (nsClasses.length === 0) {
+        excludedApis.push(fileBase)
+        continue
+      }
+
+      // --- index.ts: namespace classes + aggregating <Api> class ---------------------
+      const allTypeNames = [...new Set([...declared.values(), ...dangling.values()])]
+      const typeImport = allTypeNames.length
+        ? `import type { ${allTypeNames.join(', ')} } from './types.js'\n`
+        : ''
+      const usesPathParams = nsClasses.some((c) => c.includes('encodePathParam('))
+
+      const indexSource = [
+        `import type { VtexHttpClient } from '../../core/http.js'`,
+        `import type { CallOptions } from '../../core/types.js'`,
+        `import { ${usesPathParams ? 'encodePathParam, withCall' : 'withCall'} } from '../../core/call.js'`,
+        typeImport ? typeImport.trimEnd() : undefined,
+        ``,
+        ...nsClasses,
+        ``,
+        `export class ${apiClass} {`,
+        ...nsFieldNames.map((ns) => `  readonly ${ns}: ${apiClass}_${ns}`),
+        `  constructor(http: VtexHttpClient) {`,
+        ...nsFieldNames.map((ns) => `    this.${ns} = new ${apiClass}_${ns}(http)`),
+        `  }`,
+        `}`,
+        ``,
+      ]
+        .filter((line): line is string => line !== undefined)
+        .join('\n')
+
+      await writeFile(join('src/generated', slug, 'index.ts'), indexSource)
+
+      rawImports.push(`import { ${apiClass} } from './${slug}/index.js'`)
+      rawFields.push({ ns: topNs, cls: apiClass })
+    } catch (err) {
+      // Name the schema file, so a failure after a re-pin points at its source.
+      throw new Error(`${file}: ${err instanceof Error ? err.message : String(err)}`, { cause: err })
     }
-
-    // --- Emit one class per namespace; names are deduped over all operations ---------
-    const nsClasses: string[] = []
-    const nsFieldNames: string[] = []
-    for (const [ns, entries] of groups) {
-      const finalNames = dedupe(entries.map((e) => methodName(e.op, e.httpMethod, e.path)))
-      const included = entries
-        .map((e, i) => ({ ...e, name: finalNames[i] }))
-        .filter((e): e is OpEntry & { name: string; server: string } => e.server !== undefined)
-      if (included.length === 0) continue
-      const methodsCode = included.map((e) =>
-        generateMethod({
-          httpMethod: e.httpMethod,
-          path: e.path,
-          op: e.op,
-          refName,
-          resolveRef,
-          name: e.name,
-          server: e.server,
-        }),
-      )
-      totalMethods += methodsCode.length
-      const className = `${apiClass}_${ns}`
-      nsClasses.push(
-        [
-          `class ${className} {`,
-          `  constructor(private http: VtexHttpClient) {}`,
-          ``,
-          methodsCode.join('\n\n'),
-          `}`,
-        ].join('\n'),
-      )
-      nsFieldNames.push(ns)
-    }
-    totalNamespaces += nsFieldNames.length
-
-    // --- types.ts: declared schemas + fallback `unknown` aliases for dangling refs -
-    const typeLines: string[] = []
-    for (const [raw, schema] of Object.entries(schemas)) {
-      typeLines.push(`export type ${declared.get(raw)} = ${schemaToType(schema, refName)}\n`)
-    }
-    for (const [, finalName] of dangling) {
-      typeLines.push(`export type ${finalName} = unknown\n`)
-    }
-    await mkdir(join('src/generated', slug), { recursive: true })
-    await writeFile(join('src/generated', slug, 'types.ts'), typeLines.join('\n') || 'export {}\n')
-    typeExports.push(`export type * as ${apiClass}Types from './${slug}/types.js'`)
-
-    if (nsClasses.length === 0) {
-      excludedApis.push(fileBase)
-      continue
-    }
-
-    // --- index.ts: namespace classes + aggregating <Api> class ---------------------
-    const allTypeNames = [...new Set([...declared.values(), ...dangling.values()])]
-    const typeImport = allTypeNames.length
-      ? `import type { ${allTypeNames.join(', ')} } from './types.js'\n`
-      : ''
-    const usesPathParams = nsClasses.some((c) => c.includes('encodePathParam('))
-
-    const indexSource = [
-      `import type { VtexHttpClient } from '../../core/http.js'`,
-      `import type { CallOptions } from '../../core/types.js'`,
-      `import { ${usesPathParams ? 'encodePathParam, withCall' : 'withCall'} } from '../../core/call.js'`,
-      typeImport ? typeImport.trimEnd() : undefined,
-      ``,
-      ...nsClasses,
-      ``,
-      `export class ${apiClass} {`,
-      ...nsFieldNames.map((ns) => `  readonly ${ns}: ${apiClass}_${ns}`),
-      `  constructor(http: VtexHttpClient) {`,
-      ...nsFieldNames.map((ns) => `    this.${ns} = new ${apiClass}_${ns}(http)`),
-      `  }`,
-      `}`,
-      ``,
-    ]
-      .filter((line): line is string => line !== undefined)
-      .join('\n')
-
-    await writeFile(join('src/generated', slug, 'index.ts'), indexSource)
-
-    rawImports.push(`import { ${apiClass} } from './${slug}/index.js'`)
-    rawFields.push({ ns: topNs, cls: apiClass })
   }
 
   if (overridesApplied !== OVERRIDES.length) {
@@ -8414,7 +8517,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  26 passed (26)` and `Tests  565 passed (565)`;
+- `Test Files  26 passed (26)` and `Tests  569 passed (569)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.
