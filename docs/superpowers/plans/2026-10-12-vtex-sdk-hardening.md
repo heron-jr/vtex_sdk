@@ -7166,7 +7166,7 @@ coverage/
 ```bash
 git rm -r -q --cached schemas
 ls schemas | wc -l
-git status --short | grep -c '^D  schemas/'
+git diff --cached --name-only -- schemas | wc -l
 ```
 
 Expected: `75` files still on disk; `75` staged deletions.
@@ -7209,29 +7209,40 @@ EOF
 import { describe, it, expect, vi } from 'vitest'
 import { VtexHttpClient } from '../../src/core/http.js'
 import { OrdersFacade, ORDERS_MAX_PAGES } from '../../src/facades/orders.js'
-import { VtexPaginationLimitError, VtexUsageError } from '../../src/core/errors.js'
+import { VtexPaginationLimitError, VtexUnexpectedResponseError, VtexUsageError } from '../../src/core/errors.js'
 
-function page(list: unknown[], currentPage: number, pages: number) {
-  return new Response(JSON.stringify({ list, paging: { currentPage, pages, total: 3, perPage: 2 } }), {
-    status: 200, headers: { 'content-type': 'application/json' },
-  })
+const json = (body: unknown) =>
+  new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
+
+function page(list: unknown[], currentPage: number, pages: number, perPage = 100) {
+  return json({ list, paging: { currentPage, pages, total: pages * perPage, perPage } })
+}
+
+const pageOf = (url: string) => Number(new URL(url).searchParams.get('page'))
+
+function facadeWith(fetchMock: ReturnType<typeof vi.fn>) {
+  return new OrdersFacade(
+    new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock as unknown as typeof fetch, maxRetries: 0 }),
+  )
+}
+
+async function collect(iter: AsyncIterable<unknown>): Promise<unknown[]> {
+  const out: unknown[] = []
+  for await (const item of iter) out.push(item)
+  return out
 }
 
 describe('OrdersFacade', () => {
   it('get() fetches a single order by id', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ orderId: '123-01' }), { status: 200, headers: { 'content-type': 'application/json' } }),
-    )
-    const http = new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock })
-    const facade = new OrdersFacade(http)
-    const order = await facade.get('123-01')
+    const fetchMock = vi.fn().mockResolvedValue(json({ orderId: '123-01' }))
+    const order = await facadeWith(fetchMock).get('123-01')
     expect((order as any).orderId).toBe('123-01')
     expect(fetchMock.mock.calls[0][0]).toBe('https://x.vtexcommercestable.com.br/api/oms/pvt/orders/123-01')
   })
 
   it('get() encodes the id and rejects dot segments', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { headers: { 'content-type': 'application/json' } }))
-    const facade = new OrdersFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const fetchMock = vi.fn().mockResolvedValue(json({}))
+    const facade = facadeWith(fetchMock)
     await facade.get('../../dataentities/CL/search')
     expect(fetchMock.mock.calls[0][0]).toBe(
       'https://x.vtexcommercestable.com.br/api/oms/pvt/orders/..%2F..%2Fdataentities%2FCL%2Fsearch',
@@ -7241,47 +7252,100 @@ describe('OrdersFacade', () => {
 
   it('list() auto-paginates across pages', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(page([{ orderId: 'a' }, { orderId: 'b' }], 1, 2))
-      .mockResolvedValueOnce(page([{ orderId: 'c' }], 2, 2))
-    const http = new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock })
-    const facade = new OrdersFacade(http)
-    const ids: string[] = []
-    for await (const o of facade.list({ status: 'ready-for-handling' })) ids.push((o as any).orderId)
-    expect(ids).toEqual(['a', 'b', 'c'])
-    expect(fetchMock.mock.calls[0][0]).toContain('f_status=ready-for-handling')
-    expect(fetchMock.mock.calls[0][0]).toContain('page=1')
-    expect(fetchMock.mock.calls[1][0]).toContain('page=2')
+      .mockResolvedValueOnce(page([{ orderId: 'a' }, { orderId: 'b' }], 1, 2, 2))
+      .mockResolvedValueOnce(page([{ orderId: 'c' }], 2, 2, 2))
+    const items = await collect(facadeWith(fetchMock).list({ status: 'ready-for-handling', perPage: 2 }))
+    expect(items.map((o: any) => o.orderId)).toEqual(['a', 'b', 'c'])
+    const first = new URL(fetchMock.mock.calls[0][0]).searchParams
+    expect(first.get('f_status')).toBe('ready-for-handling')
+    expect(first.get('page')).toBe('1')
+    expect(first.get('per_page')).toBe('2')
+    expect(pageOf(fetchMock.mock.calls[1][0])).toBe(2)
   })
 
-  it('list() pagination controls override passthrough filters', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(page([{ orderId: 'a' }], 1, 1))
-    const http = new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock })
-    const facade = new OrdersFacade(http)
-    const ids: string[] = []
-    for await (const o of facade.list({ page: 5 })) ids.push((o as any).orderId)
-    expect(ids).toEqual(['a'])
-    expect(fetchMock.mock.calls[0][0]).toContain('page=1')
+  it('list() refuses page/per_page passthrough filters', () => {
+    const facade = facadeWith(vi.fn())
+    expect(() => facade.list({ page: 5 })).toThrow(VtexUsageError)
+    expect(() => facade.list({ per_page: 500 })).toThrow(/perPage/)
   })
 
   it('list() validates perPage up front', () => {
-    const facade = new OrdersFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: vi.fn() }))
-    expect(() => facade.list({ perPage: 500 })).toThrow(VtexUsageError)
-    expect(() => facade.list({ perPage: 0 })).toThrow(VtexUsageError)
+    const facade = facadeWith(vi.fn())
+    for (const perPage of [0, 101, 500, 1.5, Number.NaN, '50' as never]) {
+      expect(() => facade.list({ perPage })).toThrow(VtexUsageError)
+    }
+    for (const perPage of [1, 100]) expect(() => facade.list({ perPage })).not.toThrow()
+  })
+
+  it('list() reads exactly 30 pages without an error', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(page([{ orderId: `o${pageOf(url)}` }], pageOf(url), ORDERS_MAX_PAGES, 1)),
+    )
+    const items = await collect(facadeWith(fetchMock).list({ perPage: 1 }))
+    expect(items).toHaveLength(ORDERS_MAX_PAGES)
+    expect(fetchMock).toHaveBeenCalledTimes(ORDERS_MAX_PAGES)
   })
 
   it('list() throws after page 30 instead of requesting page 31', async () => {
-    const fetchMock = vi.fn().mockImplementation((url: string) => {
-      const current = Number(new URL(url).searchParams.get('page'))
-      return Promise.resolve(page([{ orderId: `o${current}` }], current, 40))
-    })
-    const facade = new OrdersFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
-    const ids: string[] = []
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(page([{ orderId: `o${pageOf(url)}` }], pageOf(url), 40, 1)),
+    )
+    const ids: unknown[] = []
     const consume = async () => {
-      for await (const o of facade.list()) ids.push((o as any).orderId)
+      for await (const o of facadeWith(fetchMock).list({ perPage: 1 })) ids.push(o)
     }
     await expect(consume()).rejects.toBeInstanceOf(VtexPaginationLimitError)
     expect(ids).toHaveLength(ORDERS_MAX_PAGES)
     expect(fetchMock).toHaveBeenCalledTimes(ORDERS_MAX_PAGES)
+  })
+
+  it('list() detects more results even when VTEX caps pages at 30', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(json({ list: [{ id: pageOf(url) }], paging: { currentPage: pageOf(url), pages: 30, total: 45, perPage: 1 } })),
+    )
+    await expect(collect(facadeWith(fetchMock).list({ perPage: 1 }))).rejects.toBeInstanceOf(VtexPaginationLimitError)
+    expect(fetchMock).toHaveBeenCalledTimes(ORDERS_MAX_PAGES)
+  })
+
+  it('list() never ends silently on a malformed page', async () => {
+    const html = vi.fn().mockResolvedValue(new Response('<html>maintenance</html>', { headers: { 'content-type': 'text/html' } }))
+    await expect(collect(facadeWith(html).list())).rejects.toBeInstanceOf(VtexUnexpectedResponseError)
+
+    const listNotArray = vi.fn().mockResolvedValue(json({ list: {}, paging: { currentPage: 1, pages: 1 } }))
+    await expect(collect(facadeWith(listNotArray).list())).rejects.toBeInstanceOf(VtexUnexpectedResponseError)
+
+    const fullPageNoPaging = vi.fn().mockResolvedValue(json({ list: [1, 2] }))
+    await expect(collect(facadeWith(fullPageNoPaging).list({ perPage: 2 }))).rejects.toBeInstanceOf(
+      VtexUnexpectedResponseError,
+    )
+
+    const emptyMidRun = vi.fn()
+      .mockResolvedValueOnce(page([1], 1, 3, 1))
+      .mockResolvedValueOnce(page([], 2, 3, 1))
+    await expect(collect(facadeWith(emptyMidRun).list({ perPage: 1 }))).rejects.toBeInstanceOf(VtexUnexpectedResponseError)
+  })
+
+  it('list() ends normally on a short page without paging information', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(json({ list: [1] }))
+    expect(await collect(facadeWith(fetchMock).list({ perPage: 2 }))).toEqual([1])
+  })
+
+  it('list() forwards per-call options and stops on abort', async () => {
+    const controller = new AbortController()
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(page([{ id: pageOf(url) }], pageOf(url), 5, 1)),
+    )
+    const seen: unknown[] = []
+    const consume = async () => {
+      for await (const o of facadeWith(fetchMock).list({ perPage: 1 }, { headers: { 'X-Trace': 't1' }, signal: controller.signal })) {
+        seen.push(o)
+        controller.abort()
+      }
+    }
+    await expect(consume()).rejects.toMatchObject({ name: 'AbortError' })
+    expect(seen).toHaveLength(1)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0][1].headers['X-Trace']).toBe('t1')
   })
 })
 ```
@@ -7355,7 +7419,77 @@ describe('MasterDataFacade', () => {
 
   it('scroll() validates the page size', () => {
     const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: vi.fn() }))
-    expect(() => md.scroll('CL', { size: 1001 })).toThrow(VtexUsageError)
+    for (const size of [0, 1001, 1.5, Number.NaN]) expect(() => md.scroll('CL', { size })).toThrow(VtexUsageError)
+    for (const size of [1, 1000]) expect(() => md.scroll('CL', { size })).not.toThrow()
+  })
+
+  it('scroll() snapshots its options at call time', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(json([]))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const opts = { size: 10, fields: [] as string[] }
+    const iter = md.scroll('CL', opts)
+    opts.size = 50_000
+    for await (const _ of iter) void _
+    const url = new URL(fetchMock.mock.calls[0][0])
+    expect(url.searchParams.get('_size')).toBe('10')
+    expect(url.searchParams.has('_fields')).toBe(false)
+  })
+
+  it.each([
+    ['a missing', {}],
+    ['an empty', { 'X-VTEX-MD-TOKEN': '' }],
+  ])('scroll() refuses to restart when rows come with %s token header', async (_label, headers) => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json([{ id: 1 }], headers)))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const consume = async () => {
+      for await (const _ of md.scroll('CL')) void _
+    }
+    await expect(consume()).rejects.toBeInstanceOf(VtexUnexpectedResponseError)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('scroll() keeps the previous token when a later page omits it', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(json([{ id: 1 }], { 'X-VTEX-MD-TOKEN': 'tok1' }))
+      .mockResolvedValueOnce(json([{ id: 2 }]))
+      .mockResolvedValueOnce(json([]))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const ids: number[] = []
+    for await (const d of md.scroll('CL')) ids.push((d as any).id)
+    expect(ids).toEqual([1, 2])
+    expect(new URL(fetchMock.mock.calls[2][0]).searchParams.get('_token')).toBe('tok1')
+  })
+
+  it('scroll() treats an empty body mid-scroll as an error', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(json([{ id: 1 }], { 'X-VTEX-MD-TOKEN': 'tok1' }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    const consume = async () => {
+      for await (const _ of md.scroll('CL')) void _
+    }
+    await expect(consume()).rejects.toBeInstanceOf(VtexUnexpectedResponseError)
+  })
+
+  it('scroll() forwards per-call options', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(json([]))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    for await (const _ of md.scroll('CL', {}, { headers: { 'X-Trace': 't1' } })) void _
+    expect(fetchMock.mock.calls[0][1].headers['X-Trace']).toBe('t1')
+  })
+
+  it('get() encodes or rejects traversal ids', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(json({})))
+    const md = new MasterDataFacade(new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock }))
+    for (const id of ['../../x', 'a/b', 'x#', 'x?y']) await md.get('CL', id)
+    expect(fetchMock.mock.calls.map((c) => new URL(c[0]).pathname)).toEqual([
+      '/api/dataentities/CL/documents/..%2F..%2Fx',
+      '/api/dataentities/CL/documents/a%2Fb',
+      '/api/dataentities/CL/documents/x%23',
+      '/api/dataentities/CL/documents/x%3Fy',
+    ])
+    for (const id of ['..', '.', '']) expect(() => md.get('CL', id)).toThrow(VtexUsageError)
+    await md.get('CL', 'doc1', null as never)
   })
 
   it('scroll() raises a typed error on a non-array body', async () => {
@@ -7410,6 +7544,15 @@ describe('CheckoutFacade', () => {
     await expect(new CheckoutFacade(http).simulate({ items: [] })).resolves.toEqual({ ok: true })
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
+
+  it('simulate() lets the caller turn retries off with idempotent: false', async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response('{}', { status: 503, headers: { 'content-type': 'application/json' } })),
+    )
+    const http = new VtexHttpClient({ account: 'x', appKey: 'K', appToken: 'T', fetch: fetchMock })
+    await expect(new CheckoutFacade(http).simulate({ items: [] }, { idempotent: false })).rejects.toThrow()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
 })
 ```
 
@@ -7422,7 +7565,9 @@ Expected: FAIL:
 - there is no 30-page limit;
 - the entity path can be changed;
 - `fields` is ignored;
-- scroll has no size validation;
+- scroll has no size validation and restarts forever without a token;
+- malformed or truncated List Orders pages end the iteration silently;
+- `page`/`per_page` passthrough filters are silently overridden;
 - `simulate` is not retried.
 
 - [ ] **Step 3: Replace the facades**
@@ -7433,7 +7578,7 @@ Replace `src/facades/orders.ts` with
 import type { VtexHttpClient } from '../core/http.js'
 import type { CallOptions } from '../core/types.js'
 import { encodePathParam, withCall } from '../core/call.js'
-import { VtexPaginationLimitError, VtexUsageError } from '../core/errors.js'
+import { VtexPaginationLimitError, VtexUnexpectedResponseError, VtexUsageError } from '../core/errors.js'
 
 /** VTEX's List Orders endpoint serves at most 30 pages per query. */
 export const ORDERS_MAX_PAGES = 30
@@ -7447,8 +7592,8 @@ export interface OrderListFilters {
 }
 
 interface OrdersPage {
-  list?: unknown[]
-  paging?: { currentPage: number; pages: number; total: number; perPage: number }
+  list?: unknown
+  paging?: { currentPage?: unknown; pages?: unknown; total?: unknown; perPage?: unknown }
 }
 
 export class OrdersFacade {
@@ -7462,14 +7607,19 @@ export class OrdersFacade {
    * Auto-paginated List Orders. VTEX serves at most 30 pages per query: when more
    * results match, this throws VtexPaginationLimitError after yielding page 30, so
    * callers narrow the filters (e.g. f_creationDate) instead of silently losing orders.
+   * A response that doesn't look like a List Orders page throws VtexUnexpectedResponseError
+   * rather than ending the iteration early.
    */
   list(filters: OrderListFilters = {}, opts?: CallOptions): AsyncGenerator<unknown> {
-    const { status, perPage, ...rest } = filters
+    const { status, perPage, page, per_page: perPageRaw, ...rest } = filters
+    if (page !== undefined || perPageRaw !== undefined) {
+      throw new VtexUsageError('list() pages by itself: use perPage instead of page/per_page')
+    }
     const size = perPage ?? 100
     if (!Number.isInteger(size) || size < 1 || size > 100) {
       throw new VtexUsageError(`perPage must be an integer between 1 and 100 (got ${String(perPage)})`)
     }
-    return this.#pages(rest, status, size, opts)
+    return this.#pages({ ...rest }, status, size, opts)
   }
 
   async *#pages(
@@ -7479,17 +7629,40 @@ export class OrdersFacade {
       const query: Record<string, unknown> = { ...rest, page, per_page: size }
       if (status !== undefined) query['f_status'] = status
       const res = await this.http.request<OrdersPage>(withCall({ method: 'GET', path: '/api/oms/pvt/orders', query }, opts))
-      const items = res.list ?? []
-      for (const item of items) yield item
-      const paging = res.paging ?? { currentPage: page, pages: page }
-      if (items.length === 0 || paging.currentPage >= paging.pages) return
-      if (page >= ORDERS_MAX_PAGES) {
-        throw new VtexPaginationLimitError(
-          `VTEX List Orders serves at most ${ORDERS_MAX_PAGES} pages, but ${paging.pages} match these filters; ` +
-            'narrow the query (e.g. f_creationDate) and iterate per window',
-        )
+      if (typeof res !== 'object' || res === null || !Array.isArray(res.list)) {
+        throw new VtexUnexpectedResponseError('List Orders returned a body without a list array', res)
       }
+      const items = res.list
+      for (const item of items) yield item
+      const paging = res.paging
+      const pages = typeof paging?.pages === 'number' ? paging.pages : undefined
+      const total = typeof paging?.total === 'number' ? paging.total : undefined
+      if (pages === undefined) {
+        // Without paging info a full page may hide more results: refuse to guess.
+        if (items.length === size) {
+          throw new VtexUnexpectedResponseError('List Orders returned a full page without paging information', res)
+        }
+        return
+      }
+      if (page >= pages) {
+        // Also catch a `pages` value that VTEX itself capped at the limit.
+        if (page >= ORDERS_MAX_PAGES && total !== undefined && total > page * size) {
+          throw this.#limitError(Math.ceil(total / size))
+        }
+        return
+      }
+      if (items.length === 0) {
+        throw new VtexUnexpectedResponseError(`List Orders returned an empty page ${page} of ${pages}`, res)
+      }
+      if (page >= ORDERS_MAX_PAGES) throw this.#limitError(pages)
     }
+  }
+
+  #limitError(pages: number): VtexPaginationLimitError {
+    return new VtexPaginationLimitError(
+      `VTEX List Orders serves at most ${ORDERS_MAX_PAGES} pages, but ${pages} pages match these filters; ` +
+        'narrow the query (e.g. f_creationDate) and iterate per window',
+    )
   }
 }
 ```
@@ -7526,30 +7699,36 @@ function entitySegment(dataEntity: string): string {
 export class MasterDataFacade {
   constructor(private readonly http: VtexHttpClient) {}
 
-  get(dataEntity: string, id: string, opts: MasterDataGetOptions = {}): Promise<unknown> {
-    const { fields, ...call } = opts
+  get(dataEntity: string, id: string, opts?: MasterDataGetOptions): Promise<unknown> {
+    const { fields, ...call } = opts ?? {}
     const query = fields?.length ? { _fields: fields.join(',') } : undefined
     const path = `/api/dataentities/${entitySegment(dataEntity)}/documents/${encodePathParam(id)}`
     return this.http.request(withCall({ method: 'GET', path, query }, call))
   }
 
   /**
-   * Iterates a whole data entity with the scroll API. VTEX expires the scroll token
-   * after 20 minutes without a request, so consume pages promptly.
+   * Iterates a whole data entity with the scroll API.
+   *
+   * VTEX expires the scroll token after 20 minutes without a request, and that idle time
+   * includes your processing between rows. An expired token surfaces as VTEX's error after
+   * earlier rows were already yielded. The scroll is never restarted automatically, because
+   * restarting would yield duplicate rows; start a new scroll instead.
    */
   scroll(dataEntity: string, opts: ScrollOptions = {}, call?: CallOptions): AsyncGenerator<unknown> {
     const entity = entitySegment(dataEntity)
-    if (opts.size !== undefined && (!Number.isInteger(opts.size) || opts.size < 1 || opts.size > MAX_SCROLL_SIZE)) {
-      throw new VtexUsageError(`size must be an integer between 1 and ${MAX_SCROLL_SIZE} (got ${String(opts.size)})`)
+    // Copy the options so later mutation can't bypass validation.
+    const { fields, size, query, sort } = opts
+    if (size !== undefined && (!Number.isInteger(size) || size < 1 || size > MAX_SCROLL_SIZE)) {
+      throw new VtexUsageError(`size must be an integer between 1 and ${MAX_SCROLL_SIZE} (got ${String(size)})`)
     }
-    return this.#scroll(entity, opts, call)
+    return this.#scroll(entity, { fields: fields ? [...fields] : undefined, size, query, sort }, call)
   }
 
   async *#scroll(entity: string, opts: ScrollOptions, call: CallOptions | undefined): AsyncGenerator<unknown> {
     let token: string | undefined
     for (;;) {
       const query: Record<string, unknown> = {}
-      if (opts.fields) query['_fields'] = opts.fields.join(',')
+      if (opts.fields?.length) query['_fields'] = opts.fields.join(',')
       if (opts.size) query['_size'] = opts.size
       if (opts.query) query['_where'] = opts.query
       if (opts.sort) query['_sort'] = opts.sort
@@ -7557,11 +7736,22 @@ export class MasterDataFacade {
       const { data, headers } = await this.http.requestRaw<unknown>(
         withCall({ method: 'GET', path: `/api/dataentities/${entity}/scroll`, query }, call),
       )
+      if (data === undefined && token) {
+        throw new VtexUnexpectedResponseError('Master Data scroll returned an empty body in the middle of a scroll', data)
+      }
       const rows = data ?? []
       if (!Array.isArray(rows)) throw new VtexUnexpectedResponseError('Master Data scroll returned a non-array body', data)
       for (const row of rows) yield row
       if (rows.length === 0) return
-      token = headers.get('X-VTEX-MD-TOKEN') ?? token
+      const next = headers.get('X-VTEX-MD-TOKEN')
+      if (next) token = next
+      // Without a token the next request would restart the scroll and yield the same rows forever.
+      if (!token) {
+        throw new VtexUnexpectedResponseError(
+          'Master Data scroll returned rows without an X-VTEX-MD-TOKEN header; refusing to restart the scroll',
+          undefined,
+        )
+      }
     }
   }
 }
@@ -7928,7 +8118,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - Network failures throw `VtexNetworkError`, and timeouts throw `VtexTimeoutError`, instead of a raw `TypeError` / `AbortError`. A caller abort still rejects with the signal's reason.
 - `VtexRequestError.body` is non-enumerable: still readable and writable, but left out of `JSON.stringify(err)` and default logging.
 - `retryAfter` on errors is now whole seconds, rounded up (`'1.5'` gives `2`). It is also derived from HTTP-dates. Values that are neither delta-seconds nor an HTTP-date are ignored.
-- `orders.list()` throws `VtexPaginationLimitError` instead of requesting page 31 and beyond.
+- `orders.list()` throws `VtexPaginationLimitError` instead of requesting page 31 and beyond, and `VtexUnexpectedResponseError` instead of ending early on a malformed, empty or unpaged full page. It rejects `page`/`per_page` filters (use `perPage`).
 - A `Retry-After` longer than `maxRetryAfterMs` (default 30 s) throws immediately instead of sleeping.
 - Node.js 20 or newer is required.
 
@@ -7953,7 +8143,7 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 ### Fixed
 - Generated types: `nullable`, OpenAPI 3.1 type arrays, arrays of unions, `additionalProperties`, placeholder keys, and targeted overrides for order-hook headers, the hook-config response, coupon usage and two operations with a foreign host.
 - CommonJS consumers resolve `index.d.cts` under `node16`/`nodenext`.
-- `masterData.scroll()` raises a typed error on an unexpected body and validates `size`. `masterData.get()` accepts `fields`.
+- `masterData.scroll()` raises a typed error on an unexpected body, validates `size`, and refuses to restart the scroll when VTEX returns rows without a token (it used to loop over the first page forever). `masterData.get()` accepts `fields`.
 
 ### Removed
 - `schemas/` is no longer committed; `npm run fetch-schemas` downloads it on demand.
@@ -8153,7 +8343,7 @@ Behavior:
 | `vtex.logistics` | `listWarehouses()`, `getInventoryBySku(skuId)` |
 | `vtex.checkout` | `getCart(orderFormId)`, `simulate(body)` (retried like a GET) |
 
-The Master Data scroll token expires after 20 minutes without a request, so consume pages promptly.
+The Master Data scroll token expires after 20 minutes without a request, and that includes your processing time between rows; an expired token surfaces as an error after earlier rows were yielded. The scroll is never restarted automatically (that would duplicate rows), so start a new one. `orders.list()` throws `VtexPaginationLimitError` only after yielding page 30, so write orders idempotently (upserts) when backfilling.
 
 ## Low-level requests
 
@@ -8517,7 +8707,7 @@ npm pack --dry-run
 
 Expected:
 - typecheck clean;
-- `Test Files  26 passed (26)` and `Tests  569 passed (569)`;
+- `Test Files  26 passed (26)` and `Tests  582 passed (582)`;
 - three `Build success` lines;
 - `found 0 vulnerabilities`;
 - the `npm pack` file list includes `LICENSE`, `NOTICE`, `README.md`, `package.json` and the `dist/index.*` files, but no `schemas/`, `src/`, `scripts/`, `test/` or `docs/`.

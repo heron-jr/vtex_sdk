@@ -276,12 +276,16 @@ Nothing is removed.
 - **`orders.list`**
   - Validates `perPage` (1–100).
   - Stops after page 30.
-  - If VTEX reports more pages, it throws `VtexPaginationLimitError` after yielding page 30, with a message to narrow `f_creationDate`. It never silently truncates.
+  - If VTEX reports more pages, it throws `VtexPaginationLimitError` after yielding page 30, with a message to narrow `f_creationDate`. It also throws when `pages` itself looks capped (page 30 reached while `total` says more).
+  - It never silently truncates. A body without a `list` array, a full page without `paging`, or an empty page before the last one throws `VtexUnexpectedResponseError`.
+  - `page`/`per_page` filters are rejected with `VtexUsageError`; `perPage` is the only page-size control.
 - **`masterData`**
   - Validates `dataEntity` (`^[A-Za-z0-9_-]{1,64}$`) and encodes it.
   - `get(entity, id, opts?)` accepts `fields`.
   - `scroll` validates `_size` (1–1000) and throws `VtexUnexpectedResponseError` on a non-array body.
   - The 20-minute scroll-token inactivity expiry is documented. It is not auto-restarted, because restarting would duplicate rows.
+  - Rows without an `X-VTEX-MD-TOKEN` header, when no earlier token exists, and an empty body mid-scroll both throw `VtexUnexpectedResponseError`. Otherwise the next request would restart the scroll and loop.
+  - Scroll options are copied and validated when `scroll()` is called.
 - **All facades**
   - Every facade method accepts a trailing `opts?: CallOptions`.
   - `checkout.simulate` defaults to `idempotent: true`, since it is a read-like POST.
