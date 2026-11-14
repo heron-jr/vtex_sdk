@@ -451,10 +451,12 @@ Nothing is removed.
 - The hook payloads.
 
 ## 10. Accepted risks and open items
-- **History stays as is (owner decision).** If the repo is made public, old commits still show:
-  - author emails;
-  - the earlier scoped package name;
-  - the formerly committed VTEX OpenAPI files. These include VTEX's own example credentials, which will raise GitHub secret-scanning alerts. They are false positives and can be dismissed.
+- **History rewritten before publication (owner decision).** The public repository was created from a filtered copy of the private one:
+  - the formerly committed VTEX OpenAPI files (`schemas/`) are removed from every commit, together with the VTEX example credentials they contained;
+  - every commit uses the owner's public git identity;
+  - the earlier scoped package name and local paths are replaced in old documents and commit messages.
+  
+  Commit hashes therefore differ from the private repository; short hashes quoted in these documents (e.g. the audit baseline above) refer to the private history.
 - **Upstream licensing.** `vtex/openapi-schemas` declares no license. Mitigations:
   - the schemas are no longer redistributed;
   - NOTICE and the disclaimer cover the derived code;
