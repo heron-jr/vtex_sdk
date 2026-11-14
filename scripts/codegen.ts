@@ -31,7 +31,9 @@ import { readdir, readFile, mkdir, writeFile, rename, rm } from 'node:fs/promise
 import { dirname, join } from 'node:path'
 import { methodName, dedupe, tagToNamespace } from './codegen/naming.js'
 import { schemaToType } from './codegen/types.js'
-import { generateMethod } from './codegen/operation.js'
+import { generateMethod, type GeneratedParam } from './codegen/operation.js'
+import { renderApiDoc, renderIndex, type DocApi, type DocOperation } from './codegen/docs.js'
+import { DEFAULT_SERVER } from '../src/core/url.js'
 import { applyOverrides, OVERRIDES } from './codegen/overrides.js'
 import { pickServer, trimBasePathOverlap } from './codegen/servers.js'
 import { gitBlobSha, parseSchemaLock } from './codegen/integrity.js'
@@ -201,6 +203,7 @@ async function main() {
   const typeExports: string[] = []
   const excludedOps: string[] = []
   const excludedApis: string[] = []
+  const docApis: DocApi[] = []
 
   let totalMethods = 0
   let totalNamespaces = 0
@@ -259,14 +262,18 @@ async function main() {
       // --- Emit one class per namespace; names are deduped over all operations ---------
       const nsClasses: string[] = []
       const nsFieldNames: string[] = []
+      const docOps: DocOperation[] = []
+      let docExcluded = 0
+      for (const entries of groups.values()) docExcluded += entries.filter((e) => e.server === undefined).length
       for (const [ns, entries] of groups) {
         const finalNames = dedupe(entries.map((e) => methodName(e.op, e.httpMethod, e.path)))
         const included = entries
           .map((e, i) => ({ ...e, name: finalNames[i] }))
           .filter((e): e is OpEntry & { name: string; server: string } => e.server !== undefined)
         if (included.length === 0) continue
-        const methodsCode = included.map((e) =>
-          generateMethod({
+        const methodsCode = included.map((e) => {
+          const params: GeneratedParam[] = []
+          const source = generateMethod({
             httpMethod: e.httpMethod,
             path: e.path,
             op: e.op,
@@ -274,8 +281,20 @@ async function main() {
             resolveRef,
             name: e.name,
             server: e.server,
-          }),
-        )
+            params,
+          })
+          docOps.push({
+            ns,
+            name: e.name,
+            httpMethod: e.httpMethod,
+            path: e.path,
+            server: e.server ?? DEFAULT_SERVER,
+            summary: typeof e.op.summary === 'string' ? e.op.summary : '',
+            deprecated: e.op.deprecated === true,
+            params,
+          })
+          return source
+        })
         totalMethods += methodsCode.length
         const className = `${apiClass}_${ns}`
         nsClasses.push(
@@ -301,6 +320,15 @@ async function main() {
       }
       outputs.set(`${slug}/types.ts`, typeLines.join('\n') || 'export {}\n')
       typeExports.push(`export type * as ${apiClass}Types from './${slug}/types.js'`)
+      docApis.push({
+        title,
+        file,
+        slug,
+        rawNs: nsClasses.length > 0 ? topNs : undefined,
+        typesNs: `${apiClass}Types`,
+        operations: docOps,
+        excludedCount: docExcluded,
+      })
 
       if (nsClasses.length === 0) {
         excludedApis.push(fileBase)
@@ -363,16 +391,15 @@ async function main() {
   outputs.set('index.ts', aggregator)
   outputs.set('types-index.ts', `${typeExports.join('\n')}\n`)
 
-  // Write a sibling directory first and swap it in, so a write error can't leave a partial tree.
-  const staging = 'src/generated.tmp'
-  await rm(staging, { recursive: true, force: true })
-  for (const [path, content] of outputs) {
-    const target = join(staging, path)
-    await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, content)
-  }
-  await rm('src/generated', { recursive: true, force: true })
-  await rename(staging, 'src/generated')
+  // --- API reference docs, from the same model -----------------------------------
+  const docSource = { repo: lock.repo, ref: lock.ref }
+  const docOutputs = new Map<string, string>()
+  for (const api of docApis) docOutputs.set(`${api.slug}.md`, renderApiDoc(api, docSource))
+  docOutputs.set('README.md', renderIndex(docApis, docSource))
+
+  // Write sibling directories first and swap them in, so a write error can't leave a partial tree.
+  await swapInTree('src/generated', outputs)
+  await swapInTree('docs/api-reference', docOutputs)
 
   // Operations dropped from APIs that are otherwise generated; a re-pin that changes this shows up here.
   const partial = excludedOps.filter((op) => !excludedApis.some((api) => op.startsWith(`${api}: `)))
@@ -385,6 +412,18 @@ async function main() {
       `Applied ${overridesApplied} schema overrides; trimmed ${basePathsTrimmed} overlapping base paths.\n` +
       `Excluded from included APIs: ${partial.join('; ') || 'none'}.`,
   )
+}
+
+async function swapInTree(dest: string, files: Map<string, string>): Promise<void> {
+  const staging = `${dest}.tmp`
+  await rm(staging, { recursive: true, force: true })
+  for (const [path, content] of files) {
+    const target = join(staging, path)
+    await mkdir(dirname(target), { recursive: true })
+    await writeFile(target, content)
+  }
+  await rm(dest, { recursive: true, force: true })
+  await rename(staging, dest)
 }
 
 main().catch((err) => {

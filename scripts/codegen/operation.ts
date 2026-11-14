@@ -19,6 +19,15 @@ interface Ctx {
   name?: string
   /** Normalized server template from `pickServer()`; omit (or pass DEFAULT_SERVER) for the account host. */
   server?: string
+  /** When given, receives the method's option keys in emitted order (used for the API reference docs). */
+  params?: GeneratedParam[]
+}
+
+/** One key of a generated method's `params` object. */
+export interface GeneratedParam {
+  name: string
+  in: 'path' | 'query' | 'header' | 'body'
+  required: boolean
 }
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/
@@ -254,6 +263,17 @@ export function generateMethod(ctx: Ctx): string {
     // Always required: VTEX schemas often omit requestBody.required even when the API needs a body.
     hasRequired = true
     optionFields.push(`  body: ${body.type}`)
+  }
+
+  if (ctx.params) {
+    ctx.params.push(
+      ...placeholders.map((n): GeneratedParam => ({ name: n, in: 'path', required: true })),
+      ...queryParams
+        .filter((p) => !placeholders.includes(p.name))
+        .map((p): GeneratedParam => ({ name: p.name, in: 'query', required: Boolean(p.required) })),
+      ...emittedHeaders.map((p): GeneratedParam => ({ name: p.name, in: 'header', required: Boolean(p.required) })),
+      ...(body ? [{ name: 'body', in: 'body', required: true } as GeneratedParam] : []),
+    )
   }
 
   const optionsType = optionFields.length ? `{\n${optionFields.join('\n')}\n}` : 'Record<string, never>'

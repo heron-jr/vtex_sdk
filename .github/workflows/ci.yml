@@ -48,7 +48,7 @@ jobs:
       - run: npm ci
       - run: npm run fetch-schemas
       - run: npm run codegen
-      - name: Generated code matches the committed tree
+      - name: Generated code and API reference match the committed tree
         run: |
-          git diff --exit-code -- src/generated
-          test -z "$(git status --porcelain -- src/generated)"
+          git diff --exit-code -- src/generated docs/api-reference
+          test -z "$(git status --porcelain -- src/generated docs/api-reference)"
