@@ -39,6 +39,8 @@ Security hardening and correctness release. Design: `docs/superpowers/specs/2026
 - `maxRetryAfterMs` client option and `maxCachedClients` factory option.
 - `scripts/live-check.ts` (`npm run live-check`, or `npx tsx --env-file=.env scripts/live-check.ts`): an optional, GET-only check against a real account.
 - CI: typecheck, tests and build on Node 20/22/24, plus a codegen reproducibility check.
+- Documentation: `docs/guides/` (a systems map and worked examples per VTEX system, type-checked by `npm run check-doc-examples`), a generated API reference in `docs/api-reference/` (written by `npm run codegen`, links checked by `npm run check-doc-links`) and `CLAUDE.md` for coding agents.
+- Public-repository hygiene: `SECURITY.md`, `CODEOWNERS`, Dependabot for dev tooling and actions, actions pinned by commit SHA, and an `npm audit signatures` step in CI. No runtime code changed.
 
 ### Fixed
 - Generated types: `nullable`, OpenAPI 3.1 type arrays, arrays of unions, `additionalProperties`, placeholder keys, and targeted overrides for order-hook headers, the hook-config response, coupon usage and two operations with a foreign host.

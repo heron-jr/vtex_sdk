@@ -30,6 +30,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Doc examples type-check
+        if: matrix.node == 22
+        run: npm run check-doc-examples
       - name: Package types resolve for ESM and CJS consumers
         if: matrix.node == 22
         run: npx --yes @arethetypeswrong/cli@0.18.5 --pack .

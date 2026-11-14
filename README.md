@@ -50,10 +50,18 @@ for await (const summary of vtex.orders.list({ status: 'invoiced' })) {
 const feedConfig = await vtex.raw.ordersAPI.feedV3.getFeedConfiguration()
 ```
 
+## Documentation
+
+- [Guides](./docs/guides/README.md): a map of the VTEX systems (orders, catalog, Master Data, pricing, logistics, checkout, promotions, gift cards) with worked examples. Every example is type-checked in CI.
+- [API reference](./docs/api-reference/README.md): every callable operation, generated with the code: the SDK call, HTTP method and path, host, required and optional keys, and links to VTEX's official reference.
+- [CLAUDE.md](./CLAUDE.md): how coding agents should find operations, use the SDK safely and change this repository.
+- [SECURITY.md](./SECURITY.md): how to report a vulnerability.
+
 ## Per-call options
 
 Every generated and facade method takes optional per-call options as its last argument:
 
+<!-- ts-prelude: declare const body: Parameters<typeof vtex.raw.giftcardAPI.giftCard.searchGiftCardsfromcartdata>[0]['body'] -->
 ```ts
 const controller = new AbortController()
 await vtex.orders.get('1234567890123-01', { signal: controller.signal, timeoutMs: 5_000 })
@@ -83,6 +91,7 @@ Some operations declare a non-JSON `Accept` (for example Master Data v10.2 `appl
 
 You can override the default per call:
 
+<!-- ts-prelude: declare const coupon: Parameters<typeof vtex.raw.promotionsTaxesAPI.coupons.createOrUpdateCoupon>[0]['body']; declare const order: unknown; declare const id: string -->
 ```ts
 // Upsert keyed by couponCode: safe to repeat
 await vtex.raw.promotionsTaxesAPI.coupons.createOrUpdateCoupon({ body: coupon }, { idempotent: true })
@@ -146,6 +155,7 @@ Every method that returns a promise reports argument errors (for example an empt
 
 ## Auth and environments
 
+<!-- ts-prelude: import { VtexClient } from 'vtex-sdk'; declare const appKey: string; declare const appToken: string; declare const authCookie: string -->
 ```ts
 // App-key auth (server to server)
 new VtexClient({ account: 'myaccount', appKey, appToken })
@@ -163,6 +173,7 @@ App keys and tokens are server-side secrets. The SDK is Node-only.
 
 ## Multiple accounts
 
+<!-- ts-prelude: declare function loadCredentialsFor(account: string): Promise<{ appKey: string; appToken: string }> -->
 ```ts
 import { createVtexFactory } from 'vtex-sdk'
 
@@ -214,6 +225,7 @@ const { data, headers, status } = await vtex.requestRaw({
 
 `path` is validated but not encoded: wrap every interpolated value, or an id containing `/` silently points the call at another endpoint.
 
+<!-- ts-prelude: declare const orderId: string -->
 ```ts
 import { encodePathParam } from 'vtex-sdk'
 
@@ -232,6 +244,7 @@ const filter: OrdersApiTypes.HookFilter = { type: 'FromWorkflow', status: ['invo
 
 ## Observability
 
+<!-- ts-prelude: import { VtexClient } from 'vtex-sdk'; declare const appKey: string; declare const appToken: string -->
 ```ts
 new VtexClient({
   account: 'myaccount', appKey, appToken,
@@ -252,7 +265,9 @@ npm test
 npm run build
 npm run fetch-schemas   # download the locked OpenAPI documents (verified)
 npm run fetch-schemas -- --update-lock <commit-sha>   # re-pin; review the lock diff
-npm run codegen         # regenerate src/generated from them
+npm run codegen         # regenerate src/generated and docs/api-reference from them
+npm run check-doc-examples   # type-check the ```ts blocks in README.md, CLAUDE.md and docs/guides
+npm run check-doc-links      # after a re-pin: verify the developer-portal links (network)
 npx tsx --env-file=.env scripts/live-check.ts   # optional, GET-only; VTEX_ACCOUNT/APP_KEY/APP_TOKEN in .env
 ```
 

@@ -5,8 +5,8 @@ This is an unofficial project. It is not affiliated with, endorsed by or
 sponsored by VTEX. "VTEX" is a trademark of its owner.
 
 The generated code in src/generated/ (method signatures and TypeScript types)
-is derived from the OpenAPI documents published by VTEX at
-https://github.com/vtex/openapi-schemas (© VTEX). Those documents are no longer
-included in this repository (earlier commits contained copies): `npm run
-fetch-schemas` downloads them from the upstream repository at the commit pinned
-in scripts/schemas.lock.json.
+and the generated API reference in docs/api-reference/ (API titles and one-line
+operation summaries) are derived from the OpenAPI documents published by VTEX
+at https://github.com/vtex/openapi-schemas (© VTEX). Those documents are not
+included in this repository: `npm run fetch-schemas` downloads them from the
+upstream repository at the commit pinned in scripts/schemas.lock.json.

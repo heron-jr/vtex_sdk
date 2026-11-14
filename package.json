@@ -36,7 +36,8 @@
     "fetch-schemas": "tsx scripts/fetch-schemas.ts",
     "codegen": "tsx scripts/codegen.ts",
     "live-check": "tsx scripts/live-check.ts",
-    "check-doc-links": "tsx scripts/check-doc-links.ts"
+    "check-doc-links": "tsx scripts/check-doc-links.ts",
+    "check-doc-examples": "tsx scripts/check-doc-examples.ts"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
