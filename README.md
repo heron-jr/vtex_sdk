@@ -1,7 +1,6 @@
 # vtex-sdk
 
-Unofficial TypeScript SDK for the [VTEX APIs](https://developers.vtex.com/docs/api-reference), for Node.js 20 or newer
-(Node 20 is end-of-life; prefer 22 or 24).
+Unofficial TypeScript SDK for the [VTEX APIs](https://developers.vtex.com/docs/api-reference), for Node.js 22.18+, 24.11+ or 26+.
 It is generated from VTEX's public OpenAPI documents and adds hand-written facades over the most used APIs.
 This project is not affiliated with, endorsed by or sponsored by VTEX.
 
@@ -22,7 +21,7 @@ This project is not affiliated with, endorsed by or sponsored by VTEX.
 The package is installed from GitHub; it is not published to npm. Pin a tag:
 
 ```bash
-npm install github:heron-jr/vtex_sdk#v0.2.0
+npm install github:heron-jr/vtex_sdk#v0.3.0
 ```
 
 npm builds `dist/` during install through the package's `prepare` script. Installs that skip lifecycle scripts (`--ignore-scripts`, or package managers that don't run dependency scripts) end up without `dist/`; enable scripts for this package, or build it once with `npm run build` inside `node_modules/vtex-sdk`.
@@ -272,10 +271,11 @@ npx tsx --env-file=.env scripts/live-check.ts   # optional, GET-only; VTEX_ACCOU
 ```
 
 Notes for contributors:
-- The development toolchain (vitest/vite) needs Node 20.19+ or 22.12+. Consumers only need Node 20.
+- Installing from GitHub runs `prepare`, which builds with tsup on the consumer's machine, so `engines` follows tsup's own range (`^22.18.0 || ^24.11.0 || >=26.0.0`). Keep them in sync when tsup changes.
+- `@types/node` stays on the lowest supported major (22), so code can't use APIs newer Node versions add; Dependabot ignores its majors.
 - `--update-lock` calls the GitHub API anonymously; set `GITHUB_TOKEN` to avoid its rate limit. Plain `fetch-schemas` needs no token.
 - Keep secrets in `.env` (gitignored) rather than inline on the command line, where they end up in shell history.
-- `package.json` overrides tsup's esbuild to `^0.28.2`, because esbuild 0.27.x is affected by GHSA-g7r4-m6w7-qqqr. Remove the override once tsup depends on esbuild 0.28.2 or newer, or after moving to tsdown.
+- TypeScript stays on 5.9: TypeScript 7 (the native compiler) has no JavaScript API, which tsup's declaration build and the codegen tests use.
 - Update dependencies with npm 11, so the lockfile keeps its platform (`libc`) annotations.
 
 See [`docs/vtex-notes.md`](./docs/vtex-notes.md) for VTEX hosts, authentication, rate limiting and how the generated layer is produced.

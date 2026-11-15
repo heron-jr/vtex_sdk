@@ -10,6 +10,13 @@ updates:
       dev-tooling:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # Tracks the lowest supported Node major (package.json engines), so code can't use newer APIs.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+      # TypeScript 7 (native compiler) has no JavaScript API, which tsup's dts build and the tests need.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   # Actions are pinned by commit SHA; Dependabot bumps the SHA and the version comment.
   - package-ecosystem: github-actions

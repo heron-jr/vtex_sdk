@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 (2026-11-15)
+
+Toolchain release. The SDK's runtime code is unchanged from 0.2.0.
+
+### Breaking
+- Node.js `^22.18.0 || ^24.11.0 || >=26.0.0` is required. Node 20 reached end-of-life in April 2026, and installing from GitHub builds the package with tsup 9, which needs these versions. Stay on `v0.2.0` if you can't upgrade Node yet.
+
+### Changed
+- Dev tooling: vitest 5, tsup 9 (which brings esbuild 0.28, so the esbuild override is gone) and `@types/node` 22. TypeScript stays on 5.9.
+- CI tests Node 22, 24 and 26, with actions/checkout v7.0.1 and actions/setup-node v7.1.0 pinned by SHA.
+- Dependabot ignores major updates of `@types/node` (it tracks the lowest supported Node) and of TypeScript (7 has no JavaScript API yet).
+
 ## 0.2.0 (2026-10-13)
 
 Security hardening and correctness release. Design: `docs/superpowers/specs/2026-10-12-vtex-sdk-hardening-design.md`.

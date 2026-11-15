@@ -6,7 +6,8 @@ Only the latest release tag receives fixes. Upgrade before reporting an issue th
 
 | Version | Supported |
 |---|---|
-| 0.2.x | yes |
+| 0.3.x | yes |
+| 0.2.x | no: same code, for Node 20; upgrade to 0.3 (Node 22.18+) |
 | < 0.2 | no: 0.1.x has known issues fixed in 0.2.0 (see CHANGELOG.md) |
 
 ## Reporting a vulnerability
