@@ -55,11 +55,11 @@
   "author": "Heron Jr",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/heron-jr/vtex-sdk.git"
+    "url": "git+https://github.com/heron-jr/vtex_sdk.git"
   },
-  "homepage": "https://github.com/heron-jr/vtex-sdk#readme",
+  "homepage": "https://github.com/heron-jr/vtex_sdk#readme",
   "bugs": {
-    "url": "https://github.com/heron-jr/vtex-sdk/issues"
+    "url": "https://github.com/heron-jr/vtex_sdk/issues"
   },
   "keywords": [
     "vtex",

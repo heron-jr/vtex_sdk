@@ -22,7 +22,7 @@ This project is not affiliated with, endorsed by or sponsored by VTEX.
 The package is installed from GitHub; it is not published to npm. Pin a tag:
 
 ```bash
-npm install github:heron-jr/vtex-sdk#v0.2.0
+npm install github:heron-jr/vtex_sdk#v0.2.0
 ```
 
 npm builds `dist/` during install through the package's `prepare` script. Installs that skip lifecycle scripts (`--ignore-scripts`, or package managers that don't run dependency scripts) end up without `dist/`; enable scripts for this package, or build it once with `npm run build` inside `node_modules/vtex-sdk`.

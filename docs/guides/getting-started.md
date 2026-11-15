@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-npm install github:heron-jr/vtex-sdk#v0.2.0
+npm install github:heron-jr/vtex_sdk#v0.2.0
 ```
 
 Pin a tag. The package has no runtime dependencies; npm builds `dist/` through its `prepare` script.
